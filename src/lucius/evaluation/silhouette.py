@@ -41,12 +41,13 @@ def mask_from_image(image: Image.Image, size: int = CANVAS, margin: int = 4) -> 
     border = np.concatenate([rgb[0], rgb[-1], rgb[:, 0], rgb[:, -1]])
     background = np.median(border, axis=0)
     distance = np.linalg.norm(rgb - background, axis=2)
-    threshold = max(25.0, _otsu(distance))
+    threshold = max(25.0, otsu_threshold(distance))
     mask = Image.fromarray(((distance > threshold) * 255).astype(np.uint8)).filter(ImageFilter.MedianFilter(5))
     return fit_mask(np.asarray(mask) > 127, size, margin)
 
 
-def _otsu(values: np.ndarray) -> float:
+def otsu_threshold(values: np.ndarray) -> float:
+    """Otsu's threshold over a 1-D sample of values."""
     hist, edges = np.histogram(values, bins=64)
     total = hist.sum()
     if total == 0:

@@ -39,6 +39,20 @@ def parse_task(text: str, reference_ids: list[str] | None = None) -> TaskSpec:
                 params[name] = int(value) if name == "loop_cuts" else round(value, 4)
                 sources[name] = "task"
                 break
+    triple = re.search(rf"{NUMBER}\s*[x×]\s*{NUMBER}\s*[x×]\s*{NUMBER}", lowered)
+    if triple:
+        values = [float(triple.group(i)) * UNIT.get(triple.group(i + 1) or "m", 1.0) for i in (1, 3, 5)]
+        params["dimensions"] = [round(v, 4) for v in values]
+        sources["dimensions"] = "task"
+    named = re.search(r"\b(?:named|called)\s+[\"']?([A-Za-z][A-Za-z0-9_]{0,40})", text)
+    if named:
+        params["object_name"] = named.group(1)
+        sources["object_name"] = "task"
+    primitive = re.search(r"\b(cube|cylinder|plane|cone|torus|uv sphere|sphere|ico sphere)\b", lowered)
+    if primitive:
+        params["kind"] = {"sphere": "uv_sphere", "uv sphere": "uv_sphere", "ico sphere": "ico_sphere"}.get(
+            primitive.group(1), primitive.group(1))
+        sources["kind"] = "task"
     words = set(re.findall(r"[a-z]+", lowered))
     qualifiers = {}
     for word, (dimension, factor) in QUALIFIERS.items():

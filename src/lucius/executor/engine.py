@@ -17,7 +17,8 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -106,6 +107,7 @@ class _RunContext:
     task: TaskSpec
     mode: str = "execute"
     arm: str = "memory_enhanced"
+    criteria: list[Checkpoint] = field(default_factory=list)
     seq: int = 0
     passed_checkpoints: set[str] = field(default_factory=set)
     result: RunResult | None = None
@@ -165,7 +167,12 @@ class ExecutionEngine:
             arm: ArmConfig | None = None, task_params: dict[str, Any] | None = None,
             references: list[ReferenceSilhouette] | None = None, reference_ids: list[str] | None = None,
             human: HumanChannel | None = None, practice_task_id: str | None = None,
-            benchmark_id: str | None = None, reset_scene: bool = False) -> RunResult:
+            benchmark_id: str | None = None, reset_scene: bool = False,
+            success_criteria: list[Checkpoint] | None = None,
+            plan_fn: Callable[[TaskSpec], Plan] | None = None) -> RunResult:
+        """Run a task. ``success_criteria`` are task-level checkpoints (practice/benchmark definitions)
+        evaluated alongside the skills' own checkpoints; all of them must pass for success.
+        ``plan_fn`` replaces retrieval+planning (used by the raw-demonstration experiment arm)."""
         arm = arm or ArmConfig()
         task = parse_task(task_text, reference_ids)
         if task_params:
@@ -185,10 +192,11 @@ class ExecutionEngine:
         ctx = _RunContext(run_id=run_id, session_id=session.id, sm=RunStateMachine(self.db, run_id, self.bus),
                           validator=ActionValidator(self.safety, bridge_actions=backend.bridge_actions,
                                                     gui_only=backend.gui_only, background=backend.background),
-                          references=references or [], task=task, mode=mode, arm=arm.name)
+                          references=references or [], task=task, mode=mode, arm=arm.name,
+                          criteria=list(success_criteria or []))
         ctx.result = RunResult(run_id=run_id, session_id=session.id, status="running", verdict="pending")
         try:
-            self._run(ctx, backend, arm, human, reset_scene)
+            self._run(ctx, backend, arm, human, reset_scene, plan_fn)
         except LuciusError as exc:
             log.exception("run %s aborted", run_id)
             ctx.result.reason_codes.append(f"aborted:{exc.code}")
@@ -199,7 +207,7 @@ class ExecutionEngine:
         return ctx.result
 
     def _run(self, ctx: _RunContext, backend: ExecutionBackend, arm: ArmConfig, human: HumanChannel | None,
-             reset_scene: bool) -> None:
+             reset_scene: bool, plan_fn: Callable[[TaskSpec], Plan] | None = None) -> None:
         result = ctx.result
         assert result is not None
         ctx.sm.transition(ExecState.OBSERVE, "run_started", context={"arm": arm.name})
@@ -207,11 +215,14 @@ class ExecutionEngine:
             backend.reset()
         self._state_event(ctx, backend, "initial")
         ctx.sm.transition(ExecState.PLAN, "state_observed")
-        retrieval = self.retriever.retrieve(RetrievalQuery(text=ctx.task.text, task_class=ctx.task.object_class,
-                                                           categories=ctx.task.categories,
-                                                           strategy=arm.retrieval_strategy), run_id=ctx.run_id)
-        prefs = self.preferences.active() if arm.use_preferences else {}
-        plan = self.planner.plan(ctx.task, retrieval, preferences=prefs, gui_available=backend.gui_available)
+        if plan_fn is not None:
+            plan = plan_fn(ctx.task)
+        else:
+            retrieval = self.retriever.retrieve(RetrievalQuery(text=ctx.task.text, task_class=ctx.task.object_class,
+                                                               categories=ctx.task.categories,
+                                                               strategy=arm.retrieval_strategy), run_id=ctx.run_id)
+            prefs = self.preferences.active() if arm.use_preferences else {}
+            plan = self.planner.plan(ctx.task, retrieval, preferences=prefs, gui_available=backend.gui_available)
         if not arm.use_failure_guards:
             for step in plan.steps:
                 step.guards = []
@@ -220,7 +231,7 @@ class ExecutionEngine:
                 step.recovery = []
         result.plan = plan
         self.db.execute("UPDATE runs SET plan = ?, retrieval_id = ? WHERE id = ?",
-                        (plan.model_dump_json(), retrieval.id, ctx.run_id))
+                        (plan.model_dump_json(), plan.retrieval_id, ctx.run_id))
         if not plan.steps:
             result.reason_codes.append("needs_demonstration")
             ctx.sm.transition(ExecState.FAILURE, "no_applicable_skills",
@@ -446,6 +457,12 @@ class ExecutionEngine:
                                              execution_ok=execution_ok, run_id=ctx.run_id)
             skill_results[skill_id] = report.results
         all_results = [r for rs in skill_results.values() for r in rs]
+        if ctx.criteria:
+            task_report = self.evaluator.evaluate(subject_kind="run", subject_id=ctx.run_id, checkpoints=ctx.criteria,
+                                                  params={**ctx.task.params}, structure=structure,
+                                                  references=ctx.references, execution_ok=execution_ok,
+                                                  run_id=ctx.run_id)
+            all_results += task_report.results
         verdict, failed, unevaluated, objective = verdict_for(execution_ok and not forced_failure, all_results)
         result.final_report = EvaluationReport(
             id=new_id("evaluation"), subject_kind="run", subject_id=ctx.run_id, run_id=ctx.run_id,

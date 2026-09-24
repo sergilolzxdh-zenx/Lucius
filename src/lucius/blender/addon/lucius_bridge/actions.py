@@ -656,6 +656,26 @@ def load_reference_image(p):
     return {"object": empty.name, "image": image.name}
 
 
+def import_blend(p):
+    """Replace the scene's objects with the objects of a .blend file for inspection.
+
+    Uses library appending (data only): scripts embedded in the file are never executed.
+    """
+    path = _check_path(p["path"], "LUCIUS_ALLOWED_READ_DIRS", (".blend",))
+    _leave_edit_mode()
+    for obj in list(bpy.data.objects):
+        bpy.data.objects.remove(obj, do_unlink=True)
+    _purge_orphans()
+    with bpy.data.libraries.load(path, link=False) as (data_from, data_to):
+        data_to.objects = list(data_from.objects)
+    names = []
+    for obj in data_to.objects:
+        if obj is not None:
+            bpy.context.scene.collection.objects.link(obj)
+            names.append(obj.name)
+    return {"objects": sorted(names)}
+
+
 def _snapshot_dir():
     path = os.path.join(tempfile.gettempdir(), f"lucius_snapshots_{os.getpid()}")
     os.makedirs(path, exist_ok=True)
@@ -774,6 +794,7 @@ ACTIONS = {
     "load_reference_image": (load_reference_image, {
         "path": ("path", REQUIRED), "view": (("FRONT", "SIDE", "TOP"), "FRONT"), "size": ("float", 5.0),
         "name": ("name", None)}),
+    "import_blend": (import_blend, {"path": ("path", REQUIRED)}),
     "snapshot": (snapshot, {"tag": ("path", REQUIRED)}),
     "restore": (restore, {"tag": ("path", REQUIRED)}),
 }

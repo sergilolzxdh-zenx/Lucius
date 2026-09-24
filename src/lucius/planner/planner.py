@@ -9,6 +9,7 @@ is validated) is only executed after its guard checkpoint passes.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from lucius.events.bus import EventBus, EventType
@@ -49,9 +50,11 @@ class Planner:
             d = skill.definition
             if task.object_class and d.object_class and d.object_class != task.object_class:
                 continue
-            if skill.source_class == "system_seeded" and any(s.source_class != "system_seeded"
-                                                              for s, _r in chosen.values()):
-                continue  # learned composite skills cover the task; seeds are not needed
+            if skill.source_class == "system_seeded":
+                if any(s.source_class != "system_seeded" for s, _r in chosen.values()):
+                    continue  # learned composite skills cover the task; seeds are not needed
+                if not _mentions_trigger(task.text, d.triggers):
+                    continue  # a generic capability is only used when the task asks for it
             role = d.object_role or skill.id
             if role in roles:
                 continue
@@ -74,10 +77,37 @@ class Planner:
             ready = [i for i in remaining if not (before[i] & set(remaining))]
             if not ready:  # cycle: fall back to phase order
                 ready = list(remaining)
-            ready.sort(key=lambda i: min((PHASE_ORDER.get(p.name, 9) for p in remaining[i][0].definition.phases),
-                                         default=9))
+            ready.sort(key=lambda i: (min((PHASE_ORDER.get(p.name, 9) for p in remaining[i][0].definition.phases),
+                                          default=9), 0 if _creates_object(remaining[i][0]) else 1))
             ordered.append(remaining.pop(ready[0]))
         return ordered
+
+    def plan_from_episode(self, task: TaskSpec, retrieval: RetrievalResult, definitions: list[Any],
+                          *, gui_available: bool = False) -> Plan:
+        """Baseline for A/B experiments: replay the procedure of the most similar demonstration with
+        the values it used (no generalisation, no task parameters, no failure guards)."""
+        plan = Plan(id=new_id("plan"), task=task, retrieval_id=retrieval.id, strategy="episodes_only",
+                    created_at=now(), reason_codes=["raw_demonstration_replay"])
+        if not definitions:
+            plan.unresolved.append({"reason": "no_similar_demonstration", "required": True})
+            return plan
+        ctx = CompileContext(gui_available=gui_available)
+        for definition in definitions:
+            params = {p.name: (p.observed_values[-1] if p.observed_values else p.default) for p in definition.parameters}
+            params.setdefault("object_name", (definition.object_role or "Object").title())
+            for phase in sorted(definition.phases, key=lambda p: PHASE_ORDER.get(p.name, 9)):
+                step = PlanStep(id=new_id("step"), phase=phase.name, skill_id=None, skill_name=definition.name,
+                                params=params, reason_codes=["replayed_from_episode"])
+                for i, template in enumerate(phase.actions):
+                    try:
+                        step.actions += compile_template(template, params, ctx, source=f"episode/{phase.name}/{i}")
+                    except Uncompilable as exc:
+                        plan.unresolved.append({"phase": phase.name, "action": template.action_type,
+                                                "reason": exc.reason, "required": not template.optional})
+                step.checkpoints = [c for c in (definition.checkpoint(cid) for cid in phase.checkpoints) if c]
+                plan.steps.append(step)
+        plan.confidence = 0.5
+        return plan
 
     # -- parameters -------------------------------------------------------------------------------------
     @staticmethod
@@ -109,11 +139,19 @@ class Planner:
         failures = self._failures(task, retrieval, [s for s, _r in selected])
         ctx = CompileContext(gui_available=gui_available)
         names_used: set[str] = set()
+        current_object = task.params.get("object_name")
         for skill, reasons in selected:
             params, sources = self.resolve_params(skill, task)
-            name = params["object_name"]
-            while name in names_used:  # two skills must not fight over one object name
-                name = f"{params['object_name']}_{len(names_used)}"
+            if skill.definition.object_role is None:
+                # Generic skills act on the task's object; the first creator names it.
+                name = current_object or params["object_name"]
+                current_object = name
+            else:
+                name = params["object_name"] if (len(selected) == 1 or sources.get("object_name") != "task") \
+                    else (skill.definition.object_role or "object").title()
+                base = name
+                while name in names_used:  # two role-specific skills must not fight over one object
+                    name = f"{base}_{len(names_used)}"
             params["object_name"] = name
             names_used.add(name)
             steps = self._skill_steps(skill, params, sources, reasons, ctx, plan)
@@ -233,3 +271,12 @@ def _param_value(spec: ParamSpec, task: TaskSpec, role: str) -> tuple[Any, str]:
                 value = value * factor
             return round(value, 4), "qualifier"
     return value, "skill_default" if spec.observed_values else "declared_default"
+
+
+def _creates_object(skill: Skill) -> bool:
+    return any(a.action_type == "add_primitive" for p in skill.definition.phases for a in p.actions)
+
+
+def _mentions_trigger(text: str, triggers: list[str]) -> bool:
+    lowered = text.lower()
+    return any(re.search(rf"\b{re.escape(t.lower())}s?\b", lowered) for t in triggers)
