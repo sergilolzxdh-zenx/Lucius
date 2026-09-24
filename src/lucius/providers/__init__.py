@@ -26,20 +26,38 @@ def build_providers(config: ProviderConfig, db: Database | None) -> tuple[Provid
     """Instantiate configured providers. Returns the providers and why any are unavailable."""
     notes: dict[str, str] = {}
     call_log = CallLog(db)
-    llm = vlm = evaluation = None
-    if "anthropic" in (config.llm, config.vlm, config.evaluation):
-        try:
-            from lucius.providers.anthropic_provider import AnthropicProvider, VisionJudge
+    bases: dict[str, LoggedLLM | None] = {}
 
-            base = LoggedLLM(AnthropicProvider(config.anthropic_model, effort=config.anthropic_effort,
-                                               server_fallbacks=config.anthropic_server_fallbacks,
-                                               max_retries=config.max_retries), call_log)
-            llm = base if config.llm == "anthropic" else None
-            vlm = base if config.vlm == "anthropic" else None
-            evaluation = VisionJudge(base) if config.evaluation == "anthropic" else None
-        except ProviderUnavailable as exc:
-            notes["anthropic"] = exc.message
-            log.warning("anthropic provider unavailable: %s", exc.message)
+    def base(name: str) -> LoggedLLM | None:
+        """One logged client per provider, shared by the roles that use it."""
+        if name not in bases:
+            try:
+                if name == "anthropic":
+                    from lucius.providers.anthropic_provider import AnthropicProvider
+
+                    inner: LLMProvider = AnthropicProvider(
+                        config.anthropic_model, effort=config.anthropic_effort,
+                        server_fallbacks=config.anthropic_server_fallbacks, max_retries=config.max_retries)
+                else:
+                    from lucius.providers.gemini_provider import GeminiProvider
+
+                    inner = GeminiProvider(config.gemini_model, thinking_level=config.gemini_thinking_level)
+                # The Anthropic SDK retries internally; the Gemini SDK does not by default.
+                bases[name] = LoggedLLM(inner, call_log, retries=config.max_retries if name == "gemini" else 1)
+            except ProviderUnavailable as exc:
+                notes[name] = exc.message
+                log.warning("%s provider unavailable: %s", name, exc.message)
+                bases[name] = None
+        return bases[name]
+
+    llm = base(config.llm) if config.llm != "none" else None
+    vlm = base(config.vlm) if config.vlm != "none" else None
+    evaluation = None
+    if config.evaluation != "none":
+        from lucius.providers.judge import VisionJudge
+
+        judge_base = base(config.evaluation)
+        evaluation = VisionJudge(judge_base) if judge_base is not None else None
     embeddings: EmbeddingProvider
     if config.embeddings == "sentence-transformers":
         try:

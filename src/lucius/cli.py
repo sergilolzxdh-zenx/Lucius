@@ -85,6 +85,17 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_models(args: argparse.Namespace) -> int:
+    """List the models the provider's key can use (the key is read from the environment)."""
+    if args.provider == "gemini":
+        from lucius.providers.gemini_provider import list_gemini_models
+
+        _print(list_gemini_models())
+        return 0
+    print("listing is only implemented for gemini; set providers.anthropic_model in Settings", file=sys.stderr)
+    return 1
+
+
 def cmd_record(args: argparse.Namespace) -> int:
     from lucius.provenance import DataPolicy
     from lucius.sessions import Outcome
@@ -228,6 +239,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.set_defaults(func=cmd_addon)
 
     sub.add_parser("status", help="summary of the data directory").set_defaults(func=cmd_status)
+
+    s = sub.add_parser("models", help="list the models your provider key can use")
+    s.add_argument("--provider", choices=["gemini"], default="gemini")
+    s.set_defaults(func=cmd_models)
 
     s = sub.add_parser("record", help="WATCH ME from the terminal (Ctrl+C to stop)")
     s.add_argument("--task", default=None)

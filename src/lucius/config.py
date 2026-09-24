@@ -45,13 +45,16 @@ class PrivacyConfig(BaseModel):
 
 
 class ProviderConfig(BaseModel):
-    llm: Literal["anthropic", "none"] = "none"
-    vlm: Literal["anthropic", "none"] = "none"
-    evaluation: Literal["anthropic", "none"] = "none"
+    llm: Literal["anthropic", "gemini", "none"] = "none"
+    vlm: Literal["anthropic", "gemini", "none"] = "none"
+    evaluation: Literal["anthropic", "gemini", "none"] = "none"
     embeddings: Literal["hashing", "sentence-transformers"] = "hashing"
     anthropic_model: str = "claude-opus-5"
     anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] | None = None
     anthropic_server_fallbacks: bool = True
+    # Gemini: the model must be chosen explicitly (`lucius models --provider gemini` lists them).
+    gemini_model: str | None = None
+    gemini_thinking_level: Literal["minimal", "low", "medium", "high"] | None = None
     sentence_transformers_model: str = "all-MiniLM-L6-v2"
     hashing_dim: int = Field(default=512, ge=64, le=8192)
     max_retries: int = Field(default=2, ge=0, le=8)

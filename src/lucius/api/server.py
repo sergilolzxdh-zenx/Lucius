@@ -980,7 +980,8 @@ def create_app(lucius: Lucius, *, token: str | None = None) -> FastAPI:
         cfg = lucius.config.model_dump(mode="json")
         cfg["blender"]["bridge_token"] = "set" if lucius.config.blender.bridge_token else None
         return {"config": cfg, "data_dir": str(lucius.config.data_dir),
-                "credentials": {"ANTHROPIC_API_KEY": bool(os.environ.get("ANTHROPIC_API_KEY"))},
+                "credentials": {name: bool(os.environ.get(name))
+                                for name in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "ANTHROPIC_API_KEY")},
                 "provider_notes": lucius.provider_notes}
 
     @r.put("/settings")

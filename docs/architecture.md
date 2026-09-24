@@ -49,7 +49,7 @@ roll back or delete any of it. This document describes the system as built. The
 | `lucius.practice` | Curricula, sampled practice tasks, mastery gates, synthetic references. |
 | `lucius.dataset` / `lucius.training` | Dataset assembly with eligibility and quality validation, bundles, training-file formatters, trainer interfaces and advisor. |
 | `lucius.benchmarks` | Benchmarks, A/B experiment arms, bootstrap confidence intervals. |
-| `lucius.providers` | Provider-neutral LLM/VLM/embedding/evaluation interfaces; Anthropic implementation; hashing and sentence-transformers embeddings. |
+| `lucius.providers` | Provider-neutral LLM/VLM/embedding/evaluation interfaces; Gemini and Anthropic implementations; a provider-neutral vision judge; hashing and sentence-transformers embeddings. |
 | `lucius.api` | Local FastAPI server, job manager, control-center SPA. |
 | `lucius.cli` | `lucius` command line. |
 

@@ -988,8 +988,8 @@ async function pageSettings() {
   }, (r) => (r.restart_required.length ? `Saved. Restart Lucius to apply: ${r.restart_required.join(", ")}` : "Saved"));
   const el = h("div", {}, h("h1", {}, "Settings"), h("p", { class: "sub" }, `Data directory: ${d.data_dir}`),
     h("div", { class: "card stack", style: "margin-bottom:14px" }, h("strong", {}, "Credentials"),
-      h("div", {}, "ANTHROPIC_API_KEY: ", d.credentials.ANTHROPIC_API_KEY ? chip("present in environment", "ok") : chip("not set", "seed")),
-      h("div", { class: "muted small" }, "Credentials are read from the environment by the provider SDK and are never stored by Lucius. Set providers.llm / vlm / evaluation to “anthropic” to enable model-assisted refinement, inference and judgement."),
+      Object.entries(d.credentials).map(([name, present]) => h("div", {}, `${name}: `, present ? chip("present in environment", "ok") : chip("not set", "seed"))),
+      h("div", { class: "muted small" }, "Credentials are read from the environment by the provider SDK and are never stored by Lucius. Set providers.llm / vlm / evaluation to “gemini” (and providers.gemini_model — see `lucius models`) or “anthropic” to enable model-assisted refinement, inference and judgement."),
       Object.entries(d.provider_notes || {}).map(([k, v]) => h("div", { class: "faint small" }, `${k}: ${v}`))),
     h("div", { class: "stack" }, sections.map(sectionCard)),
     h("div", { class: "row", style: "margin-top:14px" }, h("span", { class: "spacer" }), h("button", { class: "primary", onclick: save }, "Save settings")));

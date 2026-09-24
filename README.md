@@ -19,7 +19,7 @@ use the `bpy` module (`pip install bpy`, which needs Python 3.11) or a `blender`
 
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
-pip install -e ".[api,media,capture]"      # add ",anthropic" for model-assisted features
+pip install -e ".[api,media,capture]"      # add ",gemini" or ",anthropic" for model-assisted features
 pip install bpy                             # optional: headless Blender for practice/validation/benchmarks
 
 lucius addon --output lucius_bridge.zip     # Blender: Edit > Preferences > Add-ons > Install…, enable "Lucius Bridge"
@@ -47,9 +47,17 @@ export/delete sessions…). Data lives in `.lucius/` (override with `--data-dir`
 ### Model providers (optional)
 
 Without any model, Lucius records, segments, extracts skills, retrieves, plans, executes and measures
-results. Checks that need judgement are sent to you. To add model-assisted segment labelling, media
-analysis and a visual judge, install the `anthropic` extra, export `ANTHROPIC_API_KEY`, and set
-`providers.llm/vlm/evaluation` to `anthropic` in **Settings**. Lucius never stores credentials.
+results. Checks that need judgement are sent to you. Model-assisted segment labelling, media
+analysis and a visual judge can use **Gemini** or **Claude**:
+
+- **Gemini:** install the `gemini` extra and set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in the
+  environment. Run `lucius models --provider gemini` to see the models your key can use. In
+  **Settings**, set `providers.gemini_model` to one of them and `providers.llm/vlm/evaluation` to
+  `gemini`. The model is never guessed.
+- **Claude:** install the `anthropic` extra, set `ANTHROPIC_API_KEY`, and set the three roles to
+  `anthropic`.
+
+Lucius never stores credentials.
 Model outputs are schema-constrained JSON with reason codes (no hidden reasoning is requested or
 stored), are labelled `model_inferred`, are confidence-discounted, and never count as objective
 verification.
@@ -87,9 +95,11 @@ human takeover → recovery rule → the next attempt recovers without a human.
   interactive use, and viewport navigation actions. All tests used headless Blender. The recorder
   has not been run against a live Blender window.
 - **Windows and macOS window providers.** Only X11 was exercised.
-- **Anthropic provider.** Request construction, refusal/truncation handling, error mapping and
-  retries are tested with a fake SDK client. It has not been called against the live API (no
-  credentials were available).
+- **Gemini and Anthropic providers.** Request construction (JSON-schema output, images),
+  refusal/truncation handling, error mapping and retries are tested with fake SDK clients. Neither
+  has been called against the live API yet. In particular, whether Gemini accepts every output
+  schema Lucius sends is only known after the first live call; failures are recorded under
+  `model_calls` and shown in the UI.
 - **VLM media analysis** (`ingestion/vision.py`) and the **sentence-transformers** embedding
   option: the code paths exist but have not been run.
 
