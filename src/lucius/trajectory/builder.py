@@ -440,14 +440,16 @@ class _Run:
 
     def _on_agent_action(self, event: CapturedEvent) -> None:
         action = event.payload.get("action") or {}
-        if action.get("layer") != "blender_api":
+        if action.get("layer") not in ("blender_api", "internal"):
             return  # GUI actions surface through their (agent-attributed) input events
         name = action.get("name", "")
         result = event.payload.get("result") or {}
         ok = not result.get("error")
-        draft = self._new(event, vocab.BRIDGE_ACTION_MAP.get(name, f"api.{name}"), source=ActionSource.OBSERVED,
-                          evidence_kind=EvidenceKind.AGENT_EXECUTION, confidence=1.0 if ok else 0.3,
-                          params=dict(action.get("args") or {}), actor="agent",
+        actor = event.actor.value  # agent executions, or human actions issued through the bridge console
+        draft = self._new(event, action.get("action_type") or vocab.BRIDGE_ACTION_MAP.get(name, f"api.{name}"),
+                          source=ActionSource.OBSERVED,
+                          evidence_kind=EvidenceKind.AGENT_EXECUTION if actor == "agent" else EvidenceKind.DIRECT_BLENDER_EVENT,
+                          confidence=1.0 if ok else 0.3, params=dict(action.get("args") or {}), actor=actor,
                           evidence=[f"bridge action {name}" + ("" if ok else " (failed)")])
         draft.confirmed = True
         draft.meta["bridge_action"] = name

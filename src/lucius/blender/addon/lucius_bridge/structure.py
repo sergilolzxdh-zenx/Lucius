@@ -57,8 +57,15 @@ def inspect_structure(names=None, views=("front", "side", "top"), max_triangles=
         "objects": [],
     }
     for obj in objects:
+        if obj.type == "MESH" and obj.mode == "EDIT":
+            obj.update_from_editmode()  # sync pending edit-mode changes into the mesh data
+            depsgraph = bpy.context.evaluated_depsgraph_get()
         info = object_summary(obj)
         if obj.type == "MESH":
+            base = [tuple(v.co) for v in obj.data.vertices]
+            if base:
+                info["mesh_size"] = _round([(max(p[i] for p in base) - min(p[i] for p in base)) * abs(obj.scale[i])
+                                            for i in range(3)])
             evaluated = obj.evaluated_get(depsgraph)
             mesh = evaluated.to_mesh()
             try:

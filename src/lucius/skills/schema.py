@@ -88,6 +88,7 @@ class RecoveryAction(BaseModel):
     id: str
     description: str
     when: str | None = None               # failure condition id
+    when_checkpoints: list[str] = Field(default_factory=list)  # checkpoints whose failure this recovery addresses
     actions: list[ActionTemplate] = Field(default_factory=list)
     source: str = "human_correction"
     evidence: list[str] = Field(default_factory=list)
