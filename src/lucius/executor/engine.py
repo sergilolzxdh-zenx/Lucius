@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field
 
 from lucius.config import SafetyConfig
 from lucius.corrections import CorrectionStore
-from lucius.errors import ActionRejected, BlenderBridgeError, LuciusError
+from lucius.errors import ActionRejected, BlenderBridgeError, ConflictError, LuciusError, NotFoundError
 from lucius.evaluation.checks import ReferenceSilhouette
 from lucius.evaluation.evaluator import EvaluationReport, Evaluator, verdict_for
 from lucius.events.bus import EventBus, EventType
@@ -45,7 +45,7 @@ from lucius.sessions.models import Actor, CapturedEvent, EventKind, Outcome, Ses
 from lucius.sessions.store import SessionStore
 from lucius.skills.library import SkillLibrary
 from lucius.skills.schema import Checkpoint
-from lucius.storage.db import Database, dumps
+from lucius.storage.db import Database, dumps, loads
 from lucius.timeutil import now
 from lucius.trajectory import vocabulary as vocab
 
@@ -501,11 +501,52 @@ class ExecutionEngine:
                                  for s in result.steps if s.skill_id == skill_id)
             success = skill_steps_ok and required_ok and objective_ok
             signature = hashlib.sha1(dumps({k: v for k, v in params.items() if k != "object_name"}).encode()).hexdigest()[:12]
+            awaiting = [r.checkpoint_id for r in results if r.required and r.passed is None]
+            if verdict == "needs_human" and awaiting and skill_steps_ok and \
+                    not any(r.passed is False for r in results if r.required):
+                # Only a person can settle this skill's outcome: credit waits for their review.
+                result.metrics.setdefault("pending_credit", []).append(
+                    {"skill_id": skill_id, "signature": signature, "objective": objective_ok, "awaiting": awaiting})
+                continue
             self.library.record_use(skill_id, success=success, run_id=ctx.run_id, instance_signature=signature,
                                     objective=objective_ok, environment=backend.environment,
                                     role="validation" if ctx.mode == "validation" else "execution",
                                     session_id=ctx.session_id, detail={"verdict": verdict, "arm": ctx.arm})
         self.retriever.record_feedback(plan.retrieval_id or "", {"used_skills": plan.skill_ids, "verdict": verdict})
+
+    def resolve_human_review(self, run_id: str, *, passed: bool, rating: int | None = None,
+                             feedback: str | None = None, user_id: str | None = None) -> dict[str, Any]:
+        """A person settles a ``needs_human`` run (checkpoints only a human can judge).
+
+        The review is stored as a level-4 evaluation; deferred skill credit is applied now. A run
+        without any objective check passing becomes ``subjective_pass``, never ``success``.
+        """
+        row = self.db.query_one("SELECT * FROM runs WHERE id = ?", (run_id,))
+        if row is None:
+            raise NotFoundError(f"run {run_id} not found")
+        if row["status"] != "needs_human":
+            raise ConflictError(f"run {run_id} is {row['status']}, not awaiting human review", run_id=run_id)
+        user = user_id or self.user_id
+        metrics = loads(row["metrics"], {})
+        evaluation_id = self.evaluator.record_human(subject_kind="run", subject_id=run_id, run_id=run_id, passed=passed,
+                                                    rating=rating, feedback=feedback, user_id=user)
+        status = ("success" if metrics.get("objective_passes") else "subjective_pass") if passed else "failure"
+        environment = row["environment"]
+        for credit in metrics.pop("pending_credit", []):
+            if not self.library.exists(credit["skill_id"]):
+                continue
+            self.library.record_use(credit["skill_id"], success=passed and credit["objective"], run_id=run_id,
+                                    instance_signature=credit["signature"], objective=credit["objective"],
+                                    environment=environment, role="execution", session_id=row["session_id"],
+                                    detail={"verdict": status, "human_review": evaluation_id})
+        metrics["human_review"] = {"evaluation_id": evaluation_id, "passed": passed, "rating": rating, "by": user}
+        self.db.execute("UPDATE runs SET status = ?, metrics = ? WHERE id = ?", (status, dumps(metrics), run_id))
+        if row["session_id"]:
+            outcome = {"success": Outcome.SUCCESS, "failure": Outcome.FAILURE}.get(status, Outcome.EXECUTED_UNVERIFIED)
+            self.sessions.update(row["session_id"], outcome=outcome)
+        if self.bus is not None:
+            self.bus.publish(EventType.TASK_COMPLETED, run_id, verdict=status, human_review=True)
+        return {"run_id": run_id, "status": status, "evaluation_id": evaluation_id}
 
     def _finish(self, ctx: _RunContext, backend: ExecutionBackend) -> None:
         result = ctx.result

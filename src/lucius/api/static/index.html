@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="lucius-token" content="__LUCIUS_TOKEN__">
+  <title>Lucius Control Center</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <div id="shell">
+    <nav id="sidebar" aria-label="Main">
+      <div class="brand"><span class="brand-mark">L</span><span class="brand-name">Lucius</span></div>
+      <a href="#/agent" data-route="agent"><span class="ico">&#9673;</span>Agent</a>
+      <a href="#/watch" data-route="watch"><span class="ico">&#9679;</span>Watch Me</a>
+      <a href="#/import" data-route="import"><span class="ico">&#8679;</span>Import</a>
+      <a href="#/skills" data-route="skills"><span class="ico">&#9881;</span>Skills</a>
+      <a href="#/memory" data-route="memory"><span class="ico">&#9776;</span>Memory</a>
+      <a href="#/failures" data-route="failures"><span class="ico">&#9888;</span>Failures</a>
+      <a href="#/practice" data-route="practice"><span class="ico">&#10227;</span>Practice</a>
+      <a href="#/datasets" data-route="datasets"><span class="ico">&#9636;</span>Datasets</a>
+      <a href="#/benchmarks" data-route="benchmarks"><span class="ico">&#9650;</span>Benchmarks</a>
+      <a href="#/settings" data-route="settings"><span class="ico">&#9965;</span>Settings</a>
+      <div class="sidebar-foot" id="conn-state">connecting…</div>
+    </nav>
+    <div id="main-col">
+      <header id="topbar">
+        <div id="rec-indicator" class="rec-off" role="status" aria-live="polite">not recording</div>
+        <div id="topbar-status"></div>
+      </header>
+      <div id="takeover-banner" hidden></div>
+      <main id="view" tabindex="-1"></main>
+    </div>
+  </div>
+  <div id="toast" role="alert" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

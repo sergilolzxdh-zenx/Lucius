@@ -21,7 +21,8 @@ anthropic = ["anthropic>=1.0"]
 media = ["opencv-python-headless>=4.9"]
 capture = ["mss>=9.0", "pynput>=1.7"]
 blender = ["bpy>=4.2"]
-dev = ["pytest>=8.0", "httpx>=0.27"]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.5"]
+ui-test = ["playwright>=1.45"]
 all = ["lucius[api,anthropic,media,capture]"]
 
 [project.scripts]
@@ -36,6 +37,7 @@ markers = [
   "bpy: requires the Blender `bpy` module (pip install bpy)",
   "xvfb: requires an X display (Xvfb) for real screen/input capture",
   "media: requires opencv-python-headless",
+  "ui: requires playwright and a Chromium binary",
 ]
 addopts = "-q"
 

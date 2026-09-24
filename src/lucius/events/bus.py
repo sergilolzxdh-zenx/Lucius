@@ -62,6 +62,8 @@ class EventType(StrEnum):
     MASTERY_UPDATED = "MASTERY_UPDATED"
     DATASET_BUILT = "DATASET_BUILT"
     MODEL_CALL = "MODEL_CALL"
+    JOB_STATUS = "JOB_STATUS"
+    POLICY_CHANGED = "POLICY_CHANGED"
 
 
 # Streamed live but not written to event_log (their durable record lives elsewhere).
