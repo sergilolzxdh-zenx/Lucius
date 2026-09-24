@@ -102,12 +102,25 @@ def _edit_selection(obj):
     if obj is None or obj.type != "MESH" or obj.mode != "EDIT":
         return None
     bm = bmesh.from_edit_mesh(obj.data)
-    return {
-        "verts": sum(1 for v in bm.verts if v.select),
+    selected = [v.co for v in bm.verts if v.select]
+    info = {
+        "verts": len(selected),
+        "total_verts": len(bm.verts),
         "edges": sum(1 for e in bm.edges if e.select),
         "faces": sum(1 for f in bm.faces if f.select),
         "select_mode": sorted(bm.select_mode),
     }
+    if selected and len(bm.verts):
+        # Selection extent in the object's normalised bounding box: a resolution-independent
+        # description ("the top 20% along z") that a skill can re-apply to another object.
+        lo = [min(v.co[i] for v in bm.verts) for i in range(3)]
+        hi = [max(v.co[i] for v in bm.verts) for i in range(3)]
+        info["normalized_bbox"] = {
+            axis: [round((min(c[i] for c in selected) - lo[i]) / ((hi[i] - lo[i]) or 1.0), 3),
+                   round((max(c[i] for c in selected) - lo[i]) / ((hi[i] - lo[i]) or 1.0), 3)]
+            for i, axis in enumerate("xyz")
+        }
+    return info
 
 
 def object_summary(obj):

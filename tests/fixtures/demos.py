@@ -126,7 +126,33 @@ class DemoScript:
     def tab(self, to_mode: str) -> DemoScript:
         self.key("TAB")
         self.operator("OBJECT_OT_editmode_toggle")
-        self.state(mode=to_mode)
+        if to_mode.startswith("EDIT"):
+            self.state(mode=to_mode, edit_selection=self._selection(None))
+        else:
+            self.values.pop("edit_selection", None)
+            self.state(mode=to_mode)
+        return self
+
+    def _selection(self, region: tuple[str, float, float] | None) -> dict[str, Any]:
+        total = self.values["active_object_summary"].get("mesh", {}).get("verts", 8)
+        bbox = {a: [0.0, 1.0] for a in "xyz"}
+        verts = total
+        if region is not None:
+            axis, lo, hi = region
+            bbox[axis] = [lo, hi]
+            verts = max(1, int(total * (hi - lo)))
+        return {"verts": verts, "total_verts": total, "edges": verts, "faces": max(0, verts // 4),
+                "select_mode": ["VERT"], "normalized_bbox": bbox}
+
+    def select_region(self, axis: str, lo: float, hi: float) -> DemoScript:
+        self.drag("LEFT", dx=200, dy=120)
+        self.operator("VIEW3D_OT_select_box", {"mode": "SET"})
+        self.state(edit_selection=self._selection((axis, lo, hi)))
+        return self
+
+    def select_all(self) -> DemoScript:
+        self.key("A").operator("MESH_OT_select_all", {"action": "SELECT"})
+        self.state(edit_selection=self._selection(None))
         return self
 
     def scale(self, axis: str, value: float, dims: list[float] | None = None) -> DemoScript:
@@ -154,6 +180,9 @@ class DemoScript:
         self.operator("MESH_OT_loopcut_slide", {}, macros=[{"idname": "MESH_OT_loopcut", "properties": {"number_cuts": cuts}},
                                                             {"idname": "TRANSFORM_OT_edge_slide", "properties": {}}],
                       geometry_changed=[self.values["active_object"]])
+        mesh = self.values["active_object_summary"].get("mesh", {"verts": 8, "faces": 6})
+        self.state(mesh={"verts": mesh["verts"] + 4 * cuts, "faces": mesh["faces"] + 4 * cuts},
+                   geometry_changed=[self.values["active_object"]])
         return self
 
     def bevel(self, offset: float = 0.02, segments: int = 2) -> DemoScript:
@@ -201,10 +230,12 @@ def sword_blockout_demo(*, with_mistake: bool = True, blade_length: float = 6.0,
         d.wait(1.0).annotate("bevel too early - the tip is too broad").undo()
         d.state(geometry_changed=["Blade"])
         d.wait(0.6)
+    d.select_region("z", 0.8, 1.0)
     d.key("S").key("X").type_number("0.2").key("RET")
     d.operator("TRANSFORM_OT_resize", {"value": [0.2, 1.0, 1.0], "constraint_axis": [True, False, False]},
                geometry_changed=["Blade"])
     d.state(geometry_changed=["Blade"])
+    d.select_all()
     d.wait(4.5)
     d.inspect(["front", "right", "top"])
     d.wait(4.5)
