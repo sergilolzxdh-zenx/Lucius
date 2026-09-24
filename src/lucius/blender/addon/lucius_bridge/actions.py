@@ -29,6 +29,9 @@ PRIMITIVES = {
         segments=max(3, p["vertices"]), radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
     "ico_sphere": lambda p: bpy.ops.mesh.primitive_ico_sphere_add(radius=p["size"] / 2, location=p["location"]),
     "torus": lambda p: bpy.ops.mesh.primitive_torus_add(location=p["location"], rotation=p["rotation"]),
+    # A ring of vertices without a face (tutorials often start pipes and bottles from one).
+    "circle": lambda p: bpy.ops.mesh.primitive_circle_add(
+        vertices=p["vertices"], radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
 }
 
 MODIFIER_PROPS = {
@@ -694,10 +697,14 @@ def snapshot(p):
     """Save the scene to a private snapshot file (headless recovery; the GUI also has undo)."""
     if not SNAPSHOT_TAG.match(p["tag"]):
         raise BridgeCommandError("invalid_param", "invalid snapshot tag", param="tag")
-    _leave_edit_mode()
+    was_editing = bpy.context.mode == "EDIT_MESH"
+    _leave_edit_mode()  # flushes edit-mode changes into the mesh before saving
     path = os.path.join(_snapshot_dir(), p["tag"] + ".blend")
     with bpy.context.temp_override(**_context_override()):
         _op_result(bpy.ops.wm.save_as_mainfile(filepath=path, copy=True), "snapshot")
+        if was_editing and _active() is not None:
+            # A snapshot must not change what the user (or a keyboard sequence) sees: back to edit mode.
+            bpy.ops.object.mode_set(mode="EDIT")
     active = _active()
     meta = {"active": active.name if active else None,
             "selected": [o.name for o in bpy.context.view_layer.objects if o.select_get()]}
@@ -735,8 +742,10 @@ def restore(p):
             meta = json.load(handle)
         for obj in bpy.context.view_layer.objects:
             obj.select_set(obj.name in meta.get("selected", []))
-        if meta.get("active") in bpy.data.objects:
-            bpy.context.view_layer.objects.active = bpy.data.objects[meta["active"]]
+        active = meta.get("active")
+        # Blender 5 raises TypeError for `None in bpy.data.objects` (4.x returned False).
+        if isinstance(active, str) and active in bpy.data.objects:
+            bpy.context.view_layer.objects.active = bpy.data.objects[active]
     return {"tag": p["tag"], "restored": sorted(restored)}
 
 

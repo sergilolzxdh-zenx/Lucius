@@ -57,6 +57,17 @@ class ImageInput:
 
 
 @dataclass
+class VideoInput:
+    """A video the provider fetches itself (e.g. a public YouTube URL for Gemini), clipped to [start, end)."""
+
+    uri: str
+    start_s: float | None = None
+    end_s: float | None = None
+    fps: float = 1.0
+    resolution: str = "low"          # low, medium or high: tokens per frame (low reads large UI text only)
+
+
+@dataclass
 class ModelResult:
     data: dict[str, Any]
     provider: str
@@ -70,6 +81,7 @@ class LLMProvider(Protocol):
     name: str
     model: str
     supports_images: bool
+    # Providers that accept VideoInput take an extra ``videos=`` keyword in complete_json.
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
                       images: Sequence[ImageInput] = (), max_tokens: int = 8000) -> ModelResult: ...
@@ -152,16 +164,19 @@ class LoggedLLM:
         self.name = inner.name
         self.model = inner.model
         self.supports_images = inner.supports_images
+        self.supports_video = bool(getattr(inner, "supports_video", False))
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
-                      images: Sequence[ImageInput] = (), max_tokens: int = 8000) -> ModelResult:
+                      images: Sequence[ImageInput] = (), max_tokens: int = 8000,
+                      videos: Sequence[VideoInput] = ()) -> ModelResult:
         attempt = 0
+        extra = {"videos": videos} if videos else {}
         while True:
             self.limiter.wait()
             started = time.monotonic()
             try:
                 result = self.inner.complete_json(purpose=purpose, system=system, prompt=prompt, schema=schema,
-                                                  images=images, max_tokens=max_tokens)
+                                                  images=images, max_tokens=max_tokens, **extra)
             except ProviderError as exc:
                 transient = bool(exc.details.get("transient"))
                 self.log.record(provider=self.name, model=self.model, purpose=purpose, status="error",

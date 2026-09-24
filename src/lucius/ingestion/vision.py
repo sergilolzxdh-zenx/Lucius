@@ -71,7 +71,10 @@ TRANSITION_SYSTEM = (
     "You analyse frames from Blender tutorials. For each numbered before/after pair, describe what changed and "
     "which Blender operation could explain it, using only the allowed operation names. Give several candidates "
     "with confidences when unsure, and include 'unknown_action' if the evidence is weak. Report the interaction "
-    "mode and tool only if they are readable in the header, and keystroke overlays only if visible."
+    "mode and tool only if they are readable in the header, and keystroke overlays only if visible. When the "
+    "narrator's words around a pair are given (automatic captions, possibly in another language and with "
+    "recognition errors), use them as a hint about what is being done, but judge from the images: a narrator "
+    "also explains things they do not do."
 )
 
 
@@ -84,20 +87,31 @@ class VisionAnalyzer:
     def available(self) -> bool:
         return self.providers.has("vlm")
 
-    def describe_transitions(self, pairs: list[tuple[Image.Image, Image.Image]], context: str) -> dict[int, dict[str, Any]]:
+    def describe_transitions(self, pairs: list[tuple[Image.Image, Image.Image]], context: str,
+                             narration: list[str] | None = None,
+                             indices: list[int] | None = None) -> dict[int, dict[str, Any]]:
+        """Analyse before/after pairs in batches. ``indices`` names the pairs (default 0..n-1) so a
+        selected subset keeps its original numbering; ``narration`` holds the words spoken around each."""
         if not self.available or not pairs:
             return {}
+        indices = indices if indices is not None else list(range(len(pairs)))
         out: dict[int, dict[str, Any]] = {}
         per_call = self.max_images // 2
         for start in range(0, len(pairs), per_call):
             images = []
-            for i, (before, after) in enumerate(pairs[start:start + per_call], start=start):
+            spoken = []
+            batch = list(zip(indices[start:start + per_call], pairs[start:start + per_call],
+                             (narration or [""] * len(pairs))[start:start + per_call]))
+            for i, (before, after), words in batch:
                 images.append(ImageInput.from_image(before, label=f"Pair {i} BEFORE:", max_side=960))
                 images.append(ImageInput.from_image(after, label=f"Pair {i} AFTER:", max_side=960))
+                if words:
+                    spoken.append(f"Narration around pair {i}: \"{words[:600]}\"")
             try:
                 result = self.providers.vlm.complete_json(
                     purpose="media_transition_analysis", system=TRANSITION_SYSTEM,
-                    prompt=f"Context: {context}\nAnalyse pairs {start}..{start + len(images) // 2 - 1}.",
+                    prompt="\n".join([f"Context: {context}", *spoken,
+                                       "Analyse pairs " + ", ".join(str(b[0]) for b in batch) + "."]),
                     schema=transition_schema(), images=images, max_tokens=6000)
             except ProviderError as exc:
                 log.warning("transition analysis unavailable: %s", exc.message)

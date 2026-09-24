@@ -97,14 +97,16 @@ human takeover → recovery rule → the next attempt recovers without a human.
 | Datasets | Consent-based eligibility, quality validation, provenance per sample, session/skill bundles, training-file formatters |
 | Benchmarks | Baseline / retrieval-only / memory-enhanced / raw-demonstration arms, bootstrap CIs |
 | API, UI, CLI | Loopback server with Host check and token; every UI view checked in Chromium; CLI |
+| Tutorials (live) | `lucius tutorial URL`: chapters become demonstrations; captions (json3/VTT/SRT, rolling duplicates removed) give spoken actions in English and Spanish and a narration-to-action lag estimate; when the video cannot be downloaded, Gemini watches the URL chunk by chunk. Run on four real tutorials (see below) |
+| Keyboard and mouse control (live, X11) | `lucius run --backend gui`: actions typed with Blender's default shortcuts and verified against the operator log; mouse click-select and middle-drag orbit; tested against a windowed Blender 5.0.1 under Xvfb, including a full learned-skill run |
 | Gemini provider (live) | All four output schemas (segment labelling, video transitions, reference analysis, visual judge) accepted by the live API with `gemini-3.5-flash-lite`; quota errors classified (zero quota / daily / per-minute with the server's retry delay); model probing |
 
 ### Implemented, not verified in this environment
 
-- **Live interactive Blender.** The add-on's GUI-thread dispatcher, operator watching during real
-  interactive use, and viewport navigation actions. All tests used headless Blender. The recorder
-  has not been run against a live Blender window.
-- **Windows and macOS window providers.** Only X11 was exercised.
+- **The recorder against a live Blender window.** The add-on's GUI-thread dispatcher and viewport
+  actions now run in a windowed Blender (keyboard/mouse tests), but WATCH ME has not recorded one.
+- **Windows and macOS.** Window providers and keyboard/mouse input (pynput: SendInput, Quartz) are
+  implemented; only X11 was exercised. Wayland-native windows cannot receive synthesised input.
 - **Anthropic provider.** Request construction (JSON-schema output, images), refusal/truncation
   handling, error mapping and retries are tested with fake SDK clients only; it has not been called
   against the live API.
@@ -113,9 +115,13 @@ human takeover → recovery rule → the next attempt recovers without a human.
 
 ### Partial
 
-- **Execution layers.** Actions run through the Blender add-on. Pure mouse/keyboard GUI actuation
-  (driving Blender without the add-on) is not implemented; such actions are rejected with
-  `unsupported_layer`. Hotkey hints are recorded on skills for a future actuator.
+- **Keyboard and mouse coverage.** Mode switches, select all/none, extrude, move/scale/rotate along one
+  axis or uniformly, inset, bevel, views, orbit, frame selected, undo/redo, delete and click-selecting an
+  object are typed. Region selections, loop cuts, modifiers and adding primitives have no exact keyboard
+  form and go through the add-on, which also observes and verifies everything (no add-on, no control).
+- **Skills learned from video** know *which* operations were done but rarely *how much* (distances
+  are seldom visible or said). Such parameters stay unresolved, so these skills cannot be validated
+  by reproduction until a demonstration or a person supplies the values.
 - **Sculpting and organic work.** Those practice stages report `requires_gui`/`needs_demonstration`.
   The bridge has no brush-stroke action vocabulary yet.
 - **Default embeddings** are a lexical hashing embedding (documented as such). Use
@@ -129,8 +135,51 @@ human takeover → recovery rule → the next attempt recovers without a human.
 
 ### Future work
 
-A GUI actuator (synthesised input attributed through the agent ledger), sculpt stroke capture and
-replay, multi-user and remote deployment, and a trained policy as an experiment arm.
+Sculpt stroke capture and replay, keyboard forms for loop cuts and menus, multi-user and remote
+deployment, and a trained policy as an experiment arm.
+
+## Learning from tutorial videos
+
+```bash
+pip install -e ".[all]"            # includes the youtube extra (yt-dlp and a JavaScript runtime for it)
+lucius tutorial "https://www.youtube.com/watch?v=..." --start 9:24 --end 19:24   # a test slice first
+lucius tutorial "https://www.youtube.com/watch?v=..."                            # every chapter
+```
+
+Each chapter becomes one demonstration whose task is the chapter title (translated to English
+when the video is in another language). Introductions, installation and promotion chapters are
+skipped (`--no-skip` keeps them). Chapters already processed are skipped when the command is run
+again, so a run stopped by a model quota continues where it stopped.
+
+* **Video.** Downloaded at <=720p without audio and analysed by frame changes. If the platform
+  blocks downloads from your network, `--remote` (or the automatic fallback) lets a video-capable
+  model (Gemini) watch the URL in chunks of up to 5 minutes instead. `--cookies cookies.txt` from
+  your own signed-in browser is the other remedy.
+* **Captions.** The original-language track (manual if published, else speech recognition) with
+  per-word times. Spoken actions ("press E to extrude", "le damos a la G") support the visual
+  evidence around them, the narration goes to the model with each chunk, and the lag between
+  words and actions is estimated and applied only when it beats chance.
+* **Quota.** `lucius config --set providers.requests_per_minute=8` keeps a free-tier key under its
+  per-minute limit; `processing.max_vision_pairs` caps frame pairs sent per chapter.
+
+External videos are learning material only: they are never training-eligible, and the licence
+and URL travel with every sample.
+
+## Keyboard and mouse control
+
+`lucius run "<task>" --backend gui` performs the plan in your running Blender by keyboard and
+mouse, like a person would. The Lucius Bridge add-on must be enabled: it tells Lucius where the 3D
+viewport is and confirms every keystroke sequence ran the right operator with the typed values.
+
+* Blender must be the focused window and have no menu or popup open (the splash screen takes key
+  presses). Lucius presses Esc once before it starts.
+* Linux: an X11 session, or Blender under XWayland (start it with `WAYLAND_DISPLAY=` unset). macOS:
+  allow your terminal in *System Settings → Privacy & Security → Accessibility*. Windows: run
+  Lucius at the same privilege level as Blender.
+* Default keymap and median-point pivot are assumed; anything else is detected and done through the
+  add-on instead.
+* Move the mouse to take over: the agent presses Esc, stops and hands the run to you. Actions it
+  types are recorded as the agent's, not yours.
 
 ## Privacy and safety
 

@@ -40,6 +40,8 @@ def _print(value: Any) -> None:
 
 
 def _backend(app, name: str):  # type: ignore[no-untyped-def]
+    if name == "gui":
+        return app.gui_backend()
     return app.live_backend() if name == "live" else app.headless_backend()
 
 
@@ -230,6 +232,56 @@ def cmd_import(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_tutorial(args: argparse.Namespace) -> int:
+    """Learn from a narrated tutorial video: download (or use a local file), split into chapters, process."""
+    from lucius.ingestion.download import parse_timestamp
+    from lucius.ingestion.tutorial import DEFAULT_SKIP, TutorialImporter
+
+    app = _app(args)
+    try:
+        if args.max_vision_pairs is not None:
+            app.config.processing.max_vision_pairs = args.max_vision_pairs
+        if args.video_fps is not None:
+            app.ingestion.watcher.fps = args.video_fps
+        if args.video_resolution is not None:
+            app.ingestion.watcher.resolution = args.video_resolution
+        importer = TutorialImporter(app)
+        if Path(args.source).exists():
+            video = importer.local(args.source, captions=args.captions, info=args.info, language=args.language)
+        elif args.info:
+            # Saved metadata: nothing is fetched from the platform (a video model watches the URL).
+            video = importer.from_info(args.source, args.info, captions=args.captions, language=args.language)
+        else:
+            video = importer.fetch(args.source, language=args.language, cookies=args.cookies,
+                                   download_dir=args.download_dir, video=not args.remote)
+            if args.captions:
+                video.captions_path, video.captions_source = Path(args.captions), "unknown"
+        print(f"{video.title} ({video.duration / 60:.1f} min, language {video.language}, "
+              f"{len(video.chapters)} chapters, captions: {video.captions_path or 'none'}, video: "
+              f"{video.video_path or 'watched by URL (' + str(app.providers.available()['vlm']) + ')'})",
+              file=sys.stderr)
+        parts = importer.plan(video, chapters=args.chapters,
+                              start=parse_timestamp(args.start) if args.start else None,
+                              end=parse_timestamp(args.end) if args.end else None,
+                              window_s=args.window_min * 60.0, skip=None if args.no_skip else DEFAULT_SKIP,
+                              translate=not args.no_translate)
+        if args.plan_only:
+            _print({"video": video.to_dict(), "parts": [p.to_dict() for p in parts]})
+            return 0
+
+        def progress(part) -> None:  # type: ignore[no-untyped-def]
+            result = part.result
+            print(f"  {part.title}: {result.get('status')} -- {result.get('steps_identified', 0)}/"
+                  f"{result.get('steps', 0)} steps identified, {len(result.get('skills', []))} skills",
+                  file=sys.stderr)
+
+        importer.run(video, parts, validate=not args.no_validate, skip_existing=not args.reprocess, on_part=progress)
+        _print({"video": video.to_dict(), "parts": [p.to_dict() for p in parts]})
+        return 0 if all(p.skipped or p.result.get("status") == "READY" for p in parts) else 2
+    finally:
+        app.close()
+
+
 def cmd_dataset(args: argparse.Namespace) -> int:
     from lucius.dataset.service import DatasetFilters
 
@@ -310,7 +362,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("run", help="ask the agent to perform a task")
     s.add_argument("task")
-    s.add_argument("--backend", choices=["live", "headless"], default="live")
+    s.add_argument("--backend", choices=["live", "gui", "headless"], default="live",
+                   help="live: the add-on performs actions; gui: keyboard and mouse (verified by the add-on)")
     s.add_argument("--reference", action="append", help="reference media id (repeatable)")
     s.set_defaults(func=cmd_run)
 
@@ -334,6 +387,30 @@ def build_parser() -> argparse.ArgumentParser:
                    choices=["demonstration", "reference", "before", "after", "intermediate", "target", "project"])
     s.add_argument("--instructions", default=None, help="text file with one instruction per line")
     s.set_defaults(func=cmd_import)
+
+    s = sub.add_parser("tutorial", help="learn from a narrated tutorial video (URL or local file), chapter by chapter")
+    s.add_argument("source", help="video URL (downloaded with yt-dlp) or a local video file")
+    s.add_argument("--language", help="caption language (default: the video's language)")
+    s.add_argument("--captions", help="captions file (json3, VTT or SRT); downloaded automatically for URLs")
+    s.add_argument("--info", help="yt-dlp .info.json with chapters: for a local video, or for a URL whose "
+                                  "metadata was saved earlier (the platform is then not contacted)")
+    s.add_argument("--chapters", help="which chapters: 'all' (default) or 1-based '3,5-7'")
+    s.add_argument("--start", help="only this part: start time (1:02:03, 12:30 or seconds)")
+    s.add_argument("--end", help="only this part: end time")
+    s.add_argument("--window-min", type=float, default=15.0, help="window length for videos without chapters")
+    s.add_argument("--max-vision-pairs", type=int, help="vision-model pairs per chapter (quota control)")
+    s.add_argument("--video-fps", type=float, help="frames per second a video model samples (default 1)")
+    s.add_argument("--video-resolution", choices=["low", "medium", "high"], help="video model resolution")
+    s.add_argument("--cookies", help="cookies.txt from a signed-in browser, if the platform blocks downloads")
+    s.add_argument("--remote", action="store_true",
+                   help="do not download the video: a video-capable model (Gemini) watches it by URL")
+    s.add_argument("--download-dir", help="where downloads go (default <data-dir>/downloads)")
+    s.add_argument("--no-skip", action="store_true", help="also process intro/installation/promotion chapters")
+    s.add_argument("--no-translate", action="store_true", help="keep non-English chapter titles untranslated")
+    s.add_argument("--no-validate", action="store_true", help="skip validation by reproduction in headless Blender")
+    s.add_argument("--reprocess", action="store_true", help="process chapters again even if already done")
+    s.add_argument("--plan-only", action="store_true", help="download and show the chapter plan without processing")
+    s.set_defaults(func=cmd_tutorial)
 
     s = sub.add_parser("dataset", help="build a dataset (training datasets include consented sessions only)")
     s.add_argument("name")

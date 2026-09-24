@@ -52,6 +52,7 @@ class EvidenceKind(StrEnum):
     VISIBLE_UI_OPERATION = "visible_ui_operation"
     VISUAL_STATE_TRANSITION = "visual_state_transition"
     TEXT_INSTRUCTION = "text_instruction"
+    NARRATION = "narration"            # a tutorial's spoken words (captions) near a visual change
     VLM_INFERENCE = "vlm_inference"
     WEAK_VISUAL_GUESS = "weak_visual_guess"
     AGENT_EXECUTION = "agent_execution"
@@ -69,6 +70,7 @@ EVIDENCE_WEIGHT: dict[EvidenceKind, float] = {
     EvidenceKind.VISIBLE_UI_OPERATION: 0.7,
     EvidenceKind.VISUAL_STATE_TRANSITION: 0.55,
     EvidenceKind.TEXT_INSTRUCTION: 0.5,
+    EvidenceKind.NARRATION: 0.5,
     EvidenceKind.VLM_INFERENCE: 0.45,
     EvidenceKind.WEAK_VISUAL_GUESS: 0.25,
 }

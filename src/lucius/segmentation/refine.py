@@ -92,7 +92,8 @@ class SegmentRefiner:
                          + ", ".join(e.reason_code for e in seg.label_evidence))
             lines.append(render_spans(spans[:40], t0))
             if seg.meta.get("annotations"):
-                lines.append("Human notes: " + " | ".join(seg.meta["annotations"]))
+                # Human notes and tutorial narration; long tutorial segments are capped.
+                lines.append("Notes: " + " | ".join(seg.meta["annotations"])[:1500])
         images: list[ImageInput] = []
         use_vision = self.providers.has("vlm")
         if use_vision:

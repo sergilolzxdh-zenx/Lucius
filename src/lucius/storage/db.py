@@ -23,8 +23,9 @@ JSON_COLUMNS_HINT = "Columns holding JSON are decoded by the repositories, never
 
 
 def _migrations() -> list[tuple[int, str]]:
-    schema = resources.files("lucius.storage").joinpath("schema.sql").read_text()
-    return [(1, schema)]
+    package = resources.files("lucius.storage")
+    return [(1, package.joinpath("schema.sql").read_text()),
+            (2, package.joinpath("migration_002.sql").read_text())]
 
 
 def dumps(value: Any) -> str:
@@ -89,15 +90,23 @@ class Database:
         for version, script in _migrations():
             if version in applied:
                 continue
+            # Table rebuilds drop and recreate tables: with foreign keys on, the DROP would null or
+            # cascade-delete the rows that reference them. The switch only works outside a transaction.
+            conn.execute("PRAGMA foreign_keys=OFF")
             try:
                 conn.execute("BEGIN")
                 for statement in _split_sql(script):
                     conn.execute(statement)
+                broken = conn.execute("PRAGMA foreign_key_check").fetchall()
+                if broken:
+                    raise sqlite3.IntegrityError(f"{len(broken)} foreign key violations, e.g. {tuple(broken[0])}")
                 conn.execute("INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)", (version, now()))
                 conn.execute("COMMIT")
             except sqlite3.Error as exc:
                 conn.execute("ROLLBACK")
                 raise StorageError(f"migration {version} failed: {exc}", version=version) from exc
+            finally:
+                conn.execute("PRAGMA foreign_keys=ON")
 
     # -- statements --------------------------------------------------------------------
     @contextmanager

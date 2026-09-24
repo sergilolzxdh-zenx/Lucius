@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from PIL import Image
 
 from lucius.events import EventType
@@ -81,3 +82,42 @@ def test_policy_defaults_are_training_opt_in():
 
     external = DataPolicy.for_external(SourceClass.EXTERNAL_VIDEO)
     assert external.learning_allowed and not external.export_allowed and not external.training_eligible
+
+
+def test_media_rebuild_migration_keeps_references(tmp_path, monkeypatch):
+    """Migration 2 rebuilds media_assets; rows pointing at media (SET NULL and CASCADE) must survive."""
+    import sqlite3
+
+    import lucius.storage.db as dbmod
+
+    all_migrations = dbmod._migrations()
+    monkeypatch.setattr(dbmod, "_migrations", lambda: all_migrations[:1])
+    path = tmp_path / "old.sqlite3"
+    old = dbmod.Database(path)
+    c = old.conn
+    c.execute("INSERT INTO users(id, name, created_at) VALUES ('u', 'u', 0)")
+    c.execute("INSERT INTO sessions(id, user_id, kind, source, status, start_time, policy) "
+              "VALUES ('s', 'u', 'external_media', 'external_video', 'processed', 0, '{}')")
+    c.execute("INSERT INTO media_assets(id, kind, role, filename, path, sha256, size_bytes, policy, created_at) "
+              "VALUES ('m', 'video', 'demonstration', 'v.mp4', 'ab/v.mp4', 'ab', 1, '{}', 0)")
+    c.execute("INSERT INTO frames(id, session_id, seq, ts, path, sha256, width, height, source, media_asset_id) "
+              "VALUES ('f', 's', 0, 0, 'p', 'h', 1, 1, 'video', 'm')")
+    c.execute("INSERT INTO reference_constraints(id, media_asset_id, constraint_type, target, value, source, "
+              "confidence, created_at) VALUES ('r', 'm', 'aspect_ratio', 'object', '{}', 'measured', 1, 0)")
+    with pytest.raises(sqlite3.IntegrityError):
+        c.execute("INSERT INTO media_assets(id, kind, role, filename, path, sha256, size_bytes, policy, created_at) "
+                  "VALUES ('c', 'captions', 'narration', 'v.json3', 'ab/v.json3', 'cd', 1, '{}', 0)")
+    old.close()
+
+    monkeypatch.setattr(dbmod, "_migrations", lambda: all_migrations)
+    new = dbmod.Database(path)
+    assert new.scalar("SELECT MAX(version) FROM schema_migrations") == 2
+    assert new.scalar("SELECT media_asset_id FROM frames WHERE id = 'f'") == "m"          # not nulled
+    assert new.scalar("SELECT COUNT(*) FROM reference_constraints WHERE media_asset_id = 'm'") == 1  # not deleted
+    new.execute("INSERT INTO media_assets(id, kind, role, filename, path, sha256, size_bytes, policy, created_at) "
+                "VALUES ('c', 'captions', 'narration', 'v.json3', 'ab/v.json3', 'cd', 1, '{}', 0)")
+    assert new.conn.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    new.execute("DELETE FROM media_assets WHERE id = 'm'")                                  # FKs still enforced
+    assert new.scalar("SELECT COUNT(*) FROM reference_constraints") == 0
+    assert new.scalar("SELECT media_asset_id FROM frames WHERE id = 'f'") is None
+    new.close()

@@ -147,7 +147,19 @@ IDLE → OBSERVE → PLAN → EXECUTE ⇄ VERIFY → SUCCESS
   vocabulary with typed arguments. Paths are restricted to allowed directories, and there is no
   arbitrary Python or OS command execution. `observation` actions inspect state. `internal` actions
   cover snapshots and bookkeeping. View navigation that needs a viewport runs only when a GUI is
-  available. Pure mouse/keyboard GUI actuation (a `gui` layer) is **not** implemented; see the README.
+  available.
+* **Keyboard and mouse (`GuiBackend`).** Plans stay semantic; the GUI backend performs each bridge
+  action with Blender's default shortcuts when they express it exactly (`E Z Z 0.5 ⏎` is an extrusion
+  of 0.5 along global Z) and otherwise through the add-on. Each attempt: Blender must be focused and
+  free of popups and running modal operators; mutating actions are snapshotted first; the pointer is
+  placed in the 3D viewport (the add-on reports its rectangle); the operator key is sent, and only once
+  Blender reports the modal operator running are axis letters and numbers typed (a stray `X` would
+  delete, a stray `Z` open a pie menu); finally the operator log must show the expected operator with
+  the typed values and remembered options. A mismatch is rolled back from the snapshot and performed
+  by the add-on (or reported, with `gui.fallback_to_bridge` off). Input goes through XTEST on X11
+  (keycodes of the current layout, the keyboard mapping is never changed) or pynput elsewhere; every
+  event is registered in the agent ledger, and pointer movement not caused by the agent stops the run
+  (`human_interference`) after Esc cancels any modal operator.
 * **Guards.** An action that a (non-rejected) failure rule marks as premature is deferred until the
   rule's guard checkpoint passes.
 * **Recovery.** When a checkpoint fails, the engine restores the step's snapshot and re-runs the step
@@ -174,6 +186,14 @@ could not be evaluated → `needs_human`; otherwise `success` only if at least o
 run. A reviewed run without objective checks becomes `subjective_pass`, never `success`.
 
 ## 8. External media (addendum 10A–10Z)
+
+* **Tutorials.** `lucius tutorial` downloads a video with its captions and chapters (yt-dlp), or,
+  when the platform blocks the download, has a video-capable model watch the URL in chunks. Each
+  chapter (or a `--start/--end` window) is one demonstration, analysed in place on the video's own
+  timeline. Captions are parsed to per-word times; spoken actions are detected in English and
+  Spanish (keywords and named shortcuts, with axis constraints folded in); the lag between spoken
+  and seen actions is estimated against chance and applied only when significant; narration is
+  attached to steps as `narration` evidence and passed to vision models with each pair or chunk.
 
 All media converge on the same session/trajectory representation, tagged with how each fact is
 known: `observed`, `inferred`, `model_inferred` or `human_confirmed`.

@@ -59,7 +59,8 @@ def features(steps: list[TrajectoryStep], seg_steps: list[TrajectoryStep], *, sh
         if name and not (s.action_type == "delete"):
             objects.add(name)
     start, end = seg_steps[0].t_start, seg_steps[-1].t_end
-    notes = [a.get("text", "") for a in (annotations or []) if start - 2.0 <= a.get("ts", 0) <= end + 2.0]
+    notes = [f"narration: {a.get('text', '')}" if a.get("label") == "narration" else a.get("text", "")
+             for a in (annotations or []) if start - 2.0 <= a.get("ts", 0) <= end + 2.0]
     return SegmentFeatures(
         n_steps=len(seg_steps), duration=end - start, nav_steps=sum(1 for s in live if vocab.is_navigation(s.action_type)),
         mutating=mutating, actions=Counter(s.action_type for s in live),

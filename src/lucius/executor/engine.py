@@ -471,6 +471,13 @@ class ExecutionEngine:
                                                   run_id=ctx.run_id)
             all_results += task_report.results
         verdict, failed, unevaluated, objective = verdict_for(execution_ok and not forced_failure, all_results)
+        # Required actions the planner could not compile (values nobody demonstrated, no compiler) never
+        # ran: whatever the remaining checks say, the skill itself was not performed.
+        dropped = [u for u in plan.unresolved if u.get("required")]
+        incomplete = {u.get("skill_id") for u in dropped if u.get("skill_id")}
+        if dropped and verdict in ("success", "subjective_pass"):
+            verdict = "executed_unverified"
+            result.reason_codes.append(f"plan_incomplete:{len(dropped)}_required_actions_unresolved")
         result.final_report = EvaluationReport(
             id=new_id("evaluation"), subject_kind="run", subject_id=ctx.run_id, run_id=ctx.run_id,
             execution_ok=execution_ok, results=all_results, verdict=verdict, objective_passes=objective,
@@ -494,6 +501,11 @@ class ExecutionEngine:
         for skill_id, results in skill_results.items():
             if skill_id.startswith(_REPLAYED):
                 continue  # not a library skill: nothing to credit
+            if skill_id in incomplete:
+                # Neither success nor failure: only part of the skill could run. It needs the missing values
+                # (a demonstration with Blender events, or a person) before an execution can judge it.
+                result.metrics.setdefault("incomplete_skills", []).append(skill_id)
+                continue
             params = next(s.params for s in plan.steps if s.skill_id == skill_id)
             required_ok = all(r.passed is True for r in results if r.required)
             objective_ok = any(r.passed and not r.subjective and r.level in (2, 3) for r in results)

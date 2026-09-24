@@ -8,7 +8,6 @@ and the quality score is derived from them -- never silently ignored.
 
 from __future__ import annotations
 
-import hashlib
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -87,8 +86,9 @@ class DatasetValidator:
         for media_id in session.reference_ids + session.meta.get("media", []):
             try:
                 asset = self.media.get(media_id)
-                path = self.media.path(asset)
-                if not path.exists() or hashlib.sha256(path.read_bytes()).hexdigest() != asset.sha256:
+                if asset.analysis.get("remote"):
+                    continue  # fetched by the provider from its URL; there is no local copy to verify
+                if self.media.digest(asset) != asset.sha256:
                     issues.append(Issue(code="corrupted_reference", severity="error", detail=f"media {media_id}"))
             except Exception:
                 issues.append(Issue(code="corrupted_reference", severity="error", detail=f"media {media_id} missing"))

@@ -132,6 +132,18 @@ class Lucius:
             self._backend = BridgeBackend(bridge)
         return self._backend
 
+    def gui_backend(self) -> BridgeBackend:
+        """The user's running Blender, driven by keyboard and mouse (observed and verified through the add-on)."""
+        from lucius.executor.gui import GuiActuator, GuiBackend, create_injector, create_locator
+
+        bridge = self.live_backend().bridge
+        cfg = self.config.gui
+        pid = bridge.request("gui_layout").get("pid")
+        actuator = GuiActuator(create_injector(), create_locator(pid), self.ledger, event_delay_s=cfg.event_delay_s,
+                               interference_px=cfg.interference_px, activate_window=cfg.activate_window)
+        return GuiBackend(bridge, actuator, fallback_to_bridge=cfg.fallback_to_bridge,
+                          verify_timeout_s=cfg.verify_timeout_s)
+
     def headless_backend(self) -> BridgeBackend:
         """A private headless Blender for practice, validation and benchmarks."""
         from lucius.blender.headless import HeadlessBlender

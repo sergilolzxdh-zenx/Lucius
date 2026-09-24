@@ -22,12 +22,14 @@ from PIL import Image
 from pydantic import BaseModel, Field
 
 from lucius.errors import LuciusError, MediaError, NotFoundError
+from lucius.ingestion.captions import CaptionTrack, estimate_lag
 from lucius.events.bus import EventType
 from lucius.ids import new_id
 from lucius.ingestion.media import MediaAsset, MediaKind, MediaRole, MediaStore
 from lucius.ingestion.reference import ReferenceStore
 from lucius.ingestion.transitions import Transition, analyze_transition
 from lucius.ingestion.video import VideoAnalyzer, VideoReader
+from lucius.ingestion.video_model import VideoWatcher
 from lucius.ingestion.vision import VisionAnalyzer
 from lucius.logging_setup import get_logger
 from lucius.provenance import EVIDENCE_WEIGHT, ActionSource, DataPolicy, EvidenceKind, SourceClass
@@ -37,6 +39,7 @@ from lucius.storage.frames import thumbnail
 from lucius.taxonomy import classify_task
 from lucius.timeutil import now
 from lucius.trajectory.builder import link_undo_relations
+from lucius.trajectory import vocabulary as vocab
 from lucius.trajectory.model import CandidateAction, TrajectoryStep
 
 if TYPE_CHECKING:
@@ -45,6 +48,14 @@ if TYPE_CHECKING:
 log = get_logger("ingestion")
 
 MIN_ACTION_CONFIDENCE = 0.5
+MODEL_CONFIDENCE_DISCOUNT = 0.85   # a model's self-reported confidence is discounted (as in segment refinement)
+NARRATION_ONLY_FACTOR = 0.6        # a video model that only heard an operation named, without seeing it
+# Narration windows around a visual change, before any lag correction: narrators mostly say what
+# they are about to do, so the window reaches further back than forward.
+NARRATION_BEFORE_S = 4.0
+NARRATION_AFTER_S = 1.5
+MENTION_TOLERANCE_S = 1.0
+KIND_PRIORITY = {"geometry": 0, "selection": 1, "material_or_lighting": 2, "ui": 3, "camera": 4, "none": 5}
 KEYWORD_ACTIONS = [
     (r"\badd (?:a |an )?(cube|cylinder|plane|sphere|cone|torus)\b", "add_primitive"), (r"\bextrud", "extrude"),
     (r"\bloop ?cut", "loop_cut"), (r"\bbevel", "bevel"), (r"\binset", "inset"), (r"\bscale|\bresize", "scale"),
@@ -67,12 +78,17 @@ class DemoStatus(StrEnum):
 
 
 class MediaInput(BaseModel):
-    path: str
+    path: str = ""
+    url: str | None = None                # a public video a provider fetches itself (no local file)
     filename: str | None = None
     role: MediaRole = MediaRole.DEMONSTRATION
     view: str = "front"                   # for reference images
     target: str | None = None             # object the reference depicts (None: the whole result)
     kind: MediaKind | None = None
+    clip_start: float | None = None       # analyse only this part of a video (seconds on its own timeline)
+    clip_end: float | None = None
+    language: str | None = None           # language of captions
+    source_url: str | None = None         # where the media came from (provenance)
 
 
 class Demonstration(BaseModel):
@@ -100,6 +116,20 @@ def _decode(row: Any) -> Demonstration:
         updated_at=row["updated_at"])
 
 
+def _mode_label(text: str | None) -> str | None:
+    """'Edit Mode' / 'modo edición' -> the mode names Blender reports (EDIT_MESH, OBJECT, SCULPT)."""
+    if not text:
+        return None
+    lowered = text.lower()
+    if "edit" in lowered or "edici" in lowered:
+        return "EDIT_MESH"
+    if "sculpt" in lowered or "escult" in lowered:
+        return "SCULPT"
+    if "object" in lowered or "objeto" in lowered:
+        return "OBJECT"
+    return None
+
+
 class IngestionService:
     def __init__(self, app: Lucius) -> None:
         self.app = app
@@ -107,6 +137,9 @@ class IngestionService:
         self.references = ReferenceStore(app.db, app.config.media_dir)
         self.vision = VisionAnalyzer(app.providers, app.config.providers.max_images_per_call)
         self.video = VideoAnalyzer()
+        processing = app.config.processing
+        self.watcher = VideoWatcher(app.providers, fps=processing.video_model_fps,
+                                    resolution=processing.video_model_resolution, chunk_s=processing.video_model_chunk_s)
         self._threads: dict[str, threading.Thread] = {}
 
     # -- lifecycle -------------------------------------------------------------------------------------
@@ -115,7 +148,7 @@ class IngestionService:
         kinds = []
         for item in inputs:
             ext = Path(item.filename or item.path).suffix.lower()
-            kinds.append(item.kind.value if item.kind else ext.lstrip("."))
+            kinds.append("video_url" if item.url and not item.path else item.kind.value if item.kind else ext.lstrip("."))
         if instructions:
             kinds.append("text")
         primary = self._primary_source(inputs, instructions)
@@ -194,12 +227,12 @@ class IngestionService:
             stage = DemoStatus.EXTRACTING
             self._status(demo_id, stage, media=[a.id for a in assets])
             session = self._create_session(demo, assets)
-            extracted = self._extract(session.id, assets)
+            extracted = self._extract(session.id, assets, context=demo.task_text or demo.title)
             stage = DemoStatus.ANALYZING
             self._status(demo_id, stage, frames=extracted["frames"], transitions=len(extracted["transitions"]))
             analysis = self._analyze(demo, session.id, assets, extracted)
             stage = DemoStatus.INFERRING_ACTIONS
-            self._status(demo_id, stage)
+            self._status(demo_id, stage, vision=analysis["vision"])
             steps = self._infer_actions(demo, session.id, analysis)
             self.app.sessions.finalize(session.id, end_time=max([s.t_end for s in steps] + [session.start_time]),
                                        outcome=Outcome.UNKNOWN)
@@ -228,9 +261,15 @@ class IngestionService:
             try:
                 policy = demo.policy.model_copy(update={"reference_only": item.role == MediaRole.REFERENCE or
                                                         demo.policy.reference_only})
-                asset = self.media.ingest(Path(item.path), filename=item.filename, role=item.role, kind=item.kind,
-                                          demonstration_id=demo.id, policy=policy)
-                self.media.update_analysis(asset.id, {"view": item.view, "target": item.target})
+                if item.url and not item.path:
+                    asset = self.media.register_remote(item.url, role=item.role, kind=item.kind or MediaKind.VIDEO,
+                                                       demonstration_id=demo.id, policy=policy)
+                else:
+                    asset = self.media.ingest(Path(item.path), filename=item.filename, role=item.role, kind=item.kind,
+                                              demonstration_id=demo.id, policy=policy)
+                self.media.update_analysis(asset.id, {"view": item.view, "target": item.target,
+                                                      "clip_start": item.clip_start, "clip_end": item.clip_end,
+                                                      "language": item.language, "source_url": item.source_url})
                 assets.append(self.media.get(asset.id))
             except MediaError as exc:
                 errors.append({"file": item.filename or Path(item.path).name, **exc.to_dict()})
@@ -256,16 +295,37 @@ class IngestionService:
         return session
 
     # -- extraction: frames and transitions --------------------------------------------------------------
-    def _extract(self, session_id: str, assets: list[MediaAsset]) -> dict[str, Any]:
+    def _narration(self, assets: list[MediaAsset]) -> CaptionTrack | None:
+        captions = [a for a in assets if a.kind == MediaKind.CAPTIONS]
+        if not captions:
+            return None
+        asset = captions[0]
+        return CaptionTrack.from_file(self.media.path(asset), language=asset.analysis.get("language"),
+                                      source=asset.analysis.get("caption_source"))
+
+    def _extract(self, session_id: str, assets: list[MediaAsset], context: str = "") -> dict[str, Any]:
         seq = 0
         frames = 0
         transitions: list[dict[str, Any]] = []
+        watched: list[dict[str, Any]] = []
+        narration_events: list[dict[str, Any]] = []
         session = self.app.sessions.get(session_id)
         offset = 0.0
-        for asset in [a for a in assets if a.kind == MediaKind.VIDEO and a.role == MediaRole.DEMONSTRATION]:
+        narration = self._narration(assets)
+        for asset in [a for a in assets if a.kind == MediaKind.VIDEO and a.role == MediaRole.DEMONSTRATION
+                      and a.analysis.get("remote")]:
+            offset = self._watch_remote(session, asset, narration, context, offset, watched, narration_events)
+        for asset in [a for a in assets if a.kind == MediaKind.VIDEO and a.role == MediaRole.DEMONSTRATION
+                      and not a.analysis.get("remote")]:
             reader = VideoReader(self.media.path(asset))
             try:
-                samples, threshold = self.video.coarse(reader)
+                # A clip (e.g. one chapter) is analysed in place; times stay on the video's own timeline.
+                clip_start = max(0.0, float(asset.analysis.get("clip_start") or 0.0))
+                clip_end = min(float(asset.analysis.get("clip_end") or reader.duration), reader.duration)
+                if clip_end - clip_start < 1.0:
+                    raise MediaError("the requested clip is outside the video", clip=[clip_start, clip_end],
+                                     duration=reader.duration)
+                samples, threshold = self.video.coarse(reader, clip_start, clip_end)
                 events = [self.video.refine(reader, e, threshold) for e in self.video.events(samples, threshold)]
                 keyframes: dict[float, str] = {}
                 previous_thumb = None
@@ -279,7 +339,7 @@ class IngestionService:
                     if image is None:
                         return None
                     record = self.app.sessions.add_frame(
-                        session_id, image, seq=seq, ts=session.start_time + offset + t, source="video",
+                        session_id, image, seq=seq, ts=session.start_time + offset + t - clip_start, source="video",
                         media_asset_id=asset.id, media_timestamp=key, previous_thumb=previous_thumb,
                         meta={"reason": reason})
                     previous_thumb = thumbnail(image)
@@ -288,7 +348,12 @@ class IngestionService:
                     keyframes[key] = record.id
                     return record.id
 
-                for t in self.video.representative_times(samples, events, reader.duration):
+                track = narration.window(clip_start - 10.0, clip_end + 10.0) if narration else None
+                mentions = track.mentions() if track else []
+                lag = estimate_lag([m.t for m in mentions if vocab.mutates(m.action) or m.via == "hotkey"],
+                                   [e.t_before for e in events]) if track else None
+                lag_s = lag.lag_s if lag else 0.0
+                for t in self.video.representative_times(samples, events, clip_end, clip_start):
                     store(t, "representative")
                 for event in events:
                     before_id = store(event.t_before, "before_change")
@@ -297,11 +362,33 @@ class IngestionService:
                     if before is None or after is None:
                         continue
                     analysis = analyze_transition(before, after, t_before=event.t_before, t_after=event.t_after)
-                    transitions.append({"asset": asset.id, "offset": offset, "before_frame": before_id,
-                                        "after_frame": after_id, "analysis": analysis, "images": (before, after)})
-                self.media.update_analysis(asset.id, {"coarse_threshold": round(threshold, 5), "events": len(events),
-                                                      "samples": len(samples)})
-                offset += reader.duration + 1.0
+                    item: dict[str, Any] = {"asset": asset.id, "offset": offset - clip_start, "media_offset": offset,
+                                            "before_frame": before_id,
+                                            "after_frame": after_id, "analysis": analysis, "images": (before, after),
+                                            "peak": event.peak}
+                    if track is not None:
+                        # Words are said lag_s before the change they describe.
+                        item["narration"] = track.text(event.t_before - lag_s - NARRATION_BEFORE_S,
+                                                       event.t_after - lag_s + NARRATION_AFTER_S)
+                        item["mentions"] = [
+                            {"t": m.t, "action": m.action, "via": m.via, "params": m.params, "phrase": m.phrase}
+                            for m in mentions
+                            if event.t_before - MENTION_TOLERANCE_S - 2.0 <= m.t + lag_s
+                            <= event.t_after + MENTION_TOLERANCE_S]
+                        item["narration_lag_s"] = lag_s
+                    transitions.append(item)
+                if track is not None:
+                    for cue in track.window(clip_start, clip_end).cues:
+                        narration_events.append({"ts": session.start_time + offset + cue.start - clip_start,
+                                                 "text": cue.text, "media_timestamp": round(cue.start, 3),
+                                                 "language": track.language})
+                self.media.update_analysis(asset.id, {
+                    "coarse_threshold": round(threshold, 5), "events": len(events), "samples": len(samples),
+                    "clip": [clip_start, clip_end],
+                    **({"narration": {"language": track.language, "source": track.source, "words": len(track.words),
+                                      "mentions": len(mentions), "alignment": lag.to_dict() if lag else None}}
+                       if track is not None else {})})
+                offset += clip_end - clip_start + 1.0
             finally:
                 reader.close()
         # Image sequences and before/after pairs are ordered stills: every consecutive pair is a transition.
@@ -324,14 +411,55 @@ class IngestionService:
                                     "after_frame": record.id, "analysis": analysis, "images": (previous[1], image),
                                     "pair": [previous[0].id, asset.id]})
             previous = (asset, image, record.id)
-        return {"frames": frames, "transitions": transitions, "next_seq": seq, "duration": offset}
+        return {"frames": frames, "transitions": transitions, "next_seq": seq, "duration": offset,
+                "narration_events": narration_events, "watched": watched}
+
+    def _watch_remote(self, session: Any, asset: MediaAsset, narration: CaptionTrack | None, context: str,
+                      offset: float, watched: list[dict[str, Any]], narration_events: list[dict[str, Any]]) -> float:
+        """A video model watches the clip by URL; its operations are aligned with the narration."""
+        clip_start = max(0.0, float(asset.analysis.get("clip_start") or 0.0))
+        clip_end = asset.analysis.get("clip_end") or asset.duration_s
+        if clip_end is None:
+            raise MediaError("a remote video needs a clip end (its duration is unknown)", media_id=asset.id)
+        clip_end = float(clip_end)
+        report = self.watcher.watch(asset.analysis["url"], clip_start, clip_end, context=context, narration=narration)
+        if report.answered == 0:
+            raise MediaError("the video model could not analyse the video", errors=report.errors)
+        track = narration.window(clip_start - 10.0, clip_end + 10.0) if narration else None
+        mentions = track.mentions() if track else []
+        seen = [op.start for op in report.operations if op.action != "unknown_action"]
+        lag = estimate_lag([m.t for m in mentions if vocab.mutates(m.action) or m.via == "hotkey"], seen) \
+            if track else None
+        lag_s = lag.lag_s if lag else 0.0
+        for op in report.operations:
+            item: dict[str, Any] = {"asset": asset.id, "offset": offset - clip_start, "media_offset": offset, "op": op,
+                                    "model": report.model}
+            if track is not None:
+                item["narration"] = track.text(op.start - lag_s - NARRATION_BEFORE_S, op.end - lag_s + NARRATION_AFTER_S)
+                item["mentions"] = [
+                    {"t": m.t, "action": m.action, "via": m.via, "params": m.params, "phrase": m.phrase}
+                    for m in mentions if op.start - MENTION_TOLERANCE_S - 2.0 <= m.t + lag_s <= op.end + MENTION_TOLERANCE_S]
+                item["narration_lag_s"] = lag_s
+            watched.append(item)
+        if track is not None:
+            for cue in track.window(clip_start, clip_end).cues:
+                narration_events.append({"ts": session.start_time + offset + cue.start - clip_start, "text": cue.text,
+                                         "media_timestamp": round(cue.start, 3), "language": track.language})
+        self.media.update_analysis(asset.id, {
+            "clip": [clip_start, clip_end], "watch": report.stats(), "summaries": report.summaries[:40],
+            **({"narration": {"language": track.language, "source": track.source, "words": len(track.words),
+                              "mentions": len(mentions), "alignment": lag.to_dict() if lag else None}}
+               if track is not None else {})})
+        return offset + clip_end - clip_start + 1.0
 
     # -- analysis: vision, references, projects, instructions -------------------------------------------
     def _analyze(self, demo: Demonstration, session_id: str, assets: list[MediaAsset],
                  extracted: dict[str, Any]) -> dict[str, Any]:
         transitions = extracted["transitions"]
-        model = self.vision.describe_transitions([t["images"] for t in transitions],
-                                                 context=demo.task_text or demo.title) if transitions else {}
+        chosen = self._vision_selection(transitions)
+        model = self.vision.describe_transitions(
+            [transitions[i]["images"] for i in chosen], context=demo.task_text or demo.title,
+            narration=[transitions[i].get("narration", "") for i in chosen], indices=chosen) if chosen else {}
         references = []
         for asset in [a for a in assets if a.role in (MediaRole.REFERENCE, MediaRole.TARGET)
                       and a.kind in (MediaKind.IMAGE, MediaKind.SCREENSHOT)]:
@@ -354,7 +482,25 @@ class IngestionService:
                                                   for a in assets if a.kind == MediaKind.TEXT]
         return {"transitions": transitions, "model": model, "references": references,
                 "projects": [p for p in projects if p], "instructions": instructions,
-                "next_seq": extracted["next_seq"], "duration": extracted["duration"]}
+                "next_seq": extracted["next_seq"], "duration": extracted["duration"],
+                "narration_events": extracted.get("narration_events", []), "watched": extracted.get("watched", []),
+                "vision": {"transitions": len(transitions), "sent": len(chosen), "answered": len(model)}}
+
+    def _vision_selection(self, transitions: list[dict[str, Any]]) -> list[int]:
+        """Which pairs a vision model sees, within ``processing.max_vision_pairs``: spoken actions first,
+        then geometry over selection/material/UI/camera changes, then the strongest changes."""
+        if not self.vision.available or not transitions:
+            return []
+        limit = self.app.config.processing.max_vision_pairs
+        if limit is None or limit >= len(transitions):
+            return list(range(len(transitions)))
+
+        def priority(i: int) -> tuple[int, int, float]:
+            item = transitions[i]
+            spoken = sum(1 for m in item.get("mentions", []) if vocab.mutates(m["action"]))
+            return (-spoken, KIND_PRIORITY.get(item["analysis"].kind, 5), -float(item.get("peak", 0.0)))
+
+        return sorted(sorted(range(len(transitions)), key=priority)[:limit])
 
     def _inspect_project(self, session_id: str, asset: MediaAsset) -> dict[str, Any] | None:
         """Load a .blend in a private headless Blender and record its actual scene state."""
@@ -404,11 +550,16 @@ class IngestionService:
                     state_after["mode"] = "EDIT_MESH" if "EDIT" in visible else "OBJECT" if "OBJECT" in visible else visible
                 if model.get("visible_keystrokes"):
                     evidence.append("visible keystrokes: " + ", ".join(model["visible_keystrokes"]))
+            spoken = self._narration_candidates(item.get("mentions", []), candidates)
+            if item.get("narration"):
+                evidence.append(f"narration: {item['narration'][:300]}")
             ranked = sorted(candidates.values(), key=lambda c: c.confidence, reverse=True)
             top = ranked[0] if ranked else None
             if model and top is not None and top.evidence and top.evidence[0].startswith("model:"):
                 source = ActionSource.MODEL_INFERRED
                 evidence_kind = EvidenceKind.VISIBLE_SHORTCUT if model.get("visible_keystrokes") else EvidenceKind.VLM_INFERENCE
+            elif top is not None and top.action_type in spoken and top.evidence[0].startswith("narration"):
+                evidence_kind = EvidenceKind.NARRATION
             confident = top is not None and top.confidence >= MIN_ACTION_CONFIDENCE and top.action_type != "unknown_action"
             action_type = top.action_type if confident else "unknown_action"
             if tr.kind == "camera" and top is not None and top.action_type.startswith("viewport"):
@@ -418,20 +569,29 @@ class IngestionService:
             if state_after.get("mode"):
                 mode = state_after["mode"]
             params = {"estimated_shape_change": tr.shape} if tr.shape else {}
+            said = spoken.get(action_type)
+            if said:
+                params.update({k: v for k, v in said["params"].items() if k in ("axis", "kind", "type")})
+            payload: dict[str, Any] = {"params": params, "change_kind": tr.kind, "bbox": tr.bbox}
+            if said and said["params"].get("hotkey"):
+                payload["input"] = [{"hotkey": said["params"]["hotkey"].upper(), "source": "narration"}]
             steps.append(TrajectoryStep(
                 id=new_id("step"), session_id=session_id, idx=0, t_start=t0, t_end=t1,
                 frame_before_id=item["before_frame"], frame_after_id=item["after_frame"], action_type=action_type,
-                action_payload={"params": params, "change_kind": tr.kind, "bbox": tr.bbox},
+                action_payload=payload,
                 action_source=source, evidence_kind=evidence_kind,
                 action_confidence=round(top.confidence if top else 0.0, 3), evidence=evidence,
                 candidate_actions=ranked[:6], mode_label=mode, actor="human",
-                media_timestamp=round(item["offset"] + tr.t_before, 3), state_after=state_after if len(state_after) > 1 else None,
+                media_timestamp=round(item.get("media_offset", item["offset"]) + tr.t_before, 3), state_after=state_after if len(state_after) > 1 else None,
                 meta={"media_asset_id": item["asset"], "requires_validation": not confident or source != ActionSource.OBSERVED,
-                      **({"pair": item["pair"]} if "pair" in item else {})},
+                      **({"pair": item["pair"]} if "pair" in item else {}),
+                      **({"narration": item["narration"][:600], "narration_lag_s": item.get("narration_lag_s", 0.0)}
+                         if item.get("narration") else {})},
             ))
             events.append(CapturedEvent(seq=seq, ts=t1, kind=EventKind.MEDIA_OBSERVATION, actor=Actor.SYSTEM,
                                         payload={"transition": tr.model_dump(), "model": model, "asset": item["asset"]}))
             seq += 1
+        steps += self._watched_steps(session, analysis.get("watched", []))
         instruction_steps = self._instruction_steps(session, analysis, steps)
         steps = sorted(steps + instruction_steps, key=lambda s: s.t_start)
         for idx, step in enumerate(steps):
@@ -441,9 +601,86 @@ class IngestionService:
             events.append(CapturedEvent(seq=seq, ts=session.start_time, kind=EventKind.ANNOTATION, actor=Actor.HUMAN,
                                         payload={"text": text[:2000], "label": "instruction"}))
             seq += 1
+        for cue in analysis.get("narration_events", []):
+            events.append(CapturedEvent(seq=seq, ts=cue["ts"], kind=EventKind.ANNOTATION, actor=Actor.SYSTEM,
+                                        payload={"text": cue["text"][:2000], "label": "narration",
+                                                 "media_timestamp": cue["media_timestamp"],
+                                                 "language": cue["language"]}))
+            seq += 1
+        events.sort(key=lambda e: e.seq)
         self.app.sessions.append_events(session_id, events)
         self.app.trajectories.replace(session_id, steps)
         return steps
+
+    def _watched_steps(self, session: Any, watched: list[dict[str, Any]]) -> list[TrajectoryStep]:
+        """Operations a video model reported, supported (or not) by the narration around them."""
+        steps = []
+        for item in watched:
+            op = item["op"]
+            note = f"model ({item.get('model')}): {op.description}"
+            # Known only from what the narrator said: weaker, and the same words must not count twice.
+            heard_only = op.evidence == "narration_only"
+            confidence = op.confidence * MODEL_CONFIDENCE_DISCOUNT * (NARRATION_ONLY_FACTOR if heard_only else 1.0)
+            candidates = {op.action: CandidateAction(action_type=op.action, evidence=[note],
+                                                     confidence=round(confidence, 3))}
+            spoken = {} if heard_only else self._narration_candidates(item.get("mentions", []), candidates)
+            ranked = sorted(candidates.values(), key=lambda c: c.confidence, reverse=True)
+            top = ranked[0]
+            confident = top.confidence >= MIN_ACTION_CONFIDENCE and top.action_type != "unknown_action"
+            action_type = top.action_type if confident else "unknown_action"
+            evidence_kind = {"visible_keystroke_overlay": EvidenceKind.VISIBLE_SHORTCUT,
+                             "narration_only": EvidenceKind.NARRATION}.get(op.evidence, EvidenceKind.VLM_INFERENCE)
+            params = dict(op.params) if action_type == op.action else {}
+            said = spoken.get(action_type)
+            if said:
+                params.update({k: v for k, v in said["params"].items() if k in ("axis", "kind", "type")
+                               and k not in params})
+            payload: dict[str, Any] = {"params": params, "description": op.description}
+            if said and said["params"].get("hotkey"):
+                payload["input"] = [{"hotkey": said["params"]["hotkey"].upper(), "source": "narration"}]
+            mode = _mode_label(op.mode)
+            state: dict[str, Any] = {"_inferred": True, **({"mode": mode} if mode else {}),
+                                     **({"active_object": op.object} if op.object else {})}
+            creates = action_type in ("add_primitive", "duplicate")
+            evidence = [note, f"evidence: {op.evidence}"]
+            if item.get("narration"):
+                evidence.append(f"narration: {item['narration'][:300]}")
+            steps.append(TrajectoryStep(
+                id=new_id("step"), session_id=session.id, idx=0,
+                t_start=session.start_time + item["offset"] + op.start,
+                t_end=session.start_time + item["offset"] + max(op.end, op.start + 0.5),
+                action_type=action_type, action_payload=payload, action_source=ActionSource.MODEL_INFERRED,
+                evidence_kind=evidence_kind, action_confidence=round(top.confidence, 3), evidence=evidence,
+                candidate_actions=ranked[:6], mode_label=mode, actor="human",
+                media_timestamp=round(item["media_offset"] + op.start, 3),
+                state_before=None if creates or len(state) == 1 else state,
+                state_after=state if len(state) > 1 else None,
+                meta={"media_asset_id": item["asset"], "requires_validation": True, "watched_by_model": True,
+                      **({"narration": item["narration"][:600], "narration_lag_s": item.get("narration_lag_s", 0.0)}
+                         if item.get("narration") else {})}))
+        return steps
+
+    @staticmethod
+    def _narration_candidates(mentions: list[dict[str, Any]],
+                              candidates: dict[str, CandidateAction]) -> dict[str, dict[str, Any]]:
+        """Spoken actions near a change support the matching candidate (or add one). Returns them by action."""
+        spoken: dict[str, dict[str, Any]] = {}
+        for mention in mentions:
+            action = mention["action"]
+            if action not in vocab.ACTION_TYPES or action in spoken:
+                continue
+            spoken[action] = mention
+            note = f"narration ({mention['via']}): {mention['phrase'][:200]}"
+            if action in candidates:
+                current = candidates[action]
+                candidates[action] = CandidateAction(action_type=action, confidence=round(min(0.95, current.confidence
+                                                                                               + 0.25), 3),
+                                                     evidence=[*current.evidence, note])
+            else:
+                candidates[action] = CandidateAction(action_type=action,
+                                                     confidence=0.6 if mention["via"] == "hotkey" else 0.5,
+                                                     evidence=[note])
+        return spoken
 
     def _instruction_steps(self, session: Any, analysis: dict[str, Any], media_steps: list[TrajectoryStep]) -> list[TrajectoryStep]:
         """Explicit text instructions: steps when there is no visual trajectory, evidence otherwise."""

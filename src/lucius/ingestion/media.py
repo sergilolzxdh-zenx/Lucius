@@ -26,8 +26,10 @@ from lucius.timeutil import now
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff"}
 VIDEO_EXT = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v"}
 TEXT_EXT = {".txt", ".md"}
+CAPTION_EXT = {".json3", ".vtt", ".srt"}
 MAX_BYTES = {"video": 4 * 1024 ** 3, "image": 64 * 1024 ** 2, "blender_project": 2 * 1024 ** 3,
-             "text": 4 * 1024 ** 2, "image_sequence": 64 * 1024 ** 2, "screenshot": 64 * 1024 ** 2}
+             "text": 4 * 1024 ** 2, "image_sequence": 64 * 1024 ** 2, "screenshot": 64 * 1024 ** 2,
+             "captions": 64 * 1024 ** 2}
 
 
 class MediaKind(StrEnum):
@@ -37,6 +39,7 @@ class MediaKind(StrEnum):
     BLENDER_PROJECT = "blender_project"
     TEXT = "text"
     SCREENSHOT = "screenshot"
+    CAPTIONS = "captions"             # timed narration of a video (json3, VTT, SRT)
 
 
 class MediaRole(StrEnum):
@@ -48,12 +51,14 @@ class MediaRole(StrEnum):
     INTERMEDIATE = "intermediate"
     INSTRUCTION = "instruction"
     PROJECT = "project"
+    NARRATION = "narration"           # captions of a demonstration video
 
 
 SOURCE_FOR_KIND = {
     MediaKind.VIDEO: SourceClass.EXTERNAL_VIDEO, MediaKind.IMAGE: SourceClass.EXTERNAL_IMAGE,
     MediaKind.IMAGE_SEQUENCE: SourceClass.EXTERNAL_IMAGE, MediaKind.SCREENSHOT: SourceClass.EXTERNAL_IMAGE,
     MediaKind.BLENDER_PROJECT: SourceClass.EXTERNAL_PROJECT, MediaKind.TEXT: SourceClass.EXTERNAL_DOCUMENTATION,
+    MediaKind.CAPTIONS: SourceClass.EXTERNAL_VIDEO,
 }
 
 
@@ -92,6 +97,8 @@ def detect_kind(filename: str, data_head: bytes) -> MediaKind:
         return MediaKind.IMAGE
     if ext in TEXT_EXT:
         return MediaKind.TEXT
+    if ext in CAPTION_EXT:
+        return MediaKind.CAPTIONS
     raise MediaError(f"unsupported media type: {filename}", filename=filename)
 
 
@@ -110,8 +117,12 @@ class MediaStore:
         self.db = db
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
+        # (path, size, mtime) -> sha256: a long video split into chapters is ingested once per chapter.
+        self._digests: dict[tuple[str, int, int], str] = {}
 
     def path(self, asset: MediaAsset) -> Path:
+        if asset.analysis.get("remote"):
+            raise MediaError("remote media has no local file", media_id=asset.id, url=asset.analysis.get("url"))
         resolved = (self.root / asset.path).resolve()
         if self.root.resolve() not in resolved.parents:
             raise MediaError("media path escapes the media store", path=asset.path)
@@ -131,11 +142,15 @@ class MediaStore:
             raise MediaError("empty file", filename=filename)
         if size > MAX_BYTES[kind.value]:
             raise MediaError(f"{kind.value} exceeds the size limit", filename=filename, size=size)
-        digest = hashlib.sha256()
-        with source.open("rb") as handle:
-            for chunk in iter(lambda: handle.read(1 << 20), b""):
-                digest.update(chunk)
-        sha = digest.hexdigest()
+        stat = source.stat()
+        cache_key = (str(source.resolve()), stat.st_size, stat.st_mtime_ns)
+        sha = self._digests.get(cache_key)
+        if sha is None:
+            digest = hashlib.sha256()
+            with source.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1 << 20), b""):
+                    digest.update(chunk)
+            sha = self._digests[cache_key] = digest.hexdigest()
         meta = self._probe(source, kind)
         rel = f"{sha[:2]}/{sha}{Path(filename).suffix.lower()}"
         target = self.root / rel
@@ -190,7 +205,44 @@ class MediaStore:
                 path.read_text(encoding="utf-8")
             except UnicodeDecodeError as exc:
                 raise MediaError("text must be UTF-8") from exc
+        if kind == MediaKind.CAPTIONS:
+            from lucius.ingestion.captions import CaptionTrack
+
+            track = CaptionTrack.from_file(path)  # raises MediaError when unreadable or empty
+            return {"duration_s": round(track.span[1], 3)}
         return {}
+
+    def register_remote(self, url: str, *, role: MediaRole, kind: MediaKind = MediaKind.VIDEO,
+                        demonstration_id: str | None = None, policy: DataPolicy | None = None,
+                        duration_s: float | None = None) -> MediaAsset:
+        """Media a provider fetches itself (a public video URL): recorded for provenance, never stored."""
+        sha = hashlib.sha256(url.encode("utf-8")).hexdigest()
+        policy = policy or DataPolicy.for_external(SOURCE_FOR_KIND[kind], reference_only=role != MediaRole.DEMONSTRATION)
+        analysis = {"remote": True, "url": url}
+        asset = MediaAsset(id=new_id("media"), demonstration_id=demonstration_id, kind=kind, role=role, filename=url,
+                           path=f"remote/{sha}", sha256=sha, size_bytes=0, mime=None, policy=policy,
+                           created_at=now(), analysis=analysis, duration_s=duration_s)
+        self.db.insert("media_assets", {
+            "id": asset.id, "demonstration_id": demonstration_id, "kind": kind.value, "role": role.value,
+            "filename": url, "path": asset.path, "sha256": sha, "size_bytes": 0, "mime": None, "width": None,
+            "height": None, "duration_s": duration_s, "fps": None, "frame_count": None, "policy": dumps(policy),
+            "analysis": dumps(analysis), "created_at": asset.created_at})
+        return asset
+
+    def digest(self, asset: MediaAsset) -> str | None:
+        """SHA-256 of the stored file, streamed and cached (a long video is shared by many chapter sessions)."""
+        path = self.path(asset)
+        if not path.exists():
+            return None
+        stat = path.stat()
+        key = (str(path), stat.st_size, stat.st_mtime_ns)
+        if key not in self._digests:
+            digest = hashlib.sha256()
+            with path.open("rb") as handle:
+                for chunk in iter(lambda: handle.read(1 << 20), b""):
+                    digest.update(chunk)
+            self._digests[key] = digest.hexdigest()
+        return self._digests[key]
 
     def get(self, asset_id: str) -> MediaAsset:
         row = self.db.query_one("SELECT * FROM media_assets WHERE id = ?", (asset_id,))

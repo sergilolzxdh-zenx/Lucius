@@ -19,10 +19,17 @@ from lucius.planner.model import PlanAction
 INTERNAL_ACTIONS = {"scale_to_size", "restore_snapshot", "snapshot"}
 OBSERVATION_ACTIONS = {"observe_views"}
 BLOCKED_KEY_COMBOS = [
+    # the OS and window management
     {"ALT", "F4"}, {"CTRL", "Q"}, {"CTRL", "W"}, {"CTRL", "ALT", "DEL"}, {"CTRL", "ALT", "T"}, {"CTRL", "SHIFT", "ESC"},
     {"OSKEY"}, {"CTRL", "F4"}, {"ALT", "TAB"},
+    # files (saving goes through the add-on's path allowlist), new/open discard the user's scene
+    {"CTRL", "S"}, {"CTRL", "O"}, {"CTRL", "N"}, {"F4"},
+    # editors that run or edit Python, preferences, rendering
+    {"SHIFT", "F4"}, {"SHIFT", "F11"}, {"ALT", "P"}, {"CTRL", "COMMA"}, {"F12"},
 ]
 ALLOWED_TEXT = set("0123456789.-")
+GUI_MODIFIERS = {"CTRL", "SHIFT", "ALT"}
+GUI_BUTTONS = {"left", "right", "middle"}
 
 
 class ActionValidator:
@@ -74,16 +81,43 @@ class ActionValidator:
 
     @staticmethod
     def _check_keys(sequence: list[Any]) -> None:
+        from lucius.executor.gui import ALLOWED_KEYS
+
+        if len(sequence) > 200:
+            raise ActionRejected("GUI sequence too long")
         for item in sequence:
             if not isinstance(item, dict):
                 raise ActionRejected("GUI sequence items must be structured key events")
             kind = item.get("kind")
+            modifiers = {str(k).upper() for k in item.get("modifiers", [])}
+            if not modifiers <= GUI_MODIFIERS:
+                raise ActionRejected(f"modifier keys {sorted(modifiers - GUI_MODIFIERS)} not allowed")
             if kind == "key":
-                combo = {str(k).upper() for k in item.get("modifiers", [])} | {str(item.get("key", "")).upper()}
+                key = str(item.get("key", "")).upper()
+                if key not in ALLOWED_KEYS:
+                    raise ActionRejected(f"key {key!r} is not allowlisted")
+                combo = modifiers | {key}
                 if any(block <= combo for block in BLOCKED_KEY_COMBOS):
                     raise ActionRejected(f"blocked key combination {sorted(combo)}")
             elif kind == "text":
                 if not set(str(item.get("text", ""))) <= ALLOWED_TEXT:
                     raise ActionRejected("GUI text input is limited to numeric values")
-            elif kind not in ("wait",):
+            elif kind == "pointer":
+                # Viewport-relative (0..1) by default; window coordinates come from the add-on's projection.
+                # The actuator also refuses any point outside the 3D viewport.
+                if item.get("space", "view3d") == "view3d" and not all(
+                        0.0 <= float(item.get(axis, 0.5)) <= 1.0 for axis in ("x", "y")):
+                    raise ActionRejected("pointer targets are fractions of the 3D viewport")
+            elif kind in ("click", "drag"):
+                if item.get("button", "left") not in GUI_BUTTONS:
+                    raise ActionRejected(f"mouse button {item.get('button')!r} not allowed")
+                if kind == "drag" and not all(abs(float(item.get(k, 0.0))) <= 1.0 for k in ("dx", "dy")):
+                    raise ActionRejected("drags are limited to one viewport size")
+            elif kind == "scroll":
+                if abs(int(item.get("clicks", 0))) > 20:
+                    raise ActionRejected("scrolling is limited to 20 clicks per event")
+            elif kind == "wait":
+                if not 0.0 <= float(item.get("s", 0.0)) <= 5.0:
+                    raise ActionRejected("waits are limited to 5 s")
+            else:
                 raise ActionRejected(f"GUI event kind {kind!r} not allowed")

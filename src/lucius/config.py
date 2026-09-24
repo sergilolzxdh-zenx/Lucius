@@ -71,6 +71,13 @@ class ProcessingConfig(BaseModel):
     visual_change_threshold: float = Field(default=0.18, gt=0.0, le=1.0)
     model_refinement: bool = True
     representative_frames_per_segment: int = Field(default=3, ge=1, le=10)
+    # Upper bound on before/after pairs of one demonstration sent to a vision model (None: all).
+    # Pairs with spoken actions nearby and geometry changes go first; the rest keep deterministic analysis.
+    max_vision_pairs: int | None = Field(default=None, ge=0)
+    # Watching videos by URL with a video-capable model (when the video cannot be downloaded).
+    video_model_fps: float = Field(default=1.0, gt=0.0, le=10.0)
+    video_model_resolution: Literal["low", "medium", "high"] = "low"
+    video_model_chunk_s: float = Field(default=300.0, ge=30.0, le=3600.0)
 
 
 class SafetyConfig(BaseModel):
@@ -78,6 +85,16 @@ class SafetyConfig(BaseModel):
     allow_os_actions: bool = False
     allowed_save_dirs: list[str] = Field(default_factory=list)
     max_actions_per_run: int = Field(default=400, ge=1)
+
+
+class GuiConfig(BaseModel):
+    """Keyboard/mouse control of a live Blender (``lucius run --backend gui``)."""
+
+    event_delay_s: float = Field(default=0.06, ge=0.0, le=1.0)      # pause between injected events
+    verify_timeout_s: float = Field(default=5.0, gt=0.0, le=60.0)   # wait for the operator to appear in the log
+    interference_px: float = Field(default=4.0, gt=0.0)            # pointer drift that means a person moved it
+    fallback_to_bridge: bool = True     # perform an action through the add-on when its keyboard form fails
+    activate_window: bool = False       # raise and focus Blender's window before acting (X11 only)
 
 
 class BlenderConfig(BaseModel):
@@ -96,6 +113,7 @@ class LuciusConfig(BaseModel):
     providers: ProviderConfig = Field(default_factory=ProviderConfig)
     processing: ProcessingConfig = Field(default_factory=ProcessingConfig)
     safety: SafetyConfig = Field(default_factory=SafetyConfig)
+    gui: GuiConfig = Field(default_factory=GuiConfig)
     blender: BlenderConfig = Field(default_factory=BlenderConfig)
 
     @property

@@ -113,6 +113,7 @@ OPERATOR_MAP: dict[str, OperatorMapper] = {
     "MESH_OT_primitive_uv_sphere_add": _primitive("uv_sphere"),
     "MESH_OT_primitive_ico_sphere_add": _primitive("ico_sphere"),
     "MESH_OT_primitive_torus_add": _primitive("torus"),
+    "MESH_OT_primitive_circle_add": _primitive("circle"),
     "MESH_OT_extrude_region_move": lambda op: ("extrude", {"offset": _macro_props(op, "TRANSFORM_OT_translate").get("value")}),
     "MESH_OT_extrude_context_move": lambda op: ("extrude", {"offset": _macro_props(op, "TRANSFORM_OT_translate").get("value")}),
     "MESH_OT_extrude_region_shrink_fatten": lambda op: ("extrude", {"shrink_fatten": _macro_props(op, "TRANSFORM_OT_shrink_fatten").get("value")}),

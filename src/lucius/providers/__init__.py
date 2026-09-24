@@ -15,6 +15,7 @@ from lucius.providers.base import (
     LoggedLLM,
     ModelResult,
     Providers,
+    VideoInput,
 )
 from lucius.providers.embeddings import HashingEmbeddingProvider, SentenceTransformersEmbeddingProvider
 from lucius.storage.db import Database
@@ -73,5 +74,5 @@ def build_providers(config: ProviderConfig, db: Database | None) -> tuple[Provid
 
 __all__ = [
     "CallLog", "EmbeddingProvider", "EvaluationProvider", "HashingEmbeddingProvider", "ImageInput", "JudgeResult",
-    "LLMProvider", "LoggedLLM", "ModelResult", "Providers", "build_providers",
+    "LLMProvider", "LoggedLLM", "ModelResult", "Providers", "VideoInput", "build_providers",
 ]

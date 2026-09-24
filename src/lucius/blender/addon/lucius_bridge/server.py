@@ -217,7 +217,7 @@ class BridgeServer:
 
 def build_commands(capabilities):
     """Command table: name -> (handler(args), must_run_on_main_thread)."""
-    from . import actions, state, structure
+    from . import actions, gui, state, structure
 
     def hello(_args):
         import bpy
@@ -239,4 +239,8 @@ def build_commands(capabilities):
             names=a.get("names"), views=tuple(a.get("views") or ("front", "side", "top")),
             max_triangles=int(a.get("max_triangles", 20000))), True),
         "execute": (lambda a: actions.execute_action(a.get("action"), a.get("args") or {}), True),
+        # Read-only screen information for keyboard/mouse actuation (interactive sessions only).
+        "gui_layout": (gui.gui_layout, True),
+        "operator_log": (gui.operator_log, True),
+        "project": (gui.project, True),
     }

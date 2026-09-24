@@ -96,15 +96,19 @@ class BridgeBackend:
             vec = [1.0, 1.0, 1.0]
             vec["xyz".index(axis)] = factor
             if args.get("space") == "edit":
-                result = self.bridge.execute("scale_selection", {"object": obj, "factor": vec, "pivot": "median"})
+                result = self._perform("scale_selection", {"object": obj, "factor": vec, "pivot": "median"})
             else:
-                result = self.bridge.execute("transform_object", {"object": obj, "scale": vec, "relative": True})
+                result = self._perform("transform_object", {"object": obj, "scale": vec, "relative": True})
             return {"factor": round(factor, 6), "from": current, "to": size, **result}
         if action.name == "restore_snapshot":
             return self.bridge.execute("restore", {"tag": args["tag"]})
         if action.name == "snapshot":
             return self.bridge.execute("snapshot", {"tag": args["tag"]})
         raise BlenderBridgeError(f"unknown internal action {action.name}", code="unknown_internal")
+
+    def _perform(self, name: str, args: dict[str, Any]) -> dict[str, Any]:
+        """A bridge action a macro decided on (the GUI backend types it instead when it can)."""
+        return self.bridge.execute(name, args)
 
     def snapshot(self, tag: str) -> None:
         self.bridge.execute("snapshot", {"tag": tag})

@@ -15,16 +15,21 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from lucius.errors import ProviderError, ProviderRefusal, ProviderUnavailable
-from lucius.providers.base import ImageInput, ModelResult
+from lucius.providers.base import ImageInput, ModelResult, VideoInput
 
 # Finish reasons that mean the model declined or was stopped by a content filter.
 REFUSAL_REASONS = {"SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "SPII", "IMAGE_SAFETY",
                    "IMAGE_PROHIBITED_CONTENT", "IMAGE_RECITATION"}
 
 
+MEDIA_RESOLUTION = {"low": "MEDIA_RESOLUTION_LOW", "medium": "MEDIA_RESOLUTION_MEDIUM",
+                    "high": "MEDIA_RESOLUTION_HIGH"}
+
+
 class GeminiProvider:
     name = "gemini"
     supports_images = True
+    supports_video = True       # public YouTube URLs, clipped with start/end offsets
 
     def __init__(self, model: str | None, *, thinking_level: str | None = None, timeout_s: float = 600.0,
                  client: Any = None) -> None:
@@ -48,9 +53,16 @@ class GeminiProvider:
         self.thinking_level = thinking_level
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
-                      images: Sequence[ImageInput] = (), max_tokens: int = 8000) -> ModelResult:
+                      images: Sequence[ImageInput] = (), max_tokens: int = 8000,
+                      videos: Sequence[VideoInput] = ()) -> ModelResult:
         types = self._types
         parts = []
+        for video in videos:
+            parts.append(types.Part(
+                file_data=types.FileData(file_uri=video.uri),
+                video_metadata=types.VideoMetadata(
+                    start_offset=f"{video.start_s:.1f}s" if video.start_s is not None else None,
+                    end_offset=f"{video.end_s:.1f}s" if video.end_s is not None else None, fps=video.fps)))
         for image in images:
             if image.label:
                 parts.append(types.Part.from_text(text=image.label))
@@ -61,6 +73,8 @@ class GeminiProvider:
             max_output_tokens=max_tokens,
             # Lucius never passes tools; the SDK otherwise enables automatic function calling on every request.
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            media_resolution=getattr(types.MediaResolution, MEDIA_RESOLUTION[videos[0].resolution])
+            if videos else None,
             thinking_config=types.ThinkingConfig(thinking_level=self.thinking_level.upper())
             if self.thinking_level else None)
         started = time.monotonic()

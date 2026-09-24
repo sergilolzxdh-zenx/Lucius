@@ -99,21 +99,35 @@ class VideoReader:
         frame = self.frame_at(t)
         return None if frame is None else Image.fromarray(frame[:, :, ::-1])
 
-    def iter_samples(self, rate: float) -> list[Sample]:
-        """Sequential decode keeping one frame per 1/rate seconds (grab() skips decoding the rest)."""
+    def iter_samples(self, rate: float, start: float = 0.0, end: float | None = None) -> list[Sample]:
+        """Sequential decode keeping one frame per 1/rate seconds of [start, end) (grab() skips the rest).
+
+        Times are on the video's own timeline, so a chapter keeps the timestamps a viewer would see.
+        """
         cv2 = self._cv2
-        self.capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
-        step = max(1, round(self.fps / rate)) if self.fps else 1
-        samples, index = [], 0
+        if start > 0:
+            self.capture.set(cv2.CAP_PROP_POS_MSEC, start * 1000.0)
+            index = int(round(self.capture.get(cv2.CAP_PROP_POS_FRAMES) or 0))
+        else:
+            self.capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            index = 0
+        interval = 1.0 / rate
+        next_t = start
+        samples = []
         while True:
             if not self.capture.grab():
                 break
-            if index % step == 0:
+            t = index / self.fps if self.fps else float(index)
+            index += 1
+            if t < start - 1e-6:
+                continue
+            if end is not None and t >= end:
+                break
+            if t + 1e-6 >= next_t:
                 ok, frame = self.capture.retrieve()
                 if ok:
-                    samples.append(Sample(t=index / self.fps if self.fps else float(index), thumb=_thumb(frame),
-                                          header=_header(frame)))
-            index += 1
+                    samples.append(Sample(t=round(t, 3), thumb=_thumb(frame), header=_header(frame)))
+                next_t += interval * max(1, int((t - next_t) // interval) + 1)
         return samples
 
     def close(self) -> None:
@@ -129,8 +143,8 @@ class VideoAnalyzer:
         self.floor = floor
         self.merge_gap_s = merge_gap_s
 
-    def coarse(self, reader: VideoReader) -> tuple[list[Sample], float]:
-        samples = reader.iter_samples(self.coarse_fps)
+    def coarse(self, reader: VideoReader, start: float = 0.0, end: float | None = None) -> tuple[list[Sample], float]:
+        samples = reader.iter_samples(self.coarse_fps, start, end)
         for prev, cur in zip(samples, samples[1:]):
             cur.grid = _grid_change(prev.thumb, cur.thumb)
             # The strongest cell, not the frame mean: a narrowed object or a changed header label is a
@@ -180,8 +194,9 @@ class VideoAnalyzer:
         return event
 
     @staticmethod
-    def representative_times(samples: list[Sample], events: list[ChangeEvent], duration: float) -> list[float]:
-        bounds = [0.0] + [t for e in events for t in (e.t_before, e.t_after)] + [duration]
+    def representative_times(samples: list[Sample], events: list[ChangeEvent], duration: float,
+                             start: float = 0.0) -> list[float]:
+        bounds = [start] + [t for e in events for t in (e.t_before, e.t_after)] + [duration]
         times = []
         for a, b in zip(bounds[::2], bounds[1::2]):
             if b - a >= 0.3:
