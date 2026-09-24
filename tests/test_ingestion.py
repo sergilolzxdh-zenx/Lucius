@@ -10,6 +10,7 @@ from lucius.sessions import SessionKind
 from tests.fixtures.media import UIState, draw, tutorial_script, write_video
 
 pytest.importorskip("cv2")
+pytestmark = pytest.mark.media
 
 
 @pytest.fixture
@@ -113,3 +114,29 @@ def test_image_pair_and_invalid_media(app, tmp_path):
     empty = app.ingestion.create(title="nothing", task_text=None, inputs=[MediaInput(path=str(bad))])
     failed = app.ingestion.process(empty.id)
     assert failed.status == DemoStatus.FAILED and failed.status_history[-1]["error"]["stage"] == "VALIDATING"
+
+
+@pytest.mark.bpy
+def test_blend_project_and_written_instructions(app, tmp_path):
+    from lucius.blender.headless import HeadlessBlender, headless_available
+
+    if headless_available() is None:
+        pytest.skip("needs Blender")
+    project = tmp_path / "crate.blend"
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        bridge.execute("reset_scene", {"keep_camera_light": True})
+        bridge.execute("add_primitive", {"kind": "cube", "name": "Crate"})
+        bridge.execute("set_dimensions", {"object": "Crate", "dimensions": [1.2, 0.8, 0.6]})
+        bridge.execute("save_file", {"path": str(project)})
+    demo = app.ingestion.create(title="crate", task_text="wooden crate", instructions=["Add a cube", "Scale it flat"],
+                                inputs=[MediaInput(path=str(project), role=MediaRole.PROJECT)])
+    assert demo.source_class == SourceClass.EXTERNAL_PROJECT.value
+    result = app.ingestion.process(demo.id, validate=False)
+    assert result.status == DemoStatus.READY, result.status_history[-1]
+    session = app.sessions.get(result.session_id)
+    constraints = app.ingestion.references.for_media(session.meta["media"])
+    dims = next(c for c in constraints if c.constraint_type == "project_dimensions" and c.target == "crate")
+    assert dims.source == "measured" and dims.value["dimensions"] == pytest.approx({"x": 1.2, "y": 0.8, "z": 0.6}, abs=1e-4)
+    steps = app.trajectories.for_session(result.session_id)
+    assert any(s.evidence_kind == EvidenceKind.TEXT_INSTRUCTION for s in steps)
+    assert not session.policy.training_allowed  # imported material is never silently trainable

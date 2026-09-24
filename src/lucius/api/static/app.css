@@ -110,9 +110,9 @@ tr.click:hover td { background: var(--panel-2); }
 
 .chip { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; border: 1px solid var(--border);
   color: var(--muted); white-space: nowrap; }
-.chip.ok, .chip.success, .chip.mastered, .chip.high_confidence, .chip.validated, .chip.done, .chip.accepted, .chip.human_confirmed, .chip.observed { color: var(--ok); border-color: rgba(62, 207, 142, .45); }
-.chip.bad, .chip.failure, .chip.error, .chip.rejected, .chip.aborted { color: var(--bad); border-color: rgba(240, 80, 110, .45); }
-.chip.warn, .chip.needs_human, .chip.needs_demonstration, .chip.candidate_pattern, .chip.proposed, .chip.running, .chip.queued, .chip.practicing, .chip.model_inferred { color: var(--warn); border-color: rgba(245, 165, 36, .45); }
+.chip.ok, .chip.success, .chip.mastered, .chip.high_confidence, .chip.validated, .chip.done, .chip.accepted, .chip.human_confirmed, .chip.observed, .chip.READY, .chip.promoted, .chip.confirmed { color: var(--ok); border-color: rgba(62, 207, 142, .45); }
+.chip.bad, .chip.failure, .chip.error, .chip.rejected, .chip.aborted, .chip.FAILED, .chip.denied { color: var(--bad); border-color: rgba(240, 80, 110, .45); }
+.chip.warn, .chip.candidate, .chip.needs_human, .chip.needs_demonstration, .chip.candidate_pattern, .chip.proposed, .chip.running, .chip.queued, .chip.practicing, .chip.model_inferred { color: var(--warn); border-color: rgba(245, 165, 36, .45); }
 .chip.info, .chip.candidate_skill, .chip.subjective_pass, .chip.inferred, .chip.executed_unverified, .chip.requires_gui { color: var(--info); border-color: rgba(124, 196, 255, .45); }
 .chip.seed, .chip.system_seeded { color: var(--faint); }
 

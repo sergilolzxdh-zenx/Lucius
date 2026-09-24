@@ -169,6 +169,7 @@ def test_real_capture_under_xvfb(xvfb, config, sessions, bus):
     sources = RecorderSources(window=provider, grabber_factory=MssGrabber, input=PynputInputSource())
     recorder = DemonstrationRecorder(config, sessions, bus, sources)
     session = recorder.start(task_text="blockout test")
+    listeners = list(sources.input._listeners)
     assert _wait_for(lambda: recorder.status()["blender_focused"])
 
     xw.key("e")
@@ -189,6 +190,7 @@ def test_real_capture_under_xvfb(xvfb, config, sessions, bus):
     result = recorder.stop()
 
     assert result.status == SessionStatus.FINALIZED
+    assert listeners and not any(t.is_alive() for t in listeners)  # no input is received after capture stops
     events = sessions.events(session.id)
     keys = [(e.payload.get("key"), e.payload.get("modifiers"), e.blender_active) for e in events
             if e.kind == EventKind.KEY_DOWN]

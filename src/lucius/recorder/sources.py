@@ -80,6 +80,29 @@ class MssGrabber:
 _BUTTONS = {"left": "LEFT", "right": "RIGHT", "middle": "MIDDLE", "x1": "BUTTON4", "x2": "BUTTON5"}
 
 
+def _prompt_xorg_stop(base: Any) -> Any:
+    """An X11 pynput listener class whose ``stop()`` takes effect immediately.
+
+    pynput 1.8 sends the RECORD disable request on the recording connection, which is blocked
+    reading and only flushes it when the next X event arrives: on a quiet display the listener
+    keeps running after ``stop()``. Sending the request on the control connection and flushing it
+    ends the recording at once, so no input is received after capture stops.
+    """
+
+    class PromptStopListener(base):  # type: ignore[misc, valid-type]
+        def _stop_platform(self) -> None:
+            if not hasattr(self, "_context"):
+                self.wait()
+            try:
+                self._display_stop.record_disable_context(self._context)
+                self._display_stop.flush()
+            except Exception:  # connection already gone: the listener thread is ending anyway
+                pass
+
+    PromptStopListener.__name__ = base.__name__
+    return PromptStopListener
+
+
 class PynputInputSource:
     """Global mouse/keyboard listener. Only the recorder decides what is kept."""
 
@@ -114,7 +137,7 @@ class PynputInputSource:
         if not base.__module__.endswith("_xorg"):
             return base
 
-        class RawXorgListener(base):  # type: ignore[misc, valid-type]
+        class RawXorgListener(_prompt_xorg_stop(base)):  # type: ignore[misc]
             """Keeps the raw keycode and the NumLock-level keysym of each event (pynput drops them)."""
 
             raw: dict[str, Any] = {}
@@ -124,6 +147,10 @@ class PynputInputSource:
                 super()._handle_message(display, event, injected)
 
         return RawXorgListener
+
+    def _mouse_listener_class(self) -> Any:
+        base = self._mouse_mod.Listener
+        return _prompt_xorg_stop(base) if base.__module__.endswith("_xorg") else base
 
     def start(self, callback: Callable[[RawInput], None]) -> None:
         def on_move(x: float, y: float, *args: Any) -> None:
@@ -148,7 +175,7 @@ class PynputInputSource:
         def on_release(key: Any, *args: Any) -> None:
             callback(RawInput("key_up", now(), self._key_payload(key, raw()), self._injected(args)))
 
-        mouse_listener = self._mouse_mod.Listener(on_move=on_move, on_click=on_click, on_scroll=on_scroll)
+        mouse_listener = self._mouse_listener_class()(on_move=on_move, on_click=on_click, on_scroll=on_scroll)
         key_listener = self._keyboard_listener_class()(on_press=on_press, on_release=on_release)
         for listener in (mouse_listener, key_listener):
             listener.daemon = True

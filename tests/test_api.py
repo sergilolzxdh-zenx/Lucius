@@ -137,10 +137,10 @@ def test_upload_demonstration_is_analysed(client):
     deadline = time.time() + 60
     while time.time() < deadline:
         demo = client.get(f"/api/demonstrations/{demo_id}").json()["demonstration"]
-        if demo["status"] in ("COMPLETE", "PARTIAL", "FAILED", "NEEDS_REVIEW"):
+        if demo["status"] in ("READY", "FAILED"):
             break
         time.sleep(0.2)
-    assert demo["status"] != "FAILED", demo
+    assert demo["status"] == "READY", demo
     assert demo["policy"]["training_allowed"] is False  # external media are never silently trainable
     steps = client.get(f"/api/sessions/{demo['session_id']}/timeline").json()["steps"]
     assert steps and steps[0]["candidate_actions"]
