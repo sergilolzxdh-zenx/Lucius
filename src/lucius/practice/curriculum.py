@@ -36,6 +36,8 @@ class PracticeTaskTemplate(BaseModel):
     criteria: list[dict[str, Any]] = Field(default_factory=list)  # checkpoint dicts with {param} references
     task_params: dict[str, Any] = Field(default_factory=dict)     # skill parameter values, may reference params
     reference: str | None = None                  # synthetic reference generator key
+    # Fixed references for other parts of the result: {"generator", "values", "target"}.
+    part_references: list[dict[str, Any]] = Field(default_factory=list)
     requires_gui: bool = False
     difficulty: int = 1
 
@@ -131,6 +133,9 @@ def box_reference(values: dict[str, Any], size: int = 512) -> Image.Image:
 # generator key -> (image function, object role the reference depicts)
 REFERENCE_GENERATORS = {"blade": (blade_reference, "blade"), "box": (box_reference, None)}
 
+# The cross-guard of the sword tasks, as a user would supply it on a reference sheet.
+GUARD_REFERENCE = {"generator": "box", "values": {"width": 1.6, "height": 0.2}, "target": "guard"}
+
 DIMENSION_CHECK = {"description": "{name} has dimensions {x}x{y}x{z}",
                    "check": {"type": "dimensions_match", "object": "{name}", "vector": ["{x}", "{y}", "{z}"],
                              "tolerance": 0.05}}
@@ -164,6 +169,7 @@ def _curricula() -> dict[str, Curriculum]:
                              name="blade_blockout", task="Block out a sword blade with blade length {length} "
                                                          "and blade width {width}",
                              params={"length": [3.0, 7.0], "width": [0.2, 0.45]}, reference="blade",
+                             part_references=[GUARD_REFERENCE],
                              task_params={"blade_length": "{length}", "blade_width": "{width}"},
                              criteria=[{"description": "blade is {length} long and {width} wide",
                                         "check": {"type": "dimensions_match", "object": "Blade",
@@ -181,6 +187,7 @@ def _curricula() -> dict[str, Curriculum]:
                           name="blade_reference", task="Model the sword blade shown in the reference "
                                                        "(blade length {length}, blade width {width})",
                           params={"length": [3.0, 7.0], "width": [0.2, 0.45]}, reference="blade",
+                          part_references=[GUARD_REFERENCE],
                           task_params={"blade_length": "{length}", "blade_width": "{width}"},
                           criteria=[{"description": "silhouette matches the reference from the front", "level": 3,
                                      "method": "visual_measured",

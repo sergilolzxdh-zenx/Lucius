@@ -24,7 +24,7 @@ from typing import Any
 from lucius.ids import new_id
 from lucius.provenance import ActionSource, EvidenceKind
 from lucius.recorder.keys import MODIFIERS, hotkey_label
-from lucius.sessions.models import CapturedEvent, EventKind, FrameRecord
+from lucius.sessions.models import CapturedEvent, FrameRecord
 from lucius.trajectory import vocabulary as vocab
 from lucius.trajectory.model import TrajectoryStep
 

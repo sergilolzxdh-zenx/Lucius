@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-from PIL import Image
 
 from lucius.app import Lucius
 from lucius.ingestion import DemoStatus, MediaInput, MediaRole, analyze_reference, analyze_transition

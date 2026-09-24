@@ -14,7 +14,7 @@ from lucius.events import EventType
 from lucius.executor import TakeoverOutcome
 from lucius.planner.model import PlanAction
 from lucius.provenance import DataPolicy
-from lucius.sessions import SessionKind
+from lucius.sessions import Outcome, SessionKind
 from lucius.skills import SkillStatus
 from tests.conftest import HAS_BPY
 from tests.fixtures.demos import sword_blockout_demo
@@ -26,9 +26,9 @@ def record(app: Lucius, demo, task: str = "simple sword blockout") -> str:
     """Store a demonstration exactly as the recorder does, then end it (triggers processing)."""
     session = app.sessions.create(user_id=app.config.user_id, kind=SessionKind.LIVE_DEMO,
                                   policy=DataPolicy.for_live_demo(training_consent=True), task_text=task,
-                                  meta={"capture_sources": {"blender_bridge": True}})
+                                  start_time=demo.events[0].ts, meta={"capture_sources": {"blender_bridge": True}})
     app.sessions.append_events(session.id, demo.events)
-    app.sessions.finalize(session.id, end_time=demo.events[-1].ts)
+    app.sessions.finalize(session.id, end_time=demo.events[-1].ts, outcome=Outcome.SUCCESS)
     app.bus.publish(EventType.SESSION_ENDED, session.id, kind="live_demo")
     return session.id
 

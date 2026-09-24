@@ -22,7 +22,14 @@ from lucius.executor.backend import ExecutionBackend
 from lucius.executor.human import HumanChannel
 from lucius.ids import new_id
 from lucius.ingestion.media import MediaRole
-from lucius.practice.curriculum import CURRICULA, REFERENCE_GENERATORS, Curriculum, Stage, resolve_curriculum
+from lucius.practice.curriculum import (
+    CURRICULA,
+    REFERENCE_GENERATORS,
+    Curriculum,
+    PracticeTaskTemplate,
+    Stage,
+    resolve_curriculum,
+)
 from lucius.practice.mastery import MasteryMetrics, check_gate, compute_metrics
 from lucius.provenance import DataPolicy, SourceClass
 from lucius.storage.db import dumps, loads
@@ -165,10 +172,7 @@ class PracticeEngine:
             template = stage_def.tasks[template_index]
             values = template.sample(rng)
             text, criteria, task_params = template.instantiate(values)
-            references, reference_ids = [], []
-            if template.reference in REFERENCE_GENERATORS:
-                reference_ids = [self._reference(template.reference, values)]
-                references = self.app.ingestion.references.silhouettes(reference_ids, min_iou=0.8)
+            references, reference_ids = self.references_for(template, values)
             run = self.app.engine.run(text, backend, mode="practice", task_params=task_params,
                                       success_criteria=criteria, references=references, reference_ids=reference_ids,
                                       practice_task_id=task_ids[template_index], human=human, reset_scene=True)
@@ -192,6 +196,15 @@ class PracticeEngine:
             report.advanced_to = nxt.index if nxt else None
             report.message = f"stage '{stage_def.name}' mastered" + (f"; next: {nxt.name}" if nxt else "")
         return report
+
+    def references_for(self, template: PracticeTaskTemplate, values: dict[str, Any]) -> tuple[list, list[str]]:
+        """Reference silhouettes for one task instance: the sampled main reference plus fixed part references."""
+        ids = []
+        if template.reference in REFERENCE_GENERATORS:
+            ids.append(self._reference(template.reference, values))
+        for part in template.part_references:
+            ids.append(self._reference(part["generator"], part["values"], target=part.get("target")))
+        return self.app.ingestion.references.silhouettes(ids, min_iou=0.8), ids
 
     def _reference(self, generator: str, values: dict[str, Any], target: str | None = None) -> str:
         """A synthetic reference image for a practice task (stored as media with its provenance)."""

@@ -4,7 +4,7 @@ from PIL import Image
 
 from lucius.events import EventType
 from lucius.provenance import DataPolicy
-from lucius.sessions import Actor, CapturedEvent, EventKind, SessionKind, SessionStatus
+from lucius.sessions import CapturedEvent, EventKind, SessionKind, SessionStatus
 from lucius.storage.frames import hash_distance
 
 

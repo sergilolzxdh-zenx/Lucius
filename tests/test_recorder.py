@@ -12,7 +12,7 @@ from lucius.recorder.compression import MouseMoveCompressor
 from lucius.recorder.keys import hotkey_label, normalize_key
 from lucius.recorder.privacy import PrivacyFilter
 from lucius.recorder.recorder import recover_interrupted_sessions
-from lucius.recorder.window import Bounds, WindowInfo
+from lucius.recorder.window import WindowInfo
 from lucius.provenance import DataPolicy
 from lucius.sessions import CapturedEvent, EventKind, SessionKind, SessionStatus
 

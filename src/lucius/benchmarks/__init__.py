@@ -18,7 +18,8 @@ from lucius.errors import NotFoundError
 from lucius.executor.backend import ExecutionBackend
 from lucius.executor.engine import ArmConfig, RunResult
 from lucius.ids import new_id
-from lucius.practice.curriculum import REFERENCE_GENERATORS, PracticeTaskTemplate
+from lucius.practice.curriculum import PracticeTaskTemplate
+from lucius.sessions.models import SessionKind
 from lucius.storage.db import dumps, loads
 from lucius.timeutil import now
 
@@ -46,6 +47,9 @@ class BenchmarkDefinition(BaseModel):
     allowed_methods: list[str] = Field(default_factory=lambda: ["blender_api"])
     evaluation_method: str = "structural+measured_visual"
     variants: list[dict[str, Any]] = Field(default_factory=list)   # generalisation axes (explicit parameter sets)
+
+
+DEMONSTRATION_KINDS = {SessionKind.LIVE_DEMO, SessionKind.EXTERNAL_MEDIA}
 
 
 def seed_benchmarks() -> list[BenchmarkDefinition]:
@@ -100,10 +104,7 @@ class BenchmarkService:
         results = []
         for variant in definition.variants:
             text, criteria, task_params = definition.template.instantiate(variant)
-            references, reference_ids = [], []
-            if definition.template.reference in REFERENCE_GENERATORS:
-                reference_ids = [self.app.practice._reference(definition.template.reference, variant)]
-                references = self.app.ingestion.references.silhouettes(reference_ids, min_iou=0.8)
+            references, reference_ids = self.app.practice.references_for(definition.template, variant)
             if arm == "raw_demonstrations":
                 run = self._raw_run(text, backend, task_params, criteria, references, reference_ids, benchmark_id)
             else:
@@ -129,9 +130,11 @@ class BenchmarkService:
         retrieval = app.retriever.retrieve(RetrievalQuery(text=text, task_class=classify_task(text)[0],
                                                           strategy="episodes_only"))
         definitions = []
-        if retrieval.episodes:
-            episode = app.episodes.by_id(retrieval.episodes[0].id)
-            session = app.sessions.get(episode.session_id)
+        # Only demonstrations are replayed -- never the agent's own earlier runs.
+        demos = [e for e in (app.episodes.by_id(i.id) for i in retrieval.episodes)
+                 if app.sessions.get(e.session_id).kind in DEMONSTRATION_KINDS]
+        if demos:
+            session = app.sessions.get(demos[0].session_id)
             steps = app.trajectories.for_session(session.id)
             segments = app.segments.for_session(session.id)
             object_class, categories = classify_task(session.task_text)

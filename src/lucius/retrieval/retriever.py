@@ -45,7 +45,9 @@ STOP = {"a", "an", "the", "of", "and", "to", "with", "for", "in", "on", "make", 
 
 
 def tokens(text: str) -> set[str]:
-    words = {w for w in _WORD.findall(text.lower()) if w not in STOP}
+    """Vocabulary tokens. Numbers ("1.5", "2x3x4") are parameter values, not vocabulary: counting them
+    would dilute the overlap of every task that states measurements."""
+    words = {w for w in _WORD.findall(text.lower()) if w not in STOP and not any(c.isdigit() for c in w)}
     return words | {w[:-1] for w in words if w.endswith("s") and len(w) > 3}
 
 

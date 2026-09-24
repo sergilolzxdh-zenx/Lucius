@@ -42,7 +42,7 @@ class Planner:
         chosen: dict[str, tuple[Skill, list[str]]] = {}
         roles: set[str] = set()
         for item in retrieval.skills:
-            if item.score < MIN_SKILL_SCORE or not self.library.exists(item.id):
+            if not self.library.exists(item.id):
                 continue
             skill = self.library.get(item.id)
             if skill.status in (SkillStatus.DISABLED, SkillStatus.MERGED):
@@ -55,6 +55,10 @@ class Planner:
                     continue  # learned composite skills cover the task; seeds are not needed
                 if not _mentions_trigger(task.text, d.triggers):
                     continue  # a generic capability is only used when the task asks for it
+                # An explicit trigger mention is the selection evidence for a seed; the retrieval
+                # threshold still applies, the stricter learned-skill threshold does not.
+            elif item.score < MIN_SKILL_SCORE:
+                continue
             role = d.object_role or skill.id
             if role in roles:
                 continue

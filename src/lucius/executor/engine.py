@@ -97,6 +97,9 @@ class RunResult(BaseModel):
     metrics: dict[str, Any] = Field(default_factory=dict)
 
 
+_REPLAYED = "replayed:"
+
+
 @dataclass
 class _RunContext:
     run_id: str
@@ -445,9 +448,12 @@ class ExecutionEngine:
         result = ctx.result
         structure = backend.structure()
         execution_ok = all(s.actions_failed == 0 for s in result.steps)
+        # Group by skill so each skill's checkpoints resolve against its own parameters. Replayed steps
+        # (no library skill) are grouped by the definition they came from.
         per_skill: dict[str, tuple[list[Checkpoint], dict[str, Any]]] = {}
         for step in plan.steps:
-            checkpoints, _params = per_skill.setdefault(step.skill_id or "", ([], step.params))
+            key = step.skill_id or f"{_REPLAYED}{step.skill_name}"
+            checkpoints, _params = per_skill.setdefault(key, ([], step.params))
             for cp in step.checkpoints:
                 if all(c.id != cp.id for c in checkpoints):
                     checkpoints.append(cp)
@@ -486,8 +492,8 @@ class ExecutionEngine:
                     kind="correction_outcome", source_class=SourceClass.AGENT_SUCCESS.value, run_id=ctx.run_id,
                     detail="guard prevented the known failure"))
         for skill_id, results in skill_results.items():
-            if not skill_id:
-                continue
+            if skill_id.startswith(_REPLAYED):
+                continue  # not a library skill: nothing to credit
             params = next(s.params for s in plan.steps if s.skill_id == skill_id)
             required_ok = all(r.passed is True for r in results if r.required)
             objective_ok = any(r.passed and not r.subjective and r.level in (2, 3) for r in results)
