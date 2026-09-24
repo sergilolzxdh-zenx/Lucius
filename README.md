@@ -92,7 +92,7 @@ human takeover → recovery rule → the next attempt recovers without a human.
 | Memory | Episodic, semantic (repetition-gated), failure rules with promotion, workflow preferences, learning graph |
 | Retrieval, planning, execution | Hybrid retrieval with reason codes, guards from failure rules, recovery, explicit state machine, human takeover and learning from corrections (DAgger) |
 | Evaluation | Structural and measured-visual checks; `needs_human`/`subjective_pass`/`executed_unverified` never reported as success; human review with deferred skill credit |
-| External media | Video change analysis (OpenCV), before/after pairs, reference measurement, `.blend` inspection in headless Blender, written instructions, human confirmation of inferred actions, validation by reproduction |
+| External media | Video change analysis (OpenCV), before/after pairs, reference measurement, `.blend` inspection in headless Blender, written instructions, human confirmation of inferred actions, validation by reproduction (only the skill under test is planned and credited) |
 | Practice | Curricula with sampled tasks and mastery gates; honest `requires_gui` / `needs_demonstration` |
 | Datasets | Consent-based eligibility, quality validation, provenance per sample, session/skill bundles, training-file formatters |
 | Benchmarks | Baseline / retrieval-only / memory-enhanced / raw-demonstration arms, bootstrap CIs |
@@ -164,6 +164,19 @@ again, so a run stopped by a model quota continues where it stopped.
 
 External videos are learning material only: they are never training-eligible, and the licence
 and URL travel with every sample.
+
+**First run (2026-09-24, free-tier `gemini-3.5-flash-lite`, videos watched by URL).** Two Spanish
+beginner courses (Aura Prods, 1.3 h and 2.3 h) and the English *Complete Blender Mastercourse* Part 1
+(12 h) were processed completely, Part 2 (10.6 h) for one chapter before the free tier's daily
+quota (about 500 requests) ran out: 59 chapters, 2,493 steps of which 2,356 were identified, 71
+skills. Only 4 are `validated`, and for video-derived skills that means little: a video shows which
+operations were done but not the resulting Blender state, so their only checks are "the object
+exists" and validation proves the steps replay without errors, not that they build the right thing.
+Most skills also lack values (distances are rarely visible or said). They are useful as workflow
+knowledge for retrieval and planning, and become reliable after a WATCH ME demonstration of the same
+workflow or a person's review in **Skills**. The run found and fixed three evidence bugs: unknown
+object kinds were guessed to be cubes, validation credited skills whose actions could not run, and
+validation credited every skill retrieved into the plan rather than the one under test.
 
 ## Keyboard and mouse control
 

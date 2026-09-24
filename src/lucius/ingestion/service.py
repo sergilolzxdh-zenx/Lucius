@@ -727,8 +727,12 @@ class IngestionService:
         backend = self.app.headless_backend()
         for skill_id in skill_ids:
             skill = self.app.library.get(skill_id)
+            # Only the skill under test is planned: with retrieval, other (generic) skills joined every
+            # validation run and collected its credit (one reached 92 "uses" from other skills' validations).
             run = self.app.engine.run(skill.definition.name, backend, mode="validation", references=silhouettes,
-                                      reference_ids=session.reference_ids, reset_scene=True)
+                                      reference_ids=session.reference_ids, reset_scene=True,
+                                      plan_fn=lambda task, pinned=skill: self.app.planner.plan_skills(
+                                          task, [pinned], gui_available=backend.gui_available))
             results[skill_id] = {"run_id": run.run_id, "verdict": run.verdict,
                                  "unresolved": len(run.plan.unresolved) if run.plan else None,
                                  "status_after": self.app.library.get(skill_id).status.value}

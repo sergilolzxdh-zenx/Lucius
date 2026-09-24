@@ -141,6 +141,22 @@ class Planner:
             plan.reason_codes.append("needs_demonstration")
             return plan
         failures = self._failures(task, retrieval, [s for s, _r in selected])
+        return self._compose(plan, task, selected, failures, preferences, gui_available)
+
+    def plan_skills(self, task: TaskSpec, skills: list[Skill], *, gui_available: bool = False) -> Plan:
+        """Plan exactly these skills, without retrieval (validation by reproduction): no other skill joins
+        the run and takes credit for its outcome. Failure guards of the skills still apply."""
+        plan = Plan(id=new_id("plan"), task=task, retrieval_id=None, strategy="pinned", created_at=now(),
+                    reason_codes=["pinned_skills"])
+        selected = [(skill, ["pinned"]) for skill in skills]
+        action_types = {a.action_type for s in skills for p in s.definition.phases for a in p.actions}
+        failures = [f for f in self.failures.relevant(task_class=task.object_class, action_types=action_types,
+                                                      skill_ids={s.id for s in skills})
+                    if f.skill_id in {s.id for s in skills} or f.trigger_action in action_types]
+        return self._compose(plan, task, selected, failures, {}, gui_available)
+
+    def _compose(self, plan: Plan, task: TaskSpec, selected: list[tuple[Skill, list[str]]],
+                 failures: list[FailureRecord], preferences: dict[str, Any], gui_available: bool) -> Plan:
         ctx = CompileContext(gui_available=gui_available)
         names_used: set[str] = set()
         current_object = task.params.get("object_name")

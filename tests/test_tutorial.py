@@ -427,3 +427,30 @@ def test_an_object_of_unknown_kind_is_not_guessed_to_be_a_cube():
     ok = compile_template(ActionTemplate(action_type="add_primitive", args={"kind": "monkey", "name": "{object_name}"}),
                           {"object_name": "Suzanne"}, CompileContext())
     assert ok[-1].args["kind"] == "monkey"
+
+
+@pytest.mark.bpy
+def test_validating_a_skill_credits_only_that_skill(app):
+    """Found in the tutorial run: validation retrieved other skills into its plan, and a generic skill collected
+    92 'uses' from other skills' validations."""
+    from lucius.blender.headless import headless_available
+    from tests.fixtures.demos import sword_blockout_demo
+    from tests.test_e2e_learning import record
+
+    if headless_available() is None:
+        pytest.skip("needs Blender")
+    session_id = record(app, sword_blockout_demo(blade_length=6.0, blade_width=0.3, variant="a", t0=1_700_000_000.0))
+    record(app, sword_blockout_demo(blade_length=4.0, blade_width=0.24, variant="b", with_mistake=False,
+                                    t0=1_700_100_000.0))
+    uses = {s: app.library.get(s).usage_count for s in ("hard_surface_blade_blockout", "hard_surface_guard_blockout")}
+    report = app.ingestion._validate(None, session_id, ["hard_surface_blade_blockout"])
+    run = report["runs"]["hard_surface_blade_blockout"]
+    plan = app.db.query_one("SELECT plan FROM runs WHERE id = ?", (run["run_id"],))["plan"]
+    assert '"hard_surface_guard_blockout"' not in plan                      # only the skill under test is planned
+    metrics = json.loads(app.db.query_one("SELECT metrics FROM runs WHERE id = ?", (run["run_id"],))["metrics"])
+    credited = {c["skill_id"] for c in metrics.get("pending_credit", [])}  # the silhouette awaits a person here
+    if run["verdict"] != "needs_human":
+        credited.add("hard_surface_blade_blockout")
+        assert app.library.get("hard_surface_blade_blockout").usage_count == uses["hard_surface_blade_blockout"] + 1
+    assert credited == {"hard_surface_blade_blockout"}
+    assert app.library.get("hard_surface_guard_blockout").usage_count == uses["hard_surface_guard_blockout"]
