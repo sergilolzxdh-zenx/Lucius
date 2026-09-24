@@ -88,12 +88,58 @@ def cmd_status(args: argparse.Namespace) -> int:
 def cmd_models(args: argparse.Namespace) -> int:
     """List the models the provider's key can use (the key is read from the environment)."""
     if args.provider == "gemini":
-        from lucius.providers.gemini_provider import list_gemini_models
+        from lucius.providers.gemini_provider import list_gemini_models, probe_gemini_models
 
-        _print(list_gemini_models())
+        models = list_gemini_models()
+        if args.check:
+            # Listed is not callable: retired models, zero-quota models and audio/image models are listed too.
+            probes = {p["id"]: p for p in probe_gemini_models([m["id"] for m in models])}
+            models = [{**m, **probes[m["id"]]} for m in models]
+            models.sort(key=lambda m: (not m["usable"], m["id"]))
+        _print(models)
         return 0
     print("listing is only implemented for gemini; set providers.anthropic_model in Settings", file=sys.stderr)
     return 1
+
+
+def cmd_config(args: argparse.Namespace) -> int:
+    """Show the config, or set ``section.field`` values (validated; environment overrides are not persisted)."""
+    import os
+
+    from pydantic import ValidationError as PydanticValidationError
+
+    from lucius.config import LuciusConfig
+
+    base = Path(args.data_dir or os.environ.get("LUCIUS_DATA_DIR", ".lucius"))
+    path = base / "config.json"
+    raw = json.loads(path.read_text()) if path.exists() else {}
+    for assignment in args.set or []:
+        key, sep, value = assignment.partition("=")
+        section, _, field = key.strip().partition(".")
+        if not sep or not field:
+            print(f"expected section.field=value, got {assignment!r}", file=sys.stderr)
+            return 2
+        model = LuciusConfig.model_fields.get(section)
+        sub_fields = getattr(model.annotation, "model_fields", {}) if model else {}
+        if field not in sub_fields:
+            print(f"unknown setting {section}.{field}", file=sys.stderr)  # a typo would otherwise be ignored
+            return 2
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            parsed = value  # bare strings need no quotes: providers.gemini_model=gemini-3.5-flash-lite
+        raw.setdefault(section, {})[field] = parsed
+    try:
+        config = LuciusConfig.model_validate({**raw, "data_dir": base})
+    except PydanticValidationError as exc:  # names the invalid field
+        print(f"invalid configuration: {exc}", file=sys.stderr)
+        return 2
+    if args.set:
+        print(f"saved {config.save()}")
+    shown = config.model_dump(mode="json", exclude={"data_dir"})
+    shown["blender"]["bridge_token"] = "set" if config.blender.bridge_token else None
+    _print(shown if not args.section else shown.get(args.section))
+    return 0
 
 
 def cmd_record(args: argparse.Namespace) -> int:
@@ -242,7 +288,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("models", help="list the models your provider key can use")
     s.add_argument("--provider", choices=["gemini"], default="gemini")
+    s.add_argument("--check", action="store_true",
+                   help="send each model one small JSON+image request and report whether Lucius can use it")
     s.set_defaults(func=cmd_models)
+
+    s = sub.add_parser("config", help="show or set configuration (e.g. --set providers.gemini_model=MODEL)")
+    s.add_argument("section", nargs="?", help="only show this section (providers, recording, ...)")
+    s.add_argument("--set", action="append", metavar="SECTION.FIELD=VALUE", help="repeatable; values are JSON or bare strings")
+    s.set_defaults(func=cmd_config)
 
     s = sub.add_parser("record", help="WATCH ME from the terminal (Ctrl+C to stop)")
     s.add_argument("--task", default=None)

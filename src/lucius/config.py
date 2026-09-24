@@ -58,6 +58,8 @@ class ProviderConfig(BaseModel):
     sentence_transformers_model: str = "all-MiniLM-L6-v2"
     hashing_dim: int = Field(default=512, ge=64, le=8192)
     max_retries: int = Field(default=2, ge=0, le=8)
+    # Client-side cap on model requests per minute (None: unlimited). Free-tier keys have per-minute quotas.
+    requests_per_minute: int | None = Field(default=None, ge=1, le=10000)
     # Upper bound on images sent to a VLM in a single request.
     max_images_per_call: int = Field(default=6, ge=1, le=20)
 

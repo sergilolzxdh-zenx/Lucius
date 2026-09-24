@@ -169,3 +169,18 @@ def test_runs_through_jobs_and_human_review(app, client):
     assert any(uses_after[k] == uses_before[k] + 1 for k in uses_before)  # deferred credit applied once
     assert client.post(f"/api/runs/{run_id}/review", json={"passed": True}).status_code == 409
     assert client.post("/api/runs", json={"task_text": "x", "backend": "gpu"}).status_code == 422
+
+
+def test_cli_config_sets_validated_values(tmp_path, capsys):
+    from lucius.cli import main
+
+    data = str(tmp_path / "cfg")
+    assert main(["--data-dir", data, "config", "--set", "providers.gemini_model=gemini-x",
+                 "--set", "providers.requests_per_minute=12", "providers"]) == 0
+    assert '"gemini_model": "gemini-x"' in capsys.readouterr().out
+    assert main(["--data-dir", data, "config", "--set", "providers.gemini_modle=typo"]) == 2
+    assert main(["--data-dir", data, "config", "--set", "providers.llm=unknown-provider"]) == 2
+    from lucius.config import load_config
+
+    cfg = load_config(data)
+    assert cfg.providers.gemini_model == "gemini-x" and cfg.providers.requests_per_minute == 12

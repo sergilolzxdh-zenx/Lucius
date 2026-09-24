@@ -43,7 +43,8 @@ def build_providers(config: ProviderConfig, db: Database | None) -> tuple[Provid
 
                     inner = GeminiProvider(config.gemini_model, thinking_level=config.gemini_thinking_level)
                 # The Anthropic SDK retries internally; the Gemini SDK does not by default.
-                bases[name] = LoggedLLM(inner, call_log, retries=config.max_retries if name == "gemini" else 1)
+                bases[name] = LoggedLLM(inner, call_log, retries=config.max_retries if name == "gemini" else 1,
+                                        requests_per_minute=config.requests_per_minute)
             except ProviderUnavailable as exc:
                 notes[name] = exc.message
                 log.warning("%s provider unavailable: %s", name, exc.message)

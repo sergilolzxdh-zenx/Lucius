@@ -78,9 +78,13 @@ class MediaAsset(BaseModel):
     duplicate_of: str | None = None
 
 
+ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"   # Blender 5 compresses .blend files with zstd by default
+GZIP_MAGIC = b"\x1f\x8b"           # older Blender versions used gzip for compressed files
+
+
 def detect_kind(filename: str, data_head: bytes) -> MediaKind:
     ext = Path(filename).suffix.lower()
-    if data_head.startswith(b"BLENDER"):
+    if data_head.startswith(b"BLENDER") or (ext == ".blend" and data_head.startswith((ZSTD_MAGIC, GZIP_MAGIC))):
         return MediaKind.BLENDER_PROJECT
     if ext in VIDEO_EXT:
         return MediaKind.VIDEO

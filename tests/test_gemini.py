@@ -15,7 +15,8 @@ from lucius.segmentation.refine import SCHEMA as SEGMENT_SCHEMA
 genai_types = pytest.importorskip("google.genai.types")
 from google.genai import errors as genai_errors  # noqa: E402
 
-from lucius.providers.gemini_provider import GeminiProvider, list_gemini_models  # noqa: E402
+from lucius.providers.base import RateLimiter  # noqa: E402
+from lucius.providers.gemini_provider import GeminiProvider, list_gemini_models, probe_gemini_models  # noqa: E402
 
 
 def _response(text: str | None, finish: str = "STOP", *, block: str | None = None, thought: str | None = None):
@@ -68,6 +69,7 @@ def test_request_shape_schema_and_parsing():
     assert config.response_json_schema == SEGMENT_SCHEMA and config.response_schema is None
     assert config.system_instruction == "label phases" and config.max_output_tokens == 6000
     assert config.thinking_config.thinking_level == genai_types.ThinkingLevel.LOW
+    assert config.automatic_function_calling.disable is True  # Lucius never passes tools
     parts = call["contents"][0].parts
     assert parts[0].text == "Segment 2 frame:" and parts[1].inline_data.mime_type == image.media_type
     assert parts[1].inline_data.data == image.data and parts[2].text == "segments..."
@@ -140,3 +142,84 @@ def test_model_listing_keeps_generation_models():
               genai_types.Model(name="models/embed-b", display_name="B", supported_actions=["embedContent"])]
     listed = list_gemini_models(SimpleNamespace(models=FakeModels(models=models)))
     assert [m["id"] for m in listed] == ["gemini-a"]
+
+
+def _quota_error(message: str, quota_ids: list[str], retry: str | None = None):
+    details = [{"@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                "violations": [{"quotaMetric": "m", "quotaId": q} for q in quota_ids]}]
+    if retry:
+        details.append({"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": retry})
+    return genai_errors.ClientError(429, {"error": {"code": 429, "message": message, "status": "RESOURCE_EXHAUSTED",
+                                                    "details": details}})
+
+
+def test_quota_errors_distinguish_zero_daily_and_per_minute_limits():
+    """Shapes taken from live free-tier responses: only a per-minute limit is worth retrying."""
+    provider, _ = _provider([
+        _quota_error("Quota exceeded for metric: free_tier_requests, limit: 0, model: gemini-pro",
+                     ["GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+                      "GenerateRequestsPerDayPerProjectPerModel-FreeTier"], "1s"),
+        _quota_error("Quota exceeded for metric: free_tier_requests, limit: 500",
+                     ["GenerateRequestsPerDayPerProjectPerModel-FreeTier"], "3600s"),
+        _quota_error("Quota exceeded for metric: free_tier_requests, limit: 15",
+                     ["GenerateRequestsPerMinutePerProjectPerModel-FreeTier"], "23.5s"),
+    ])
+    kw = {"purpose": "t", "system": "s", "prompt": "p", "schema": {"type": "object"}}
+    with pytest.raises(ProviderUnavailable, match="no quota"):
+        provider.complete_json(**kw)
+    with pytest.raises(ProviderError, match="daily quota") as daily:
+        provider.complete_json(**kw)
+    assert daily.value.details["transient"] is False
+    with pytest.raises(ProviderError, match="rate limited") as minute:
+        provider.complete_json(**kw)
+    assert minute.value.details["transient"] is True and minute.value.details["retry_after_s"] == 23.5
+
+
+def test_logged_retry_waits_as_long_as_the_server_asks(db, monkeypatch):
+    slept: list[float] = []
+    monkeypatch.setattr("lucius.providers.base.time.sleep", slept.append)
+    provider, _ = _provider([_quota_error("limit: 15", ["GenerateRequestsPerMinute-FreeTier"], "23.5s"),
+                             _quota_error("limit: 15", ["GenerateRequestsPerMinute-FreeTier"], "600s"),
+                             _response('{"ok": 1}')])
+    LoggedLLM(provider, CallLog(db), retries=2).complete_json(purpose="p", system="s", prompt="q", schema={})
+    assert slept == [23.5, 90.0]  # the server's delay, capped so a run never stalls for long
+
+
+def test_rate_limiter_spaces_requests(monkeypatch):
+    clock = [100.0]
+    slept: list[float] = []
+    monkeypatch.setattr("lucius.providers.base.time.monotonic", lambda: clock[0])
+    monkeypatch.setattr("lucius.providers.base.time.sleep", slept.append)
+    limiter = RateLimiter(per_minute=30)
+    for _ in range(3):
+        limiter.wait()
+    assert slept == [2.0, 4.0]
+    RateLimiter(None).wait()  # unlimited never sleeps
+    assert len(slept) == 2
+
+
+def test_probe_reports_which_listed_models_lucius_can_use():
+    class ProbeModels(FakeModels):
+        def generate_content(self, *, model, contents, config):
+            self.calls.append(model)
+            assert config.response_json_schema and any(p.inline_data for p in contents[0].parts)
+            outcomes = {
+                "good": _response('{"colour": "red"}'),
+                "retired": _client_error(404, "NOT_FOUND"),
+                "pro": _quota_error("limit: 0", ["GenerateRequestsPerDayPerProjectPerModel-FreeTier"]),
+                "tts": _client_error(400, "INVALID_ARGUMENT"),
+                "busy": genai_errors.ServerError(503, {"error": {"code": 503, "message": "high demand"}}),
+            }
+            outcome = outcomes[model]
+            if isinstance(outcome, Exception):
+                raise outcome
+            return outcome
+
+    fake = ProbeModels()
+    result = {r["id"]: r for r in probe_gemini_models(["good", "retired", "pro", "tts", "busy"],
+                                                      client=SimpleNamespace(models=fake))}
+    assert result["good"] == {"id": "good", "usable": True, "status": "ok"}
+    assert {k: v["status"] for k, v in result.items() if k != "good"} == {
+        "retired": "retired_or_missing", "pro": "no_quota", "tts": "unsupported_request",
+        "busy": "temporarily_unavailable"}
+    assert sorted(fake.calls) == ["busy", "good", "pro", "retired", "tts"]

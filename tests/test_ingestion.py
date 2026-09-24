@@ -116,6 +116,16 @@ def test_image_pair_and_invalid_media(app, tmp_path):
     assert failed.status == DemoStatus.FAILED and failed.status_history[-1]["error"]["stage"] == "VALIDATING"
 
 
+def test_compressed_blend_files_are_recognised():
+    from lucius.ingestion.media import MediaKind, detect_kind
+
+    assert detect_kind("scene.blend", b"BLENDER-v405") == MediaKind.BLENDER_PROJECT
+    assert detect_kind("scene.blend", b"\x28\xb5\x2f\xfd\x60\x19") == MediaKind.BLENDER_PROJECT  # zstd (Blender 5)
+    assert detect_kind("scene.blend", b"\x1f\x8b\x08\x00") == MediaKind.BLENDER_PROJECT  # gzip (older versions)
+    with pytest.raises(Exception, match="unsupported"):
+        detect_kind("archive.zst", b"\x28\xb5\x2f\xfd")  # zstd alone is not a Blender project
+
+
 @pytest.mark.bpy
 def test_blend_project_and_written_instructions(app, tmp_path):
     from lucius.blender.headless import HeadlessBlender, headless_available

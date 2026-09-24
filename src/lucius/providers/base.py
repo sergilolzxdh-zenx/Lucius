@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import io
+import threading
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -118,13 +119,36 @@ class CallLog:
         })
 
 
-class LoggedLLM:
-    """Wraps an LLM provider with call accounting and bounded retries on transient errors."""
+class RateLimiter:
+    """Spaces requests evenly so a per-minute quota is never exceeded (shared by every thread)."""
 
-    def __init__(self, inner: LLMProvider, log_: CallLog, retries: int = 1) -> None:
+    def __init__(self, per_minute: int | None) -> None:
+        self.interval = 60.0 / per_minute if per_minute else 0.0
+        self._next = 0.0
+        self._lock = threading.Lock()
+
+    def wait(self) -> None:
+        if not self.interval:
+            return
+        with self._lock:
+            current = time.monotonic()
+            slot = max(current, self._next)
+            self._next = slot + self.interval
+        if slot > current:
+            time.sleep(slot - current)
+
+
+MAX_RETRY_WAIT_S = 90.0
+
+
+class LoggedLLM:
+    """Wraps an LLM provider with call accounting, rate limiting and bounded retries on transient errors."""
+
+    def __init__(self, inner: LLMProvider, log_: CallLog, retries: int = 1, requests_per_minute: int | None = None) -> None:
         self.inner = inner
         self.log = log_
         self.retries = retries
+        self.limiter = RateLimiter(requests_per_minute)
         self.name = inner.name
         self.model = inner.model
         self.supports_images = inner.supports_images
@@ -133,6 +157,7 @@ class LoggedLLM:
                       images: Sequence[ImageInput] = (), max_tokens: int = 8000) -> ModelResult:
         attempt = 0
         while True:
+            self.limiter.wait()
             started = time.monotonic()
             try:
                 result = self.inner.complete_json(purpose=purpose, system=system, prompt=prompt, schema=schema,
@@ -143,7 +168,9 @@ class LoggedLLM:
                                 latency_s=time.monotonic() - started, error=f"{exc.code}: {exc.message}")
                 if transient and attempt < self.retries:
                     attempt += 1
-                    time.sleep(min(8.0, 2.0 ** attempt))
+                    # A rate-limit response says how long to wait; waiting less just fails again.
+                    retry_after = float(exc.details.get("retry_after_s") or 0.0)
+                    time.sleep(min(MAX_RETRY_WAIT_S, max(min(8.0, 2.0 ** attempt), retry_after)))
                     continue
                 raise
             self.log.record(provider=self.name, model=result.model, purpose=purpose, status="ok", usage=result.usage,

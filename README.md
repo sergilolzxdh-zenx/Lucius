@@ -51,9 +51,18 @@ results. Checks that need judgement are sent to you. Model-assisted segment labe
 analysis and a visual judge can use **Gemini** or **Claude**:
 
 - **Gemini:** install the `gemini` extra and set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) in the
-  environment. Run `lucius models --provider gemini` to see the models your key can use. In
-  **Settings**, set `providers.gemini_model` to one of them and `providers.llm/vlm/evaluation` to
-  `gemini`. The model is never guessed.
+  environment. Run `lucius models --provider gemini --check` to see which models your key can
+  actually call. The API also lists retired models, models with no quota on your tier, and
+  audio/image models; `--check` sends each one small JSON+image request and labels it. Then set
+  the model (the model is never guessed):
+
+  ```bash
+  lucius config --set providers.gemini_model=gemini-3.5-flash-lite \
+                --set providers.llm=gemini --set providers.vlm=gemini --set providers.evaluation=gemini
+  lucius config --set providers.requests_per_minute=10   # optional: stay under a free-tier per-minute quota
+  ```
+
+  The same settings are editable in the control center's **Settings**.
 - **Claude:** install the `anthropic` extra, set `ANTHROPIC_API_KEY`, and set the three roles to
   `anthropic`.
 
@@ -88,6 +97,7 @@ human takeover → recovery rule → the next attempt recovers without a human.
 | Datasets | Consent-based eligibility, quality validation, provenance per sample, session/skill bundles, training-file formatters |
 | Benchmarks | Baseline / retrieval-only / memory-enhanced / raw-demonstration arms, bootstrap CIs |
 | API, UI, CLI | Loopback server with Host check and token; every UI view checked in Chromium; CLI |
+| Gemini provider (live) | All four output schemas (segment labelling, video transitions, reference analysis, visual judge) accepted by the live API with `gemini-3.5-flash-lite`; quota errors classified (zero quota / daily / per-minute with the server's retry delay); model probing |
 
 ### Implemented, not verified in this environment
 
@@ -95,11 +105,9 @@ human takeover → recovery rule → the next attempt recovers without a human.
   interactive use, and viewport navigation actions. All tests used headless Blender. The recorder
   has not been run against a live Blender window.
 - **Windows and macOS window providers.** Only X11 was exercised.
-- **Gemini and Anthropic providers.** Request construction (JSON-schema output, images),
-  refusal/truncation handling, error mapping and retries are tested with fake SDK clients. Neither
-  has been called against the live API yet. In particular, whether Gemini accepts every output
-  schema Lucius sends is only known after the first live call; failures are recorded under
-  `model_calls` and shown in the UI.
+- **Anthropic provider.** Request construction (JSON-schema output, images), refusal/truncation
+  handling, error mapping and retries are tested with fake SDK clients only; it has not been called
+  against the live API.
 - **VLM media analysis** (`ingestion/vision.py`) and the **sentence-transformers** embedding
   option: the code paths exist but have not been run.
 
