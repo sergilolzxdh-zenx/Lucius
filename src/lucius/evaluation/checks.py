@@ -36,6 +36,7 @@ class ReferenceSilhouette:
     mask: np.ndarray
     media_asset_id: str | None = None
     min_iou: float = 0.75
+    target: str | None = None      # object role/name it depicts; None = the whole scene
 
 
 def _object(structure: dict[str, Any], name: str | None) -> dict[str, Any] | None:
@@ -179,23 +180,44 @@ def check_taper(check: dict, structure: dict, _refs: list) -> CheckOutcome:
                          "profile": [round(w, 3) for w in profile]})
 
 
+def _scene_silhouette(structure: dict[str, Any], view: str) -> np.ndarray | None:
+    triangles = [t for o in structure.get("objects", []) for t in (o.get("silhouettes") or {}).get(
+        STRUCTURE_VIEW.get(view, view), [])]
+    return rasterize(triangles)[0] if triangles else None
+
+
+def _matches(ref: ReferenceSilhouette, name: str | None) -> bool:
+    if ref.target is None or name is None:
+        return False
+    return ref.target.lower() == name.lower() or name.lower().startswith(ref.target.lower())
+
+
 def check_silhouette(check: dict, structure: dict, refs: list[ReferenceSilhouette]) -> CheckOutcome:
-    """Measured comparison with reference silhouettes. Without references it is not evaluable
-    here (the evaluator may then ask a vision model, recorded as subjective)."""
-    obj = _object(structure, check.get("object"))
-    if obj is None:
+    """Measured comparison with reference silhouettes.
+
+    Object-scoped checks use references that depict that object; ``scope: scene`` checks compare the
+    whole scene with untargeted references. ``stage: intermediate`` (a check during blockout, before the
+    final shape exists) uses a relaxed threshold. Without a matching reference the check is not
+    evaluable here -- the evaluator may ask a vision model, recorded as subjective.
+    """
+    scene = check.get("scope") == "scene"
+    obj = None if scene else _object(structure, check.get("object"))
+    if not scene and obj is None:
         return CheckOutcome(False, 0.0, "object_missing", {})
     views = check.get("views") or []
-    comparable = [r for r in refs if r.view in views or (r.view in ("side", "right", "left")
-                                                          and set(views) & {"side", "right", "left"})]
+    side = {"side", "right", "left"}
+    comparable = [r for r in refs if (r.view in views or (r.view in side and set(views) & side))
+                  and ((scene and r.target is None) or (not scene and _matches(r, check.get("object"))))]
     if not comparable:
-        return CheckOutcome(None, None, "no_reference_silhouette", {"views": views})
+        return CheckOutcome(None, None, "no_reference_silhouette", {"views": views, "scope": "scene" if scene else
+                                                                    check.get("object")})
+    relax = 0.8 if check.get("stage") == "intermediate" else 1.0
     scores = {}
     for ref in comparable:
-        mask = _silhouette_for(obj, ref.view)
+        mask = _scene_silhouette(structure, ref.view) if scene else _silhouette_for(obj, ref.view)
         if mask is None:
             return CheckOutcome(None, None, "silhouette_unavailable", {"view": ref.view})
-        scores[ref.view] = (iou(mask, ref.mask), ref.min_iou)
+        scores[ref.view] = (iou(mask, ref.mask), round(ref.min_iou * relax, 4))
     worst = min(s for s, _m in scores.values())
     ok = all(s >= m for s, m in scores.values())
     return CheckOutcome(ok, round(worst, 4), "silhouette_matches_reference" if ok else "silhouette_mismatch",

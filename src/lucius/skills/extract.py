@@ -108,14 +108,18 @@ def _selection(state: dict[str, Any] | None) -> Selection | None:
     axis = min(spans, key=spans.get)
     if spans[axis] >= 0.999:
         return Selection(kind="all")
-    return Selection(kind="region", axis=axis, min=bbox[axis][0], max=bbox[axis][1])
+    lo, hi = bbox[axis]
+    if hi - lo < 0.02:  # a selected edge loop has no extent along its axis: keep a small margin
+        lo, hi = max(0.0, lo - 0.02), min(1.0, hi + 0.02)
+    return Selection(kind="region", axis=axis, min=round(lo, 4), max=round(hi, 4))
 
 
 def _region_name(sel: Selection | None) -> str:
+    """Band of the normalised bounding box a region selection sits in (bottom/lower/upper/top)."""
     if sel is None or sel.kind != "region" or sel.min is None or sel.max is None:
         return ""
     centre = (sel.min + sel.max) / 2
-    return "top" if centre >= 0.66 else "bottom" if centre <= 0.34 else "middle"
+    return "bottom" if centre < 0.25 else "lower" if centre < 0.5 else "upper" if centre < 0.75 else "top"
 
 
 def _vec_axis(value: Any, neutral: float) -> str | None:
@@ -126,15 +130,23 @@ def _vec_axis(value: Any, neutral: float) -> str | None:
     return None
 
 
+def _vector(step: TrajectoryStep) -> Any:
+    """The step's 3-vector amount: operator ``value``, or bridge-action ``factor``/``offset``."""
+    for key in ("value", "factor", "offset"):
+        if step.params.get(key) is not None:
+            return step.params[key]
+    return None
+
+
 def _axis_of(step: TrajectoryStep) -> str | None:
     axis = step.params.get("axis")
     if isinstance(axis, str) and len(axis) == 1:
         return axis
-    return _vec_axis(step.params.get("value"), 1.0 if step.action_type == "scale" else 0.0)
+    return _vec_axis(_vector(step), 1.0 if step.action_type == "scale" else 0.0)
 
 
 def _axis_value(step: TrajectoryStep, axis: str) -> float | None:
-    value = step.params.get("value")
+    value = _vector(step)
     if isinstance(value, list) and len(value) == 3:
         return float(value["xyz".index(axis)])
     if isinstance(value, (int, float)):
@@ -444,10 +456,17 @@ class SkillExtractor:
             if not ortho:
                 continue
             cp_id = f"{role}_{phase_name}_silhouette"
+            final = phase_name == last_shaping
+            # Only the last shaping phase must match the final target; earlier inspections checked an
+            # unfinished form, so they are advisory with a relaxed threshold.
+            check = {"type": "silhouette", "object": obj, "views": ortho}
+            if not final:
+                check["stage"] = "intermediate"
             checkpoints.append(Checkpoint(
-                id=cp_id, description=f"{role} silhouette reads correctly from {', '.join(ortho)} views",
-                level=3, method="visual_measured", check={"type": "silhouette", "object": obj, "views": ortho},
-                after_phase=phase_name, derived_from=[s.id for s in b.unit.segments if s.label in ("inspection", "verification")]))
+                id=cp_id, description=f"{role} silhouette reads correctly from {', '.join(ortho)} views"
+                                      + ("" if final else " (intermediate form)"),
+                level=3, method="visual_measured", check=check, required=final, after_phase=phase_name,
+                derived_from=[s.id for s in b.unit.segments if s.label in ("inspection", "verification")]))
             for p in phases:
                 if p.name == phase_name:
                     p.checkpoints.append(cp_id)

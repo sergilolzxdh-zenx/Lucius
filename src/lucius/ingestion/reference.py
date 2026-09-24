@@ -77,7 +77,8 @@ class ReferenceStore:
             "value": dumps(value), "source": source, "confidence": confidence, "created_at": c.created_at})
         return c
 
-    def measure(self, media_asset_id: str, image: Image.Image, view: str = "front") -> list[VisualConstraint]:
+    def measure(self, media_asset_id: str, image: Image.Image, view: str = "front",
+                target: str | None = None) -> list[VisualConstraint]:
         """Deterministic measurements of a reference image (replaces earlier measurements of it)."""
         self.db.execute("DELETE FROM reference_constraints WHERE media_asset_id = ? AND source = 'measured'",
                         (media_asset_id,))
@@ -89,7 +90,7 @@ class ReferenceStore:
         base = 0.85 if reliable else 0.3
         out = [
             self.add(media_asset_id, "silhouette", view, {"mask_file": mask_path.name, "canvas": CANVAS,
-                                                          "coverage": round(coverage, 4)},
+                                                          "coverage": round(coverage, 4), "target": target},
                      source="measured", confidence=base),
             self.add(media_asset_id, "aspect_ratio", view, {"height_over_width": round(analysis["aspect_ratio"] or 0, 4)},
                      source="measured", confidence=base),
@@ -127,7 +128,7 @@ class ReferenceStore:
             if path.exists():
                 mask = np.asarray(Image.open(path)) > 127
                 out.append(ReferenceSilhouette(view=c.target, mask=fit_mask(mask), media_asset_id=c.media_asset_id,
-                                               min_iou=min_iou))
+                                               min_iou=min_iou, target=c.value.get("target")))
         return out
 
     def parameter_hints(self, media_asset_ids: list[str]) -> dict[str, float]:

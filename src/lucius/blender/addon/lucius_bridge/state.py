@@ -88,11 +88,26 @@ def _workspace(context):
     return workspace
 
 
+OBJECT_MODE_TO_CONTEXT = {"SCULPT": "SCULPT", "VERTEX_PAINT": "PAINT_VERTEX", "WEIGHT_PAINT": "PAINT_WEIGHT",
+                          "TEXTURE_PAINT": "PAINT_TEXTURE", "POSE": "POSE", "OBJECT": "OBJECT"}
+
+
+def _mode(context):
+    """Interaction mode. From a timer/socket thread ``context.mode`` can lag behind the active object,
+    so the active object's own mode is authoritative when it is not in object mode."""
+    obj = context.view_layer.objects.active
+    if obj is not None and obj.mode != "OBJECT":
+        if obj.mode == "EDIT":
+            return f"EDIT_{obj.type}"
+        return OBJECT_MODE_TO_CONTEXT.get(obj.mode, obj.mode)
+    return context.mode
+
+
 def _active_tool(context):
     workspace = _workspace(context)
     if workspace is None:
         return None
-    tool = workspace.tools.from_space_view3d_mode(context.mode, create=False)
+    tool = workspace.tools.from_space_view3d_mode(_mode(context), create=False)
     return None if tool is None else tool.idname
 
 
@@ -153,7 +168,7 @@ def capture_state(include_objects=True):
     c.field("file", lambda: os.path.basename(bpy.data.filepath) or None)
     c.field("file_dirty", lambda: bool(bpy.data.is_dirty))
     c.field("scene", lambda: context.scene.name)
-    c.field("mode", lambda: context.mode)
+    c.field("mode", lambda: _mode(context))
     c.field("workspace", lambda: _workspace(context).name if _workspace(context) else None)
     c.field("active_tool", lambda: _active_tool(context))
     c.field("camera", lambda: context.scene.camera.name if context.scene.camera else None)

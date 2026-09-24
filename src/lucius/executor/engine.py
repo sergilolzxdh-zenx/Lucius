@@ -367,7 +367,8 @@ class ExecutionEngine:
                               context={"attempt": attempt, "recovery_plans": [r.id for r in plans]})
             backend.restore(snapshot)
             self._event(ctx, EventKind.MARKER, Actor.AGENT, {"label": "recover_restore", "snapshot": snapshot})
-            actions = [a for r in plans for a in r.actions if a.name != "restore_snapshot"] or step.actions
+            # Redo the step from its snapshot, then apply the learned corrective actions (if any).
+            actions = step.actions + [a for r in plans for a in r.actions if a.name != "restore_snapshot"]
             ctx.sm.transition(ExecState.EXECUTE, "recovery_actions", evidence=[a.name for a in actions][:10])
             # Guarded actions stay held in the step's original deferred list; never re-defer here.
             self._execute_actions(ctx, backend, step, actions, report, allow_defer=False)

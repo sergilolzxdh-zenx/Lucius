@@ -193,9 +193,11 @@ class PracticeEngine:
             report.message = f"stage '{stage_def.name}' mastered" + (f"; next: {nxt.name}" if nxt else "")
         return report
 
-    def _reference(self, generator: str, values: dict[str, Any]) -> str:
+    def _reference(self, generator: str, values: dict[str, Any], target: str | None = None) -> str:
         """A synthetic reference image for a practice task (stored as media with its provenance)."""
-        image = REFERENCE_GENERATORS[generator](values)
+        make, default_target = REFERENCE_GENERATORS[generator]
+        image = make(values)
+        target = target or default_target
         tmp = Path(self.app.config.media_dir) / "tmp"
         tmp.mkdir(parents=True, exist_ok=True)
         path = tmp / f"{generator}_{new_id('media')}.png"
@@ -204,7 +206,7 @@ class PracticeEngine:
                             training_allowed=False, export_allowed=True, notes=f"synthetic {generator} reference")
         asset = self.app.ingestion.media.ingest(path, role=MediaRole.REFERENCE, policy=policy)
         path.unlink(missing_ok=True)
-        self.app.ingestion.media.update_analysis(asset.id, {"view": "front", "synthetic": values})
+        self.app.ingestion.media.update_analysis(asset.id, {"view": "front", "synthetic": values, "target": target})
         with Image.open(self.app.ingestion.media.path(asset)) as img:
-            self.app.ingestion.references.measure(asset.id, img.convert("RGB"), "front")
+            self.app.ingestion.references.measure(asset.id, img.convert("RGB"), "front", target=target)
         return asset.id

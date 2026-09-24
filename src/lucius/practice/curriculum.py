@@ -103,21 +103,33 @@ class Curriculum(BaseModel):
 # -- synthetic reference generators ---------------------------------------------------------------
 
 def blade_reference(values: dict[str, Any], size: int = 512) -> Image.Image:
-    """Front-view silhouette of a blade: full width up to 2/3 of the length, then tapering to 20%."""
+    """Front-view silhouette of a blade: full width up to ``tip_start`` of the length (default 2/3),
+    then tapering linearly to ``tip_width`` (default 20%) of the width."""
     length, width = float(values["length"]), float(values["width"])
     scale = (size * 0.9) / max(length, width)
     w, h = width * scale, length * scale
     cx, bottom = size / 2, size * 0.95
     top = bottom - h
-    shoulder = bottom - h * (2 / 3)
-    tip = w * 0.2
+    shoulder = bottom - h * float(values.get("tip_start", 2 / 3))
+    tip = w * float(values.get("tip_width", 0.2))
     image = Image.new("RGB", (size, size), (235, 235, 235))
     ImageDraw.Draw(image).polygon([(cx - w / 2, bottom), (cx + w / 2, bottom), (cx + w / 2, shoulder),
                                    (cx + tip / 2, top), (cx - tip / 2, top), (cx - w / 2, shoulder)], fill=(40, 40, 40))
     return image
 
 
-REFERENCE_GENERATORS = {"blade": blade_reference}
+def box_reference(values: dict[str, Any], size: int = 512) -> Image.Image:
+    """Front-view silhouette of a box ``width`` x ``height``."""
+    width, height = float(values["width"]), float(values["height"])
+    scale = (size * 0.9) / max(width, height)
+    w, h = width * scale, height * scale
+    image = Image.new("RGB", (size, size), (235, 235, 235))
+    ImageDraw.Draw(image).rectangle([(size - w) / 2, (size - h) / 2, (size + w) / 2, (size + h) / 2], fill=(40, 40, 40))
+    return image
+
+
+# generator key -> (image function, object role the reference depicts)
+REFERENCE_GENERATORS = {"blade": (blade_reference, "blade"), "box": (box_reference, None)}
 
 DIMENSION_CHECK = {"description": "{name} has dimensions {x}x{y}x{z}",
                    "check": {"type": "dimensions_match", "object": "{name}", "vector": ["{x}", "{y}", "{z}"],

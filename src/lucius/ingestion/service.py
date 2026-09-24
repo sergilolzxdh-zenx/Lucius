@@ -71,6 +71,7 @@ class MediaInput(BaseModel):
     filename: str | None = None
     role: MediaRole = MediaRole.DEMONSTRATION
     view: str = "front"                   # for reference images
+    target: str | None = None             # object the reference depicts (None: the whole result)
     kind: MediaKind | None = None
 
 
@@ -229,7 +230,7 @@ class IngestionService:
                                                         demo.policy.reference_only})
                 asset = self.media.ingest(Path(item.path), filename=item.filename, role=item.role, kind=item.kind,
                                           demonstration_id=demo.id, policy=policy)
-                self.media.update_analysis(asset.id, {"view": item.view})
+                self.media.update_analysis(asset.id, {"view": item.view, "target": item.target})
                 assets.append(self.media.get(asset.id))
             except MediaError as exc:
                 errors.append({"file": item.filename or Path(item.path).name, **exc.to_dict()})
@@ -336,7 +337,7 @@ class IngestionService:
                       and a.kind in (MediaKind.IMAGE, MediaKind.SCREENSHOT)]:
             image = Image.open(self.media.path(asset)).convert("RGB")
             view = asset.analysis.get("view", "front")
-            constraints = self.references.measure(asset.id, image, view)
+            constraints = self.references.measure(asset.id, image, view, target=asset.analysis.get("target"))
             description = self.vision.describe_reference(image)
             if description:
                 self.references.add(asset.id, "object_class", "object", {"object_class": description["object_class"],

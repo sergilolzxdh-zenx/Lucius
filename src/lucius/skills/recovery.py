@@ -51,11 +51,16 @@ def learn_from_takeovers(session: Session, steps: list[TrajectoryStep], takeover
         definition = skill.definition.model_copy(deep=True)
         builder = _CandidateBuilder(session, Unit(), steps, definition.object_role, context.get("params", {}).get(
             "object_name"), object_class, categories)
-        templates = [t for t in (builder.template(s) for s in human_steps) if t is not None]
-        for t in templates:
-            # A correction applies to *this* state, so it keeps the concrete values the human used.
-            t.args = {k: (builder.params[v.strip("{}")].default if isinstance(v, str) and v.startswith("{")
-                          and v.strip("{}") in builder.params else v) for k, v in t.args.items()}
+        templates = []
+        for human_step in human_steps:
+            template = builder.template(human_step)
+            if template is None:
+                continue
+            # A correction applies to *this* state, so it keeps the concrete values the human used
+            # (substituted per step, before a later step can reuse the same parameter name).
+            template.args = {k: (builder.params[v.strip("{}")].default if isinstance(v, str) and v.startswith("{")
+                                 and v.strip("{}") in builder.params else v) for k, v in template.args.items()}
+            templates.append(template)
         failed = context.get("failed_checkpoints") or []
         recovery_id = f"rc_human_{'_'.join(sorted(failed)) or context.get('phase', 'step')}"
         existing = next((r for r in definition.recovery_actions if r.id == recovery_id), None)
