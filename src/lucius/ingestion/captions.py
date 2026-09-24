@@ -224,14 +224,15 @@ class CaptionTrack:
 PRIMITIVES = {"cube": "cube", "cubo": "cube", "cylinder": "cylinder", "cilindro": "cylinder", "plane": "plane",
               "plano": "plane", "sphere": "uv_sphere", "esfera": "uv_sphere", "cone": "cone", "cono": "cone",
               "torus": "torus", "toroide": "torus", "dona": "torus", "icosphere": "ico_sphere",
-              "icoesfera": "ico_sphere", "circle": "circle", "circulo": "circle"}
+              "icoesfera": "ico_sphere", "circle": "circle", "circulo": "circle", "monkey": "monkey", "mono": "monkey",
+              "suzanne": "monkey"}
 
 # (pattern on accent-free lowercase text, action). Order matters: the first match in a phrase wins
 # for overlapping spans, so specific patterns come before general ones.
 ACTION_LEXICON: list[tuple[str, str]] = [
     (r"\b(?:add|adding|insert|anad\w*|agreg\w*|insert\w*|cre(?:a|ar|amos))\s+(?:a |an |un |una |el |la )?"
      r"(?:new |nuevo |nueva )?(cube|cylinder|plane|sphere|cone|torus|icosphere|circle|cubo|cilindro|plano|esfera|"
-     r"cono|toroide|dona|icoesfera|circulo)\b", "add_primitive"),
+     r"cono|toroide|dona|icoesfera|circulo|monkey|mono|suzanne)\b", "add_primitive"),
     (r"\bloop ?cut|\bcortes? (?:de|en) (?:bucle|loop)|\bcorte en bucle", "loop_cut"),
     (r"\bextru\w*", "extrude"),
     (r"\bbevel\w*|\bbisel\w*|\bchaflan\w*", "bevel"),

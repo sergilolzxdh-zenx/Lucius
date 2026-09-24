@@ -412,3 +412,18 @@ def test_validation_cannot_pass_a_skill_whose_values_nobody_showed(app, tmp_path
     for skill_id, run in runs.items():
         assert run["unresolved"] and run["verdict"] != "success"
         assert app.library.get(skill_id).status.value in ("candidate_pattern", "candidate_skill")
+
+
+def test_an_object_of_unknown_kind_is_not_guessed_to_be_a_cube():
+    """Found live: 'add an Area light' (reported without a kind) became a skill that adds a cube, and its only
+    check ('Area exists') passed -- a validated skill that does something else entirely."""
+    from lucius.planner.compile import CompileContext, Uncompilable, compile_template
+    from lucius.skills.schema import ActionTemplate
+
+    for kind in (None, "area", "point"):
+        template = ActionTemplate(action_type="add_primitive", args={"kind": kind, "name": "{object_name}"})
+        with pytest.raises(Uncompilable, match="unknown or not a mesh primitive"):
+            compile_template(template, {"object_name": "Area"}, CompileContext())
+    ok = compile_template(ActionTemplate(action_type="add_primitive", args={"kind": "monkey", "name": "{object_name}"}),
+                          {"object_name": "Suzanne"}, CompileContext())
+    assert ok[-1].args["kind"] == "monkey"

@@ -34,7 +34,8 @@ WATCH_SYSTEM = (
     "operation only if it is performed in the clip, not merely explained; evidence says how you know it. The "
     "narration (automatic captions, possibly in another language, with recognition errors) tells you what "
     "the narrator says at each time. Parameters: axis (x, y, z) if constrained, value if a number is typed or "
-    "stated, kind for added primitives (cube, cylinder, plane, circle, uv_sphere, ico_sphere, cone, torus), "
+    "stated, kind for added mesh primitives (cube, cylinder, plane, circle, uv_sphere, ico_sphere, cone, torus, "
+    "monkey); lights, cameras, curves and text are not add_primitive: use unknown_action for them, "
     "modifier_type for modifiers (e.g. MIRROR, SUBSURF, SOLIDIFY, ARRAY, BEVEL, BOOLEAN). Leave a parameter null "
     "when it is not visible or stated. confidence is 0..1."
 )

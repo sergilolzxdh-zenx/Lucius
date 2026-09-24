@@ -62,6 +62,9 @@ for _name, _family, _mut, _lvl in [
 ]:
     register_action_type(_name, _family, _mut, _lvl)
 
+# Mesh primitives the Blender bridge can add (``add_primitive`` kinds).
+PRIMITIVE_KINDS = ("cube", "plane", "cylinder", "cone", "uv_sphere", "ico_sphere", "torus", "circle", "monkey")
+
 # Modifier types whose addition is setup (symmetry) rather than detail.
 MODIFIER_DETAIL = {"MIRROR": 0, "SOLIDIFY": 1, "ARRAY": 1, "SIMPLE_DEFORM": 0, "BEVEL": 2, "SUBSURF": 2,
                    "WEIGHTED_NORMAL": 2, "TRIANGULATE": 2, "DECIMATE": 2, "BOOLEAN": 1}
@@ -114,6 +117,7 @@ OPERATOR_MAP: dict[str, OperatorMapper] = {
     "MESH_OT_primitive_ico_sphere_add": _primitive("ico_sphere"),
     "MESH_OT_primitive_torus_add": _primitive("torus"),
     "MESH_OT_primitive_circle_add": _primitive("circle"),
+    "MESH_OT_primitive_monkey_add": _primitive("monkey"),
     "MESH_OT_extrude_region_move": lambda op: ("extrude", {"offset": _macro_props(op, "TRANSFORM_OT_translate").get("value")}),
     "MESH_OT_extrude_context_move": lambda op: ("extrude", {"offset": _macro_props(op, "TRANSFORM_OT_translate").get("value")}),
     "MESH_OT_extrude_region_shrink_fatten": lambda op: ("extrude", {"shrink_fatten": _macro_props(op, "TRANSFORM_OT_shrink_fatten").get("value")}),

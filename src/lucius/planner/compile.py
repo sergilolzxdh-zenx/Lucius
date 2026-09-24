@@ -15,6 +15,7 @@ from lucius.evaluation.evaluator import resolve
 from lucius.ids import new_id
 from lucius.planner.model import PlanAction
 from lucius.skills.schema import ActionTemplate, Selection
+from lucius.trajectory import vocabulary as vocab
 
 AXIS_VECTOR = {"x": 0, "y": 1, "z": 2}
 
@@ -97,8 +98,11 @@ def compile_template(t: ActionTemplate, params: dict[str, Any], ctx: CompileCont
         return [_action("reset_scene", at, {"keep_camera_light": bool(args.get("keep_camera_light", True))},
                         "clear the scene", source=source)]
     if at == "add_primitive":
+        kind = args.get("kind")
+        if kind not in vocab.PRIMITIVE_KINDS:
+            raise Uncompilable(f"primitive kind {kind!r} is unknown or not a mesh primitive")
         mode("OBJECT")
-        prim = {"kind": args.get("kind", "cube"), "name": args.get("name") or obj}
+        prim = {"kind": kind, "name": args.get("name") or obj}
         if isinstance(args.get("size"), (int, float)):
             prim["size"] = float(args["size"])
         ctx.object_name = prim["name"]

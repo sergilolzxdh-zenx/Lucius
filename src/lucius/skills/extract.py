@@ -194,7 +194,9 @@ class _CandidateBuilder:
         mode = (step.mode_label or "").split("_")[0] or None
         role = self.role or "object"
         if at == "add_primitive":
-            return ActionTemplate(action_type=at, args={"kind": step.params.get("kind", "cube"), "name": "{object_name}"},
+            # An unknown kind stays unknown (None): a video often shows an object appear without saying what it
+            # is, and guessing "cube" turned "add an area light" into a validated "add a cube".
+            return ActionTemplate(action_type=at, args={"kind": step.params.get("kind"), "name": "{object_name}"},
                                   requires_mode="OBJECT", **base)
         if at == "delete" and (step.state_before or {}).get("active_object", "").lower() in DEFAULT_OBJECT_NAMES:
             return ActionTemplate(action_type="reset_scene", args={"keep_camera_light": True}, object_ref=None,

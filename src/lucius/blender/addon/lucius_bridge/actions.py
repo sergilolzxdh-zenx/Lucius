@@ -29,6 +29,8 @@ PRIMITIVES = {
         segments=max(3, p["vertices"]), radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
     "ico_sphere": lambda p: bpy.ops.mesh.primitive_ico_sphere_add(radius=p["size"] / 2, location=p["location"]),
     "torus": lambda p: bpy.ops.mesh.primitive_torus_add(location=p["location"], rotation=p["rotation"]),
+    "monkey": lambda p: bpy.ops.mesh.primitive_monkey_add(
+        size=p["size"], location=p["location"], rotation=p["rotation"]),
     # A ring of vertices without a face (tutorials often start pipes and bottles from one).
     "circle": lambda p: bpy.ops.mesh.primitive_circle_add(
         vertices=p["vertices"], radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
