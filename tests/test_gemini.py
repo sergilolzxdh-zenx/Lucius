@@ -184,6 +184,13 @@ def test_logged_retry_waits_as_long_as_the_server_asks(db, monkeypatch):
     LoggedLLM(provider, CallLog(db), retries=2).complete_json(purpose="p", system="s", prompt="q", schema={})
     assert slept == [23.5, 90.0]  # the server's delay, capped so a run never stalls for long
 
+    slept.clear()
+    bare = genai_errors.ClientError(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED",
+                                                    "message": "Resource has been exhausted (e.g. check quota)."}})
+    provider, _ = _provider([bare, bare, _response('{"ok": 1}')])
+    LoggedLLM(provider, CallLog(db), retries=2).complete_json(purpose="p", system="s", prompt="q", schema={})
+    assert slept == [15.0, 30.0]  # no delay given: long enough for a per-minute window to pass
+
 
 def test_rate_limiter_spaces_requests(monkeypatch):
     clock = [100.0]

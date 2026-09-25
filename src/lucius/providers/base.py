@@ -151,6 +151,7 @@ class RateLimiter:
 
 
 MAX_RETRY_WAIT_S = 90.0
+RATE_LIMIT_BACKOFF_S = 15.0
 
 
 class LoggedLLM:
@@ -183,8 +184,11 @@ class LoggedLLM:
                                 latency_s=time.monotonic() - started, error=f"{exc.code}: {exc.message}")
                 if transient and attempt < self.retries:
                     attempt += 1
-                    # A rate-limit response says how long to wait; waiting less just fails again.
+                    # A rate-limit response says how long to wait; waiting less just fails again. When it does not
+                    # say, a per-minute window needs far more than the 2-4 s backoff (seen live: three 429s in a row).
                     retry_after = float(exc.details.get("retry_after_s") or 0.0)
+                    if not retry_after and exc.details.get("rate_limited"):
+                        retry_after = RATE_LIMIT_BACKOFF_S * attempt
                     time.sleep(min(MAX_RETRY_WAIT_S, max(min(8.0, 2.0 ** attempt), retry_after)))
                     continue
                 raise

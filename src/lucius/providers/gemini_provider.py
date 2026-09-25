@@ -160,7 +160,7 @@ def _quota_error(exc: Any, model: str, purpose: str) -> ProviderError:
         return ProviderError(f"daily quota for {model!r} is exhausted", purpose=purpose, transient=False,
                              quota=quota_ids)
     return ProviderError(f"rate limited: {message.splitlines()[0][:200]}", purpose=purpose, transient=True,
-                         retry_after_s=retry_after, quota=quota_ids)
+                         retry_after_s=retry_after, rate_limited=True, quota=quota_ids)
 
 
 def _client(client: Any) -> Any:
