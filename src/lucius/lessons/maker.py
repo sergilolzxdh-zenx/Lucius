@@ -39,11 +39,14 @@ LEARNED_STATUSES = ("validated", "high_confidence")
 MAKE_SYSTEM = (
     "You plan how Lucius builds what is asked in Blender, as a recipe of the actions listed -- the techniques it "
     "has learned from tutorials, plus basic object handling. The learned recipes show how the tutorials used "
-    "those techniques and at what sizes: reuse their approach and values where they fit. Build at real-world "
-    "scale, resting on the ground (z = 0), as separate named parts where the thing has parts, and give it "
-    "materials only if set_material is available. If a reference image is given, match its shape, proportions "
-    "and colours. If the task needs a technique that is not available, get as close as you can with what is, "
-    "and name what is missing in missing_techniques."
+    "those techniques and at what sizes: reuse their approach and values where they fit. Shape parts the way the "
+    "tutorials do -- extrude, inset, scale and rotate selections, loop cuts, bevels, subdivision and smooth "
+    "shading -- rather than only stacking primitives (e.g. a blade tip is the blade's end faces scaled to a point, "
+    "not a separate cone; hard edges get a small bevel). Build at real-world scale, resting on the ground (z = 0), "
+    "as separate named parts where the thing has parts, touching where they join, and give it materials only if "
+    "set_material is available. If a reference image is given, match its shape, proportions and colours. If the "
+    "task needs a technique that is not available, get as close as you can with what is, and name what is "
+    "missing in missing_techniques."
 )
 
 CRITIQUE_SYSTEM = (
@@ -154,8 +157,12 @@ class Maker:
                      for phase in d.phases for a in phase.actions if a.action_type in RECIPE_ACTIONS]
             score = next((e.summary.get("visual_score") for e in reversed(self.app.library.examples(skill.id))
                           if e.role == "validation"), None)
-            out.recipes.append({"skill_id": skill.id, "title": d.name, "status": skill.status.value, "score": score,
-                                "recipe": Recipe(title=d.name, summary=d.purpose, steps=steps)})
+            item = {"skill_id": skill.id, "title": d.name, "status": skill.status.value, "score": score,
+                    "kind": "lesson" if "tutorial_recipe" in d.categories else "made",
+                    "recipe": Recipe(title=d.name, summary=d.purpose, steps=steps)}
+            if item["kind"] == "made":
+                item.update(self._feedback(d.notes))
+            out.recipes.append(item)
             if skill.status.value not in LEARNED_STATUSES or "tutorial_recipe" not in d.categories:
                 continue  # only lessons Lucius passed teach it a technique
             for step in steps:
@@ -167,22 +174,53 @@ class Maker:
                     out.modifiers.add(str(step.args["type"]).upper())
         return out
 
+    def _feedback(self, notes: list[str]) -> dict[str, Any]:
+        """What was said about a made thing: the model's critique of its best attempt and a person's rating."""
+        project_id = next((n.split(" ", 1)[1] for n in notes if n.startswith("project ")), None)
+        if project_id is None:
+            return {}
+        try:
+            data = self.projects.get(project_id).data
+        except Exception:
+            return {}
+        attempts = [a for a in data.get("attempts", []) if a.get("score") is not None]
+        best = max(attempts, key=lambda a: a["score"], default=None)
+        problems = [f"{d.get('object')}: {d.get('problem')}" for d in ((best or {}).get("critique") or {}).get(
+            "differences", [])][:5]
+        return {"critique": problems, "rating": data.get("rating")}
+
     def _examples(self, techniques: Techniques, task: str, limit_chars: int = 30000) -> str:
+        """Tutorial recipes as worked examples of the learned techniques, and Lucius' own earlier attempts at
+        similar tasks with what was judged wrong with them -- to improve on, not to copy."""
         words = set(re.findall(r"[a-z]{3,}", task.lower()))
 
-        def relevance(item: dict[str, Any]) -> tuple[int, int]:
+        def overlap(item: dict[str, Any]) -> int:
             text = f"{item['title']} {item['recipe'].summary}".lower()
-            return (-len(words & set(re.findall(r"[a-z]{3,}", text))),
-                    0 if item["status"] in LEARNED_STATUSES else 1)
+            return len(words & set(re.findall(r"[a-z]{3,}", text)))
 
-        blocks, used = [], 0
-        for item in sorted(techniques.recipes, key=relevance):
+        lessons = sorted((r for r in techniques.recipes if r["kind"] == "lesson"),
+                         key=lambda r: (r["status"] not in LEARNED_STATUSES, -overlap(r)))
+        own = sorted((r for r in techniques.recipes if r["kind"] == "made" and overlap(r)), key=lambda r: -overlap(r))
+        blocks, used = ["# Recipes learned from tutorials (how the tutor built things; reuse the techniques)"], 0
+        for item in lessons:
             block = f"## {item['title']} ({item['status']}, judged {item['score']}/10)\n{item['recipe'].compact(80)}"
-            if used + len(block) > limit_chars:
-                continue
-            blocks.append(block)
-            used += len(block)
-        return "\n\n".join(blocks) or "(no learned recipes yet)"
+            if used + len(block) <= limit_chars:
+                blocks.append(block)
+                used += len(block)
+        if own:
+            blocks.append("# Your earlier attempts at similar tasks: do better than these. Keep what was right, fix "
+                          "what was criticised, and use the learned techniques where these only stacked primitives")
+            for item in own[:2]:
+                critique = "; ".join(item.get("critique") or []) or "no critique recorded"
+                rating = item.get("rating")
+                block = (f"## {item['title']} (judged {item['score']}/10"
+                         + (f", person rated it {'good' if rating.get('good') else 'bad'}: {rating.get('note', '')}"
+                            if rating else ", not rated by a person") + f")\nCriticised: {critique}\n"
+                         + item["recipe"].compact(60))
+                if used + len(block) <= limit_chars:
+                    blocks.append(block)
+                    used += len(block)
+        return "\n\n".join(blocks) if len(blocks) > 1 else "(no learned recipes yet)"
 
     # -- model calls ---------------------------------------------------------------------------------------
     def _call(self, purpose: str, *, system: str, prompt: str, schema: dict[str, Any],

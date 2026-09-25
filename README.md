@@ -233,6 +233,32 @@ bevel, array, boolean, displace…), shade smooth, Principled BSDF materials, li
 colour and particle scattering (sprinkles). There is no sculpting, curves, texture images or node
 editing yet: recipes approximate them and say so.
 
+**First lesson (2026-09-25, the Spanish beginner course, free-tier Gemini).** Every chapter's
+notes came from the models still answering that day (mostly `gemini-3.5-flash-lite`: 3.8-flash's free
+daily quota is small and the other flash models were overloaded), and the free daily quotas of all
+of them ran out after three chapters:
+
+| Chapter | Result | Best score |
+|---|---|---|
+| Interface (ends with the mug's base) | learned | 10/10 |
+| Mug and plate | learned: hollow mug with rim and handle, dished plate | 7/10 |
+| Donut and croissant | partial: lumpy donut and a segmented croissant, badly placed | 4/10 |
+| Particles, materials, lights, camera, render | not yet (quota) | – |
+
+What it took to get there, and what it says about the approach:
+
+* Recipes written by a small model fail on details (a typo in an argument name, a selection box
+  that misses the geometry). Corrections that see the error, the object's local bounds and what the
+  previous steps selected fix most of them; a step that still fails is skipped and recorded.
+* Practice helps when it edits a recipe (change, insert or delete steps by index) and hurts when the
+  model rewrites it: rewrites of the 71-step mug recipe came back with 20 steps and scored lower.
+  Relearning continues from the best recipe so far, so learning accumulates across runs.
+* The runs found real bugs: extrude removed a lone face's original (a filled circle became a tube,
+  not a cup), previews were framed before loaded objects had their positions, and failed practice
+  runs counted against the skill they were practising.
+* Judging is noisy: the same mug recipe was scored 3, 4 and 7 by different models. The best score is
+  kept, which favours lucky judgements; your rating in **Projects** is the correction.
+
 ## Make something new, or from a reference image
 
 ```bash
@@ -251,6 +277,20 @@ lifts the restriction; the project records it). It builds, renders, has the mode
 against your words and reference image, revises (three tries by default) and keeps the best try in
 a project folder like a lesson's. What it made becomes a skill that stays a candidate until you
 rate it good.
+
+### Sending a reference image
+
+Any of these works:
+
+* **Control center:** `lucius serve`, open http://127.0.0.1:8765/, go to **Projects**, type what to
+  make, press *Choose Files* and pick the image (photo, drawing or screenshot), then **Make it**.
+* **Command line:** `lucius make "a sword like this" --reference path/to/image.jpg` (repeat
+  `--reference` for several views).
+* **Through Claude Code:** attach the image in the chat and ask for it to be made; it is saved next to
+  the project and passed with `--reference`.
+
+The image goes to the model that plans and judges the build, and is kept in the project folder next
+to the renders so you can compare them.
 
 ### Windows (PowerShell)
 
