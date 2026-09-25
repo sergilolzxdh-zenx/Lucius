@@ -259,6 +259,14 @@ What it took to get there, and what it says about the approach:
 * Judging is noisy: the same mug recipe was scored 3, 4 and 7 by different models. The best score is
   kept, which favours lucky judgements; your rating in **Projects** is the correction.
 
+`lucius make "a sword"` before and after those chapters, with the same free-tier models: before, only
+basic object handling was allowed and it stacked five primitives (judged 7/10, and it named extrude,
+inset, bevel and materials as missing). After, its first plan copied that earlier sword; once earlier
+attempts were shown as things to improve on (with their critique) and tutorial recipes as the
+techniques to use, it bevelled the guard and extruded and scaled the blade to a point -- but left the
+blade too thin and detached (4/10). The techniques transfer; with the smallest models, the plans
+around them are still poor.
+
 ## Make something new, or from a reference image
 
 ```bash
