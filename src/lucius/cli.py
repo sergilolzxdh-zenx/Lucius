@@ -246,16 +246,7 @@ def cmd_tutorial(args: argparse.Namespace) -> int:
         if args.video_resolution is not None:
             app.ingestion.watcher.resolution = args.video_resolution
         importer = TutorialImporter(app)
-        if Path(args.source).exists():
-            video = importer.local(args.source, captions=args.captions, info=args.info, language=args.language)
-        elif args.info:
-            # Saved metadata: nothing is fetched from the platform (a video model watches the URL).
-            video = importer.from_info(args.source, args.info, captions=args.captions, language=args.language)
-        else:
-            video = importer.fetch(args.source, language=args.language, cookies=args.cookies,
-                                   download_dir=args.download_dir, video=not args.remote)
-            if args.captions:
-                video.captions_path, video.captions_source = Path(args.captions), "unknown"
+        video = _tutorial_video(importer, args, video=not args.remote)
         print(f"{video.title} ({video.duration / 60:.1f} min, language {video.language}, "
               f"{len(video.chapters)} chapters, captions: {video.captions_path or 'none'}, video: "
               f"{video.video_path or 'watched by URL (' + str(app.providers.available()['vlm']) + ')'})",
@@ -280,6 +271,83 @@ def cmd_tutorial(args: argparse.Namespace) -> int:
         return 0 if all(p.skipped or p.result.get("status") == "READY" for p in parts) else 2
     finally:
         app.close()
+
+
+def _tutorial_video(importer, args: argparse.Namespace, *, video: bool):  # type: ignore[no-untyped-def]
+    if Path(args.source).exists():
+        return importer.local(args.source, captions=args.captions, info=args.info, language=args.language)
+    if args.info:
+        # Saved metadata: nothing is fetched from the platform (a video model watches the URL).
+        return importer.from_info(args.source, args.info, captions=args.captions, language=args.language)
+    downloaded = importer.fetch(args.source, language=args.language, cookies=args.cookies,
+                                download_dir=args.download_dir, video=video)
+    if args.captions:
+        downloaded.captions_path, downloaded.captions_source = Path(args.captions), "unknown"
+    return downloaded
+
+
+def _say(message: str) -> None:
+    print(message, file=sys.stderr, flush=True)
+
+
+def cmd_learn(args: argparse.Namespace) -> int:
+    """Learn a tutorial as recipes: watch each chapter, rebuild it in Blender, compare with the video, practise."""
+    from lucius.ingestion.download import parse_timestamp
+    from lucius.ingestion.tutorial import DEFAULT_SKIP, TutorialImporter
+    from lucius.lessons import LessonLearner
+
+    app = _app(args)
+    try:
+        importer = TutorialImporter(app)
+        video = _tutorial_video(importer, args, video=False)
+        parts = importer.plan(video, chapters=args.chapters,
+                              start=parse_timestamp(args.start) if args.start else None,
+                              end=parse_timestamp(args.end) if args.end else None,
+                              skip=None if args.no_skip else DEFAULT_SKIP, translate=not args.no_translate)
+        _say(f"{video.title}: {len([p for p in parts if not p.skipped])} chapters to learn "
+             f"(projects in {app.config.projects_dir})")
+        learner = LessonLearner(app, practice_rounds=args.practice, target_score=args.target)
+        results = learner.learn(video, parts, redo=args.redo, on_progress=_say)
+        _print({"video": video.url, "chapters": [r.to_dict() for r in results]})
+        return 0 if results and all(r.status in ("learned", "nothing_to_learn") for r in results) else 2
+    finally:
+        app.close()
+
+
+def cmd_make(args: argparse.Namespace) -> int:
+    """Make something with what Lucius has learned (optionally from reference images)."""
+    from lucius.lessons import Maker
+
+    app = _app(args)
+    try:
+        maker = Maker(app, iterations=args.iterations)
+        backend = _backend(app, args.backend) if args.backend != "headless" else None
+        result = maker.make(args.task, references=args.reference or [], allow_unlearned=args.allow_unlearned,
+                            backend=backend, on_progress=_say)
+        _print(result.to_dict())
+        return 0 if result.status == "made" else 2
+    finally:
+        app.close()
+
+
+def cmd_projects(args: argparse.Namespace) -> int:
+    from lucius.lessons import ProjectStore, rate_project
+
+    app = _app(args)
+    try:
+        store = ProjectStore(app.config.projects_dir)
+        if args.action != "list" and not args.project_id:
+            print("give the project id (see `lucius projects list`)", file=sys.stderr)
+            return 2
+        if args.action == "list":
+            _print(store.list(kind=args.kind))
+        elif args.action == "show":
+            _print(store.get(args.project_id).data)
+        else:
+            _print(rate_project(app, args.project_id, good=args.action == "good", note=args.note or ""))
+    finally:
+        app.close()
+    return 0
 
 
 def cmd_dataset(args: argparse.Namespace) -> int:
@@ -411,6 +479,41 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reprocess", action="store_true", help="process chapters again even if already done")
     s.add_argument("--plan-only", action="store_true", help="download and show the chapter plan without processing")
     s.set_defaults(func=cmd_tutorial)
+
+    s = sub.add_parser("learn", help="learn a tutorial as recipes: watch each chapter, rebuild it in Blender, "
+                                     "compare with the video and practise (renders saved as projects)")
+    s.add_argument("source", help="video URL (watched by a video model), or a local video file")
+    s.add_argument("--info", help="saved yt-dlp .info.json (chapters, captions; the platform is not contacted)")
+    s.add_argument("--captions", help="captions file (json3, VTT or SRT)")
+    s.add_argument("--language", help="caption language (default: the video's language)")
+    s.add_argument("--cookies", help="cookies.txt from a signed-in browser, if the platform blocks metadata")
+    s.add_argument("--download-dir", help="where metadata and captions go (default <data-dir>/downloads)")
+    s.add_argument("--chapters", help="which chapters: 'all' (default) or 1-based '4,5-7'")
+    s.add_argument("--start", help="only this part: start time (1:02:03, 12:30 or seconds)")
+    s.add_argument("--end", help="only this part: end time")
+    s.add_argument("--practice", type=int, default=2, help="practice rounds per chapter after the first attempt")
+    s.add_argument("--target", type=float, default=8.0, help="stop practising a chapter at this score (0-10)")
+    s.add_argument("--redo", action="store_true", help="learn chapters again even if already learned")
+    s.add_argument("--no-skip", action="store_true", help="also learn intro/installation/promotion chapters")
+    s.add_argument("--no-translate", action="store_true", help="keep non-English chapter titles untranslated")
+    s.set_defaults(func=cmd_learn)
+
+    s = sub.add_parser("make", help="make something with the techniques Lucius has learned")
+    s.add_argument("task", help="what to make, e.g. \"a sword with a long blade\"")
+    s.add_argument("--reference", action="append", help="reference image (PNG/JPEG/WebP); repeat for several")
+    s.add_argument("--iterations", type=int, default=3, help="build-judge-revise rounds")
+    s.add_argument("--allow-unlearned", action="store_true",
+                   help="also use Blender actions no lesson has taught (the project records it)")
+    s.add_argument("--backend", choices=["headless", "live", "gui"], default="headless",
+                   help="headless Blender (default), your Blender through the add-on, or keyboard and mouse")
+    s.set_defaults(func=cmd_make)
+
+    s = sub.add_parser("projects", help="what Lucius built: list, show, or rate a project good/bad")
+    s.add_argument("action", choices=["list", "show", "good", "bad"], nargs="?", default="list")
+    s.add_argument("project_id", nargs="?")
+    s.add_argument("--kind", choices=["lesson", "task"])
+    s.add_argument("--note", help="what was good or wrong (kept with the rating)")
+    s.set_defaults(func=cmd_projects)
 
     s = sub.add_parser("dataset", help="build a dataset (training datasets include consented sessions only)")
     s.add_argument("name")

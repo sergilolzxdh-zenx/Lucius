@@ -196,6 +196,11 @@ class Planner:
                             reason_codes=reasons + [f"param_sources:{','.join(sorted(set(sources.values())))}"])
             for i, template in enumerate(phase.actions):
                 source = f"{skill.id}/{phase.name}/{i}"
+                if template.action_type == "reset_scene" and plan.steps:
+                    # Only the plan's first skill may start from a clean scene: a later skill's reset would
+                    # delete what the skills before it built.
+                    step.reason_codes.append("skipped_reset_after_first_skill")
+                    continue
                 if template.optional and template.frequency < 0.5:
                     step.reason_codes.append(f"skipped_rare_optional:{template.action_type}")
                     continue

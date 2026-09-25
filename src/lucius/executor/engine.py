@@ -120,8 +120,10 @@ class ExecutionEngine:
     def __init__(self, *, db: Database, sessions: SessionStore, library: SkillLibrary, failures: FailureMemory,
                  retriever: HybridRetriever, planner: Planner, evaluator: Evaluator, corrections: CorrectionStore,
                  preferences: WorkflowPreferences, safety: SafetyConfig, bus: EventBus | None = None,
-                 user_id: str = "local", on_session_complete: Callable[[str], None] | None = None) -> None:
+                 user_id: str = "local", on_session_complete: Callable[[str], None] | None = None,
+                 output_dirs: list[str] | None = None) -> None:
         self.db = db
+        self.output_dirs = list(output_dirs or [])
         self.sessions = sessions
         self.library = library
         self.failures = failures
@@ -194,7 +196,8 @@ class ExecutionEngine:
             "benchmark_id": benchmark_id, "params": dumps(task.params), "metrics": dumps({}), "started_at": now()})
         ctx = _RunContext(run_id=run_id, session_id=session.id, sm=RunStateMachine(self.db, run_id, self.bus),
                           validator=ActionValidator(self.safety, bridge_actions=backend.bridge_actions,
-                                                    gui_only=backend.gui_only, background=backend.background),
+                                                    gui_only=backend.gui_only, background=backend.background,
+                                                    output_dirs=self.output_dirs),
                           references=references or [], task=task, mode=mode, arm=arm.name,
                           criteria=list(success_criteria or []))
         ctx.result = RunResult(run_id=run_id, session_id=session.id, status="running", verdict="pending")

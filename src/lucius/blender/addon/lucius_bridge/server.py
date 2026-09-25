@@ -200,7 +200,9 @@ class BridgeServer:
             elif cmd in self.commands:
                 handler, main_thread = self.commands[cmd]
                 if main_thread:
-                    result = self.dispatcher.call(handler, args)
+                    # A render or a heavy modifier may keep Blender's main thread busy for minutes.
+                    slow = cmd == "execute" and args.get("action") in ("render_image", "apply_modifier", "add_scatter")
+                    result = self.dispatcher.call(handler, args, timeout=600.0 if slow else 60.0)
                 else:
                     result = handler(args)
             else:
@@ -239,6 +241,7 @@ def build_commands(capabilities):
             names=a.get("names"), views=tuple(a.get("views") or ("front", "side", "top")),
             max_triangles=int(a.get("max_triangles", 20000))), True),
         "execute": (lambda a: actions.execute_action(a.get("action"), a.get("args") or {}), True),
+        "scene_summary": (lambda _a: state.scene_summary(), True),
         # Read-only screen information for keyboard/mouse actuation (interactive sessions only).
         "gui_layout": (gui.gui_layout, True),
         "operator_log": (gui.operator_log, True),

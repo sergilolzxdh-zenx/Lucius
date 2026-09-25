@@ -46,6 +46,7 @@ roll back or delete any of it. This document describes the system as built. The
 | `lucius.executor` | Explicit run state machine, execution engine, safety policy, human-takeover channel. |
 | `lucius.evaluation` | Checkpoint checks (structural, silhouette IoU/taper from rasterised geometry), verdict rules, human evaluations. |
 | `lucius.ingestion` | External media: validation, content-addressed media store, video change analysis, before/after transitions, reference measurement, optional VLM analysis, `.blend` inspection, text instructions. |
+| `lucius.lessons` | Tutorial chapters as recipes (watch → notes → recipe → rebuild → render → compare → practise), the maker (new tasks and reference images, limited to learned techniques), project folders with renders and ratings. |
 | `lucius.practice` | Curricula, sampled practice tasks, mastery gates, synthetic references. |
 | `lucius.dataset` / `lucius.training` | Dataset assembly with eligibility and quality validation, bundles, training-file formatters, trainer interfaces and advisor. |
 | `lucius.benchmarks` | Benchmarks, A/B experiment arms, bootstrap confidence intervals. |
@@ -215,6 +216,44 @@ known: `observed`, `inferred`, `model_inferred` or `human_confirmed`.
   `pending`.
 * **Rights.** External material is never training-eligible by default. Licence, reference-only
   status and consent are stored with the media and every dataset sample.
+
+## 8b. Lessons and the maker
+
+`lucius.ingestion` turns a video into observed operations; `lucius.lessons` checks that Lucius can
+reproduce the result, which is the evidence that it learned something.
+
+* **Recipes** are ordered bridge actions with concrete values (`Recipe`, `RecipeStep`). Models write
+  them against a catalogue that documents each action in Blender's own terms (the hotkey a tutor
+  presses) and its units; angles are written in degrees and colours as hex and converted before the
+  bridge validates them. The bridge gained what tutorials use: box selection of faces/edges/vertices
+  in object-local metres (so a selection survives geometry growing), rotate/delete/bridge/fill/
+  separate/duplicate, primitive sizes, materials, lights, camera, world, particle scattering and
+  `render_image` (Cycles; a temporary camera and studio lights frame the objects when the scene has
+  none). Renders and `.blend` files may only be written inside Lucius' output folders.
+* **Lesson loop** (`LessonLearner`), per chapter, continuing from the previous chapter's saved scene:
+  a video model writes notes from the chapter (URL clips of <=5 minutes, high resolution, narration
+  attached; cached), a model turns them into a recipe, `RecipeRunner` executes it step by step
+  through the safety validator and stops at the first failure, a model corrects the failing recipe,
+  the scene is rendered, a model compares the renders with the last minute of the chapter (video
+  input) and lists differences as recipe fixes, and the recipe is revised and rebuilt. The best
+  attempt becomes a skill (`lesson_<video>_<chapter>`, category `tutorial_recipe`, steps as
+  templates that compile to themselves) with a validation record: objective when it rebuilt, a
+  success when it was also judged >= 6/10. The comparison is a model judgement and is labelled so.
+* **Reference frames.** Downloads are often blocked, but the player's storyboard sprites (one small
+  frame every few seconds) are listed in the saved metadata; the frame at the time the comparison
+  names is cropped out and placed next to Lucius' renders in `sheet.png`.
+* **Maker.** A task (and optional reference images) is planned as a recipe restricted to basic
+  object handling plus the actions of validated lesson recipes (and their modifier types); learned
+  recipes are given as worked examples. Build, fix, render, critique (against the words and the
+  reference images), revise, keep the best. The resulting skill (`made_recipe`) is not validated by
+  the model's own critique; a person's rating (`lucius projects good|bad`, or the control center)
+  confirms or rejects it.
+* **Projects** (`<data dir>/projects/<id>/`) hold `project.json` (attempts, runs, scores, comparison
+  notes, rating), every attempt's recipe and renders, `sheet.png` and `scene.blend`. The API serves
+  them read-only by name inside the project folder.
+* **Model availability.** `providers.gemini_fallback_models` lists models tried, in order, when the
+  chosen model is overloaded (503) or out of daily quota; the model that answered is recorded with
+  every call.
 
 ## 9. Practice, datasets, training, benchmarks
 

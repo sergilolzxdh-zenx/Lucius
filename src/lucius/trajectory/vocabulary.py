@@ -59,8 +59,21 @@ for _name, _family, _mut, _lvl in [
     ("ui_click", "ui", False, -1), ("text_entry", "ui", False, -1), ("rename", "ui", True, -1),
     ("snapshot", "file", False, -1), ("restore", "history", True, -1), ("reset_scene", "file", True, -1),
     ("geometry_edit", "edit", True, 1), ("unknown_action", "unknown", False, -1),
+    ("separate", "edit", True, 1), ("set_material", "shading", True, 2), ("scatter", "shading", True, 2),
+    ("add_light", "lighting", True, -1), ("set_world", "lighting", True, -1), ("add_camera", "camera", True, -1),
+    ("render", "render", False, -1),
 ]:
     register_action_type(_name, _family, _mut, _lvl)
+
+# Bridge action -> semantic action type (for actions whose names differ).
+BRIDGE_ACTION_TYPES = {
+    "set_mode": "mode_change", "transform_object": "translate", "select_box": "select_elements",
+    "select_faces_by_normal": "select_elements", "translate_selection": "translate", "scale_selection": "scale",
+    "rotate_selection": "rotate", "taper_selection": "taper", "loop_cut_axis": "loop_cut", "merge_by_distance": "merge",
+    "delete_elements": "delete", "delete_objects": "delete", "bridge_edge_loops": "bridge_loops",
+    "separate_selection": "separate", "duplicate_object": "duplicate", "shade": "shade_smooth", "add_scatter": "scatter",
+    "render_image": "render", "set_render": "render", "rename_object": "rename", "save_file": "save",
+}
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).
 PRIMITIVE_KINDS = ("cube", "plane", "cylinder", "cone", "uv_sphere", "ico_sphere", "torus", "circle", "monkey")

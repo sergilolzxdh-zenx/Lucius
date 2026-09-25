@@ -18,30 +18,48 @@ from mathutils import Matrix, Vector
 from .protocol import BridgeCommandError
 from .state import find_view3d
 
+def _radius(p):
+    return p["radius"] if p.get("radius") is not None else p["size"] / 2
+
+
+def _depth(p):
+    return p["depth"] if p.get("depth") is not None else p["size"]
+
+
 PRIMITIVES = {
     "cube": lambda p: bpy.ops.mesh.primitive_cube_add(size=p["size"], location=p["location"], rotation=p["rotation"]),
     "plane": lambda p: bpy.ops.mesh.primitive_plane_add(size=p["size"], location=p["location"], rotation=p["rotation"]),
     "cylinder": lambda p: bpy.ops.mesh.primitive_cylinder_add(
-        vertices=p["vertices"], radius=p["size"] / 2, depth=p["size"], location=p["location"], rotation=p["rotation"]),
+        vertices=p["vertices"], radius=_radius(p), depth=_depth(p), location=p["location"], rotation=p["rotation"]),
     "cone": lambda p: bpy.ops.mesh.primitive_cone_add(
-        vertices=p["vertices"], radius1=p["size"] / 2, depth=p["size"], location=p["location"], rotation=p["rotation"]),
+        vertices=p["vertices"], radius1=_radius(p), radius2=p.get("radius2") or 0.0, depth=_depth(p),
+        location=p["location"], rotation=p["rotation"]),
     "uv_sphere": lambda p: bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=max(3, p["vertices"]), radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
-    "ico_sphere": lambda p: bpy.ops.mesh.primitive_ico_sphere_add(radius=p["size"] / 2, location=p["location"]),
-    "torus": lambda p: bpy.ops.mesh.primitive_torus_add(location=p["location"], rotation=p["rotation"]),
+        segments=max(3, p["vertices"]), ring_count=max(3, p["vertices"] // 2), radius=_radius(p),
+        location=p["location"], rotation=p["rotation"]),
+    "ico_sphere": lambda p: bpy.ops.mesh.primitive_ico_sphere_add(radius=_radius(p), location=p["location"]),
+    "torus": lambda p: bpy.ops.mesh.primitive_torus_add(
+        major_radius=p.get("major_radius") or 1.0, minor_radius=p.get("minor_radius") or 0.25,
+        major_segments=p.get("major_segments") or 48, minor_segments=p.get("minor_segments") or 12,
+        location=p["location"], rotation=p["rotation"]),
     "monkey": lambda p: bpy.ops.mesh.primitive_monkey_add(
         size=p["size"], location=p["location"], rotation=p["rotation"]),
-    # A ring of vertices without a face (tutorials often start pipes and bottles from one).
+    # A ring of vertices (tutorials often start pipes, plates and croissants from one); ``fill`` adds the n-gon.
     "circle": lambda p: bpy.ops.mesh.primitive_circle_add(
-        vertices=p["vertices"], radius=p["size"] / 2, location=p["location"], rotation=p["rotation"]),
+        vertices=p["vertices"], radius=_radius(p), fill_type="NGON" if p.get("fill") else "NOTHING",
+        location=p["location"], rotation=p["rotation"]),
 }
 
 MODIFIER_PROPS = {
-    "MIRROR": {"use_axis": "bool3", "use_clip": "bool", "use_mirror_merge": "bool"},
+    "MIRROR": {"use_axis": "bool3", "use_bisect_axis": "bool3", "use_clip": "bool", "use_mirror_merge": "bool"},
     "BEVEL": {"width": "float", "segments": "int", "limit_method": ("NONE", "ANGLE", "WEIGHT", "VGROUP")},
     "SUBSURF": {"levels": "int", "render_levels": "int"},
-    "SOLIDIFY": {"thickness": "float"},
+    "SOLIDIFY": {"thickness": "float", "offset": "float", "use_even_offset": "bool"},
     "ARRAY": {"count": "int", "relative_offset_displace": "vec3"},
+    "BOOLEAN": {"object": "object", "operation": ("DIFFERENCE", "UNION", "INTERSECT")},
+    "DISPLACE": {"strength": "float", "mid_level": "float"},
+    "SMOOTH": {"factor": "float", "iterations": "int"},
+    "CAST": {"factor": "float", "cast_type": ("SPHERE", "CYLINDER", "CUBOID")},
     "SIMPLE_DEFORM": {"deform_method": ("TWIST", "BEND", "TAPER", "STRETCH"), "factor": "float",
                       "deform_axis": ("X", "Y", "Z")},
     "WEIGHTED_NORMAL": {},
@@ -83,6 +101,12 @@ def _check(value, kind, name):
             raise BridgeCommandError("invalid_param", f"{name} must be a 3-vector", param=name)
         inner = "bool" if kind == "bool3" else "float"
         return [_check(v, inner, name) for v in value]
+    if kind == "bounds3":
+        if not isinstance(value, (list, tuple)) or len(value) != 3:
+            raise BridgeCommandError("invalid_param", f"{name} must be 3 numbers or nulls", param=name)
+        return [None if v is None else _check(v, "float", name) for v in value]
+    if kind == "object":
+        return _obj(_check(value, "name", name))
     if kind == "name":
         if not isinstance(value, str) or not OBJECT_NAME.match(value):
             raise BridgeCommandError("invalid_param", f"{name} must be a valid object name", param=name)
@@ -385,6 +409,14 @@ def extrude(p):
     faces = [f for f in bm.faces if f.select]
     edges = [e for e in bm.edges if e.select]
     verts = _selected_verts(bm)
+    if p["offset"] is not None:
+        offset = Vector(p["offset"])
+    elif p["distance"] is not None:
+        # Like pressing E on faces: along their average normal.
+        normal = sum((f.normal for f in faces), Vector()) if faces else Vector((0, 0, 1))
+        offset = (normal.normalized() if normal.length > 1e-9 else Vector((0, 0, 1))) * p["distance"]
+    else:
+        raise BridgeCommandError("missing_param", "extrude needs offset or distance", param="offset")
     before = len(bm.verts)
     if faces:
         ret = bmesh.ops.extrude_face_region(bm, geom=faces)
@@ -396,7 +428,7 @@ def extrude(p):
         ret = {"geom": ret["verts_out"] + ret["edges_out"]}
     new_geom = ret["geom"]
     new_verts = [g for g in new_geom if isinstance(g, bmesh.types.BMVert)]
-    bmesh.ops.translate(bm, vec=Vector(p["offset"]), verts=new_verts)
+    bmesh.ops.translate(bm, vec=offset, verts=new_verts)
     _select_only(bm, new_geom)
     bm.normal_update()
     bmesh.update_edit_mesh(obj.data)
@@ -507,6 +539,201 @@ def merge_by_distance(p):
     bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=p["distance"])
     bmesh.update_edit_mesh(obj.data)
     return {"object": obj.name, "removed": before - len(bm.verts)}
+
+
+def _box_coord(obj, bm, space):
+    if space == "normalized":
+        lo, hi = _local_bbox(bm)
+        span = [(hi[i] - lo[i]) or 1.0 for i in range(3)]
+        return lambda co: [(co[i] - lo[i]) / span[i] for i in range(3)]
+    if space == "world":
+        return lambda co: list(obj.matrix_world @ co)
+    return lambda co: list(co)
+
+
+def select_box(p):
+    """Select vertices, edges or faces inside a box (any bound may be null = unbounded).
+
+    Faces are tested by their centre, edges by both vertices. ``facing`` keeps only faces whose normal
+    points that way (``min_dot``); ``sharp_deg`` keeps only edges whose faces meet at least at that
+    angle, and boundary edges (a rim, the lip of a mug) -- what Alt+click on an edge loop usually picks;
+    ``boundary`` keeps only edges of holes and open rims (what bridge_edge_loops joins).
+    """
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    coord = _box_coord(obj, bm, p["space"])
+    low, high = p["min"], p["max"]
+
+    def inside(co):
+        c = coord(co)
+        return all((low[i] is None or c[i] >= low[i] - 1e-6) and (high[i] is None or c[i] <= high[i] + 1e-6)
+                   for i in range(3))
+
+    if not p["extend"]:
+        for elem in (*bm.verts, *bm.edges, *bm.faces):
+            elem.select = False
+    facing = Vector(p["facing"]).normalized() if p["facing"] is not None else None
+    count = 0
+    if p["element"] == "FACE":
+        bm.select_mode = {"FACE"}
+        for face in bm.faces:
+            if inside(face.calc_center_median()) and (facing is None or face.normal.dot(facing) >= p["min_dot"]):
+                face.select = True
+                count += 1
+    elif p["element"] == "EDGE":
+        import math
+        bm.select_mode = {"EDGE"}
+        limit = math.radians(p["sharp_deg"]) if p["sharp_deg"] is not None else None
+        for edge in bm.edges:
+            if not all(inside(v.co) for v in edge.verts):
+                continue
+            if p["boundary"] and len(edge.link_faces) != 1:
+                continue
+            if limit is not None and len(edge.link_faces) == 2 and edge.calc_face_angle(0.0) < limit:
+                continue
+            edge.select = True
+            count += 1
+    else:
+        bm.select_mode = {"VERT"}
+        for vert in bm.verts:
+            if inside(vert.co):
+                vert.select = True
+                count += 1
+    bm.select_flush_mode()
+    bmesh.update_edit_mesh(obj.data)
+    if count == 0:
+        raise BridgeCommandError("empty_selection", "nothing inside the box", object=obj.name)
+    return {"object": obj.name, "selected": count, "element": p["element"],
+            "verts": sum(v.select for v in bm.verts), "faces": sum(f.select for f in bm.faces)}
+
+
+def rotate_selection(p):
+    """Rotate the selected elements about an axis through the selection (R, axis, angle)."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    verts = _selected_verts(bm)
+    if p["pivot"] == "median":
+        pivot = sum((v.co for v in verts), Vector()) / len(verts)
+    elif p["pivot"] == "bbox_center":
+        lo, hi = _local_bbox(bm)
+        pivot = (lo + hi) / 2
+    else:
+        pivot = Vector()
+    rotation = Matrix.Rotation(p["angle"], 3, p["axis"].upper())
+    bmesh.ops.rotate(bm, cent=pivot, matrix=rotation, verts=verts)
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "rotated": len(verts)}
+
+
+def delete_elements(p):
+    """X in edit mode: delete the selected vertices, edges, faces, or only the faces (keeping the rim)."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    context = {"VERTS": "VERTS", "EDGES": "EDGES", "FACES": "FACES", "ONLY_FACES": "FACES_ONLY"}[p["what"]]
+    if p["what"] == "VERTS":
+        geom = [v for v in bm.verts if v.select]
+    elif p["what"] == "EDGES":
+        geom = [e for e in bm.edges if e.select]
+    else:
+        geom = [f for f in bm.faces if f.select]
+    if not geom:
+        raise BridgeCommandError("empty_selection", f"no {p['what'].lower()} selected")
+    bmesh.ops.delete(bm, geom=geom, context=context)
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "deleted": len(geom), "verts": len(bm.verts), "faces": len(bm.faces)}
+
+
+def bridge_edge_loops(p):
+    """Join two selected edge loops (or two holes) with a band of faces."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    edges = [e for e in bm.edges if e.select]
+    if len(edges) < 2:
+        raise BridgeCommandError("empty_selection", "select two edge loops to bridge")
+    before = len(bm.faces)
+    result = bmesh.ops.bridge_loops(bm, edges=edges)
+    if p["cuts"]:
+        inner = [e for e in result.get("edges", []) if e not in edges]
+        if inner:
+            bmesh.ops.subdivide_edges(bm, edges=inner, cuts=p["cuts"], use_grid_fill=True)
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "new_faces": len(bm.faces) - before}
+
+
+def fill(p):
+    """F: make a face (or faces) from the selected boundary."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    edges = [e for e in bm.edges if e.select]
+    verts = [v for v in bm.verts if v.select]
+    if not verts:
+        raise BridgeCommandError("empty_selection", "nothing selected to fill")
+    before = len(bm.faces)
+    if p["grid"] and edges:
+        bmesh.ops.grid_fill(bm, edges=edges)
+    else:
+        bmesh.ops.contextual_create(bm, geom=[*verts, *edges])
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "new_faces": len(bm.faces) - before}
+
+
+def subdivide(p):
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    edges = [e for e in bm.edges if e.select]
+    if not edges:
+        raise BridgeCommandError("empty_selection", "no edges selected")
+    bmesh.ops.subdivide_edges(bm, edges=edges, cuts=p["cuts"], use_grid_fill=True, smooth=p["smoothness"])
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "verts": len(bm.verts)}
+
+
+def separate_selection(p):
+    """Shift+D, P: copy (or move) the selected faces into a new object -- icing on a donut."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    if not any(f.select for f in bm.faces):
+        raise BridgeCommandError("empty_selection", "no faces selected")
+    before = set(bpy.data.objects.keys())
+    with bpy.context.temp_override(**_context_override(obj)):
+        if p["duplicate"]:
+            _op_result(bpy.ops.mesh.duplicate(), "duplicate")
+        _op_result(bpy.ops.mesh.separate(type="SELECTED"), "separate")
+        bpy.ops.object.mode_set(mode="OBJECT")
+    created = sorted(set(bpy.data.objects.keys()) - before)
+    if not created:
+        raise BridgeCommandError("operator_failed", "separate made no object")
+    new = bpy.data.objects[created[0]]
+    if p["new_name"]:
+        new.name = p["new_name"]
+        new.data.name = p["new_name"]
+    for o in bpy.context.view_layer.objects:
+        o.select_set(o == new)
+    bpy.context.view_layer.objects.active = new
+    return {"object": new.name, "from": obj.name, "faces": len(new.data.polygons)}
+
+
+def duplicate_object(p):
+    """Shift+D on an object: a copy (with its modifiers and materials), optionally moved."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    new = obj.copy()
+    if obj.data is not None and not p["linked"]:
+        new.data = obj.data.copy()
+    for collection in obj.users_collection:
+        collection.objects.link(new)
+    if p["new_name"]:
+        new.name = p["new_name"]
+    new.location = obj.location + Vector(p["offset"])
+    if p["rotation"] is not None:
+        new.rotation_euler = Vector(obj.rotation_euler) + Vector(p["rotation"])
+    for o in bpy.context.view_layer.objects:
+        o.select_set(o == new)
+    bpy.context.view_layer.objects.active = new
+    return {"object": new.name, "location": list(new.location)}
 
 
 def add_modifier(p):
@@ -673,12 +900,20 @@ def import_blend(p):
     _purge_orphans()
     with bpy.data.libraries.load(path, link=False) as (data_from, data_to):
         data_to.objects = list(data_from.objects)
+        data_to.worlds = list(data_from.worlds[:1])
     names = []
+    scene = bpy.context.scene
     for obj in data_to.objects:
         if obj is not None:
-            bpy.context.scene.collection.objects.link(obj)
+            scene.collection.objects.link(obj)
             names.append(obj.name)
-    return {"objects": sorted(names)}
+    # A saved scene continues where it stopped: its camera and world come back too.
+    cameras = sorted((o for o in scene.objects if o.type == "CAMERA"), key=lambda o: o.name)
+    if cameras and (scene.camera is None or scene.camera.name not in scene.objects):
+        scene.camera = cameras[0]
+    if data_to.worlds and data_to.worlds[0] is not None:
+        scene.world = data_to.worlds[0]
+    return {"objects": sorted(names), "camera": scene.camera.name if scene.camera else None}
 
 
 def _snapshot_dir():
@@ -757,7 +992,9 @@ OBJ = ("name", None)
 ACTIONS = {
     "add_primitive": (add_primitive, {
         "kind": (tuple(PRIMITIVES), REQUIRED), "size": ("float", 2.0), "location": V3, "rotation": V3,
-        "vertices": ("int", 32), "name": ("name", None)}),
+        "vertices": ("int", 32), "name": ("name", None), "radius": ("float", None), "radius2": ("float", None),
+        "depth": ("float", None), "major_radius": ("float", None), "minor_radius": ("float", None),
+        "major_segments": ("int", None), "minor_segments": ("int", None), "fill": ("bool", False)}),
     "select_objects": (select_objects, {"names": ("names", REQUIRED), "active": OBJ, "deselect_others": ("bool", True)}),
     "delete_objects": (delete_objects, {"names": ("names", REQUIRED)}),
     "set_mode": (set_mode, {"object": OBJ, "mode": (("OBJECT", "EDIT", "SCULPT"), REQUIRED)}),
@@ -775,7 +1012,22 @@ ACTIONS = {
     "select_faces_by_normal": (select_faces_by_normal, {
         "object": OBJ, "direction": ("vec3", REQUIRED), "min_dot": ("float", 0.9), "extend": ("bool", False)}),
     "select_all": (select_all, {"object": OBJ, "action": (("SELECT", "DESELECT"), "SELECT")}),
-    "extrude": (extrude, {"object": OBJ, "offset": ("vec3", REQUIRED)}),
+    "select_box": (select_box, {
+        "object": OBJ, "min": ("bounds3", [None, None, None]), "max": ("bounds3", [None, None, None]),
+        "element": (("VERT", "EDGE", "FACE"), "FACE"), "space": (("normalized", "local", "world"), "normalized"),
+        "facing": ("vec3", None), "min_dot": ("float", 0.7), "sharp_deg": ("float", None), "boundary": ("bool", False),
+        "extend": ("bool", False)}),
+    "extrude": (extrude, {"object": OBJ, "offset": ("vec3", None), "distance": ("float", None)}),
+    "rotate_selection": (rotate_selection, {
+        "object": OBJ, "axis": (tuple(AXES), REQUIRED), "angle": ("float", REQUIRED),
+        "pivot": (("median", "bbox_center", "origin"), "median")}),
+    "delete_elements": (delete_elements, {"object": OBJ, "what": (("VERTS", "EDGES", "FACES", "ONLY_FACES"), "FACES")}),
+    "bridge_edge_loops": (bridge_edge_loops, {"object": OBJ, "cuts": ("int", 0)}),
+    "fill": (fill, {"object": OBJ, "grid": ("bool", False)}),
+    "subdivide": (subdivide, {"object": OBJ, "cuts": ("int", 1), "smoothness": ("float", 0.0)}),
+    "separate_selection": (separate_selection, {"object": OBJ, "new_name": ("name", None), "duplicate": ("bool", True)}),
+    "duplicate_object": (duplicate_object, {"object": OBJ, "new_name": ("name", None), "offset": V3,
+                                            "rotation": ("vec3", None), "linked": ("bool", False)}),
     "translate_selection": (translate_selection, {"object": OBJ, "offset": ("vec3", REQUIRED)}),
     "scale_selection": (scale_selection, {
         "object": OBJ, "factor": ("vec3", REQUIRED), "pivot": (("median", "bbox_center"), "median")}),
@@ -811,6 +1063,11 @@ ACTIONS = {
 }
 
 GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
+
+# Materials, lights, camera and rendering live in their own module.
+from . import scene as _scene  # noqa: E402
+
+ACTIONS.update(_scene.ACTIONS)
 
 
 def execute_action(name, args):

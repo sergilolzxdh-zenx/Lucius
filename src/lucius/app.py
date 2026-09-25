@@ -91,7 +91,8 @@ class Lucius:
             db=self.db, sessions=self.sessions, library=self.library, failures=self.failures, retriever=self.retriever,
             planner=self.planner, evaluator=self.evaluator, corrections=self.corrections, preferences=self.preferences,
             safety=cfg.safety, bus=self.bus, user_id=cfg.user_id,
-            on_session_complete=self.pipeline.submit if background_processing else self.pipeline.process)
+            on_session_complete=self.pipeline.submit if background_processing else self.pipeline.process,
+            output_dirs=[str(cfg.exports_dir), str(cfg.projects_dir)])
         self.bus.subscribe(EventType.SESSION_ENDED, on_session_end(self.pipeline, background=background_processing))
         self.ledger = AgentActionLedger()
         self.human = InteractiveHumanChannel()
@@ -149,8 +150,9 @@ class Lucius:
         from lucius.blender.headless import HeadlessBlender
 
         if self._headless is None or self._headless.bridge is None or not self._headless.bridge.connected:
-            self._headless = HeadlessBlender(allowed_save_dirs=[str(self.config.exports_dir)],
-                                             allowed_read_dirs=[str(self.config.media_dir)])
+            self._headless = HeadlessBlender(
+                allowed_save_dirs=[str(self.config.exports_dir), str(self.config.projects_dir)],
+                allowed_read_dirs=[str(self.config.media_dir), str(self.config.projects_dir)])
             self._headless.start()
         return BridgeBackend(self._headless.bridge)
 

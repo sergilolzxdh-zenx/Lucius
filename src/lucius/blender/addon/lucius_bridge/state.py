@@ -148,7 +148,13 @@ def object_summary(obj):
         "scale": [round(float(v), 5) for v in obj.scale],
         "dimensions": [round(float(v), 5) for v in obj.dimensions],
         "modifiers": [{"name": m.name, "type": m.type} for m in obj.modifiers],
+        "materials": [slot.material.name for slot in getattr(obj, "material_slots", []) if slot.material],
+        "parent": obj.parent.name if obj.parent else None,
     }
+    if obj.type == "LIGHT" and obj.data is not None:
+        data["light"] = {"type": obj.data.type, "energy": round(float(obj.data.energy), 3)}
+    if obj.type == "CAMERA" and obj.data is not None:
+        data["camera"] = {"lens": round(float(obj.data.lens), 2)}
     if obj.type == "MESH" and obj.data is not None:
         mesh = obj.data
         data["mesh"] = {
@@ -157,6 +163,18 @@ def object_summary(obj):
             "use_mirror_z": bool(mesh.use_mirror_z),
         }
     return data
+
+
+def scene_summary():
+    """Every object of the scene (what a build produced), plus the scene camera."""
+    scene = bpy.context.scene
+    edited = [o for o in scene.objects if o.type == "MESH" and o.mode == "EDIT"]
+    for obj in edited:
+        obj.update_from_editmode()   # edit-mode changes reach the mesh (and its size) only when flushed
+    if edited:
+        bpy.context.view_layer.update()
+    return {"objects": [object_summary(o) for o in scene.objects][:MAX_LISTED_OBJECTS],
+            "camera": scene.camera.name if scene.camera else None, "mode": bpy.context.mode}
 
 
 def capture_state(include_objects=True):

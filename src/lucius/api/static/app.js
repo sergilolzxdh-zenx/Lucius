@@ -115,7 +115,7 @@ const labelColor = (label) => {
 
 // -- routing ------------------------------------------------------------------------------------------
 const ROUTES = {
-  agent: pageAgent, runs: pageRun, watch: pageWatch, sessions: pageSession, import: pageImport,
+  agent: pageAgent, runs: pageRun, watch: pageWatch, sessions: pageSession, import: pageImport, projects: pageProjects,
   skills: pageSkills, memory: pageMemory, failures: pageFailures, practice: pagePractice,
   datasets: pageDatasets, benchmarks: pageBenchmarks, settings: pageSettings,
 };
@@ -847,6 +847,91 @@ async function pageFailure(failureId) {
       c.before_frame_id ? h("img", { src: `/api/frames/${c.before_frame_id}/image`, style: "height:60px" }) : "—",
       c.after_frame_id ? h("img", { src: `/api/frames/${c.after_frame_id}/image`, style: "height:60px" }) : "—"]))));
   return { el, live: ["FAILURE_PROMOTED", "CORRECTION_RECORDED"] };
+}
+
+// -- Projects: what Lucius made, making something new, rating ---------------------------------------------------------
+const projectFile = (id, name) => `/api/projects/${encodeURIComponent(id)}/files/${encodeURIComponent(name)}`;
+const scoreChip = (s) => (s == null ? chip("no score", "seed") : chip(`${num(s, 1)}/10`, s >= 7 ? "ok" : s >= 5 ? "warn" : "bad"));
+function ratingChip(r) {
+  if (!r) return chip("not rated", "seed");
+  return chip(r.good ? "you: good" : "you: bad", r.good ? "ok" : "bad");
+}
+async function pageProjects(projectId) {
+  if (projectId) return pageProjectDetail(projectId);
+  const [list, tech, jobsNow] = await Promise.all([GET("/projects"), GET("/techniques"), GET("/jobs")]);
+  const task = h("textarea", { placeholder: "What should Lucius make? e.g. “a sword with a long thin blade and a round guard”" });
+  const refs = h("input", { type: "file", multiple: true, accept: "image/png,image/jpeg,image/webp" });
+  const preview = h("div", { class: "frames" });
+  refs.addEventListener("change", () => preview.replaceChildren(...[...refs.files].map((f) => h("img", { src: URL.createObjectURL(f), alt: f.name }))));
+  const iterations = select([["1", "1 try"], ["2", "2 tries"], ["3", "3 tries"], ["4", "4 tries"]], "3");
+  const unlearned = h("input", { type: "checkbox" });
+  const submit = () => act(async () => {
+    if (!task.value.trim()) throw new Error("Describe what to make first.");
+    const fd = new FormData();
+    fd.append("task", task.value.trim());
+    fd.append("iterations", iterations.value);
+    fd.append("allow_unlearned", unlearned.checked);
+    [...refs.files].forEach((f) => fd.append("references", f));
+    return api("POST", "/make", fd);
+  }, "Lucius is making it — the result appears below when it is done");
+  const running = jobsNow.filter((j) => j.kind === "make" && (j.status === "queued" || j.status === "running"));
+  const cards = list.map((p) => h("a", { class: "card project-card", href: `#/projects/${encodeURIComponent(p.id)}` },
+    p.sheet ? h("img", { src: projectFile(p.id, p.sheet), alt: p.title, loading: "lazy" }) : h("div", { class: "empty" }, p.status),
+    h("div", { class: "row between" }, h("strong", {}, p.title), chip(p.kind)),
+    h("div", { class: "row" }, chip(p.status), scoreChip(p.score), ratingChip(p.rating), h("span", { class: "faint small" }, ago(p.created_at)))));
+  const el = h("div", {},
+    h("h1", {}, "Projects"),
+    h("p", { class: "sub" }, "Everything Lucius built — tutorial chapters it rebuilt and things you asked for — with pictures. Open one and tell Lucius whether it did a good job: your rating counts for (or against) the skill it made."),
+    h("div", { class: "card stack" },
+      h("h3", { style: "margin-top:0" }, "Make something"),
+      field("What to make", task),
+      field("Reference images (optional: a photo or drawing of what you want)", refs), preview,
+      h("div", { class: "row" }, field("Tries", iterations),
+        h("label", { class: "check", title: "Also use Blender actions no lesson has taught" }, unlearned, "allow techniques it has not learned"),
+        h("span", { class: "spacer" }), h("button", { class: "primary", onclick: submit }, "Make it")),
+      running.length ? notice(`Working on: ${running.map((j) => j.title).join(", ")}`) : null,
+      h("div", { class: "small muted" }, `Learned techniques: ${tech.actions.length ? tech.actions.join(", ") : "none yet — teach it with lucius learn"}`,
+        tech.modifiers.length ? ` · modifiers: ${tech.modifiers.join(", ")}` : "")),
+    h("h2", {}, "Results"),
+    cards.length ? h("div", { class: "grid g3" }, cards) : empty("Nothing made yet."));
+  return { el, live: ["JOB_STATUS", "SKILL_PROMOTED"] };
+}
+async function pageProjectDetail(projectId) {
+  const p = await GET(`/projects/${encodeURIComponent(projectId)}`);
+  const note = h("input", { placeholder: "What was good or wrong? (optional)", value: (p.rating && p.rating.note) || "" });
+  const rate = (good) => act(() => POST(`/projects/${encodeURIComponent(p.id)}/rate`, { good, note: note.value }),
+    good ? "Thanks — marked good" : "Thanks — marked bad");
+  const attempts = (p.attempts || []).map((a) => {
+    const judged = a.comparison || a.critique || {};
+    return h("div", { class: "card stack" },
+      h("div", { class: "row between" }, h("strong", {}, `Attempt ${a.number}`),
+        h("span", {}, a.run && a.run.ok ? chip("built", "ok") : chip("failed", "bad"), " ", scoreChip(a.score),
+          a.fixes ? h("span", { class: "faint small" }, ` ${a.fixes} correction(s)`) : null)),
+      a.run && a.run.error ? notice(a.run.error, "bad") : null,
+      h("div", { class: "frames" }, (a.renders || []).map((r) => h("a", { href: projectFile(p.id, r), target: "_blank" },
+        h("img", { src: projectFile(p.id, r), alt: r, style: "height:180px" })))),
+      judged.looks_like ? h("div", {}, h("span", { class: "muted" }, "Looks like: "), judged.looks_like) : null,
+      (judged.matches || []).length ? h("div", { class: "small" }, h("span", { class: "muted" }, "Right: "), judged.matches.join("; ")) : null,
+      (judged.differences || []).length ? h("ul", { class: "small" }, judged.differences.map((d) => h("li", {}, `${d.object}: ${d.problem}`,
+        h("span", { class: "faint" }, ` → ${d.fix}`)))) : null);
+  });
+  const learned = p.learned_from ? h("div", { class: "card small" }, h("h3", { style: "margin-top:0" }, "Where the techniques came from"),
+    Object.entries(p.learned_from).map(([a, src]) => h("div", {}, h("span", { class: "mono" }, a), ": ", src.join(", ")))) : null;
+  const el = h("div", {},
+    h("div", { class: "row between" }, h("h1", {}, p.title), h("span", {}, chip(p.status), " ", scoreChip(p.score))),
+    h("p", { class: "sub" }, `${p.kind === "lesson" ? "Tutorial chapter" : "Task"} · ${fmtTime(p.created_at)}`,
+      p.source && p.source.video ? h("span", {}, " · ", h("a", { href: p.source.video, target: "_blank", rel: "noreferrer" }, "video")) : null),
+    h("div", { class: "card stack" },
+      h("div", { class: "row" }, h("strong", {}, "Did Lucius do a good job?"), ratingChip(p.rating)),
+      h("div", { class: "row" }, note, h("button", { class: "primary", onclick: () => rate(true) }, "Good"),
+        h("button", { class: "danger", onclick: () => rate(false) }, "Bad"))),
+    p.sheet ? h("div", { class: "card" }, h("img", { src: projectFile(p.id, p.sheet), alt: "side by side", style: "max-width:100%" })) : null,
+    h("div", { class: "row" }, p.blend ? h("a", { class: "button", href: projectFile(p.id, p.blend) }, "Download the .blend (open in Blender)") : null,
+      p.recipe_steps ? h("span", { class: "faint small" }, `${p.recipe_steps} steps: ${(p.actions || []).join(", ")}`) : null),
+    (p.missing_techniques || []).length ? notice(`Not learned yet (approximated): ${p.missing_techniques.join(", ")}`) : null,
+    (p.notes || []).length ? notice(p.notes.join(" · ")) : null,
+    learned, h("h2", {}, "Attempts"), attempts.length ? h("div", { class: "stack" }, attempts) : empty("No attempts."));
+  return { el, live: ["JOB_STATUS"] };
 }
 
 // -- Practice ------------------------------------------------------------------------------------------------------

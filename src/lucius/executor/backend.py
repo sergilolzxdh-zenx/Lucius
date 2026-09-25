@@ -20,6 +20,10 @@ from lucius.errors import BlenderBridgeError
 from lucius.planner.model import PlanAction
 
 
+# Actions that can take longer than an ordinary bridge request.
+SLOW_ACTIONS = {"render_image": 600.0, "apply_modifier": 120.0, "add_scatter": 120.0}
+
+
 class ActionResult(BaseModel):
     ok: bool
     result: dict[str, Any] = Field(default_factory=dict)
@@ -71,7 +75,7 @@ class BridgeBackend:
         started = time.monotonic()
         try:
             if action.layer == "blender_api":
-                result = self.bridge.execute(action.name, action.args)
+                result = self.bridge.execute(action.name, action.args, timeout=SLOW_ACTIONS.get(action.name))
             elif action.layer == "internal":
                 result = self._internal(action)
             elif action.layer == "observation":

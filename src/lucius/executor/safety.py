@@ -33,8 +33,10 @@ GUI_BUTTONS = {"left", "right", "middle"}
 
 
 class ActionValidator:
-    def __init__(self, config: SafetyConfig, *, bridge_actions: set[str], gui_only: set[str], background: bool) -> None:
+    def __init__(self, config: SafetyConfig, *, bridge_actions: set[str], gui_only: set[str], background: bool,
+                 output_dirs: list[str] | None = None) -> None:
         self.config = config
+        self.output_dirs = list(output_dirs or [])   # Lucius' own output folders (renders, project files)
         self.bridge_actions = bridge_actions
         self.gui_only = gui_only
         self.background = background
@@ -64,7 +66,9 @@ class ActionValidator:
             if action.name in self.gui_only and self.background:
                 raise ActionRejected(f"{action.name} needs an interactive viewport", action=action.name)
             if action.name == "save_file":
-                self._check_save_path(str(action.args.get("path", "")))
+                self._check_save_path(str(action.args.get("path", "")), (".blend",))
+            elif action.name == "render_image":
+                self._check_save_path(str(action.args.get("path", "")), (".png", ".jpg", ".jpeg"))
             return
         if action.layer == "gui":
             if not self.config.allow_gui_actions:
@@ -73,10 +77,10 @@ class ActionValidator:
             return
         raise ActionRejected(f"layer {action.layer} is not permitted (OS actions are disabled)", layer=action.layer)
 
-    def _check_save_path(self, path: str) -> None:
-        allowed = [os.path.realpath(d) for d in self.config.allowed_save_dirs]
+    def _check_save_path(self, path: str, extensions: tuple[str, ...]) -> None:
+        allowed = [os.path.realpath(d) for d in [*self.config.allowed_save_dirs, *self.output_dirs]]
         real = os.path.realpath(path)
-        if not path.endswith(".blend") or not any(real == d or real.startswith(d + os.sep) for d in allowed):
+        if not path.lower().endswith(extensions) or not any(real == d or real.startswith(d + os.sep) for d in allowed):
             raise ActionRejected("save path outside the allowed directories", path=path)
 
     @staticmethod

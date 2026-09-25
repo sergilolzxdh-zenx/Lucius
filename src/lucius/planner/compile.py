@@ -13,6 +13,7 @@ from typing import Any
 
 from lucius.evaluation.evaluator import resolve
 from lucius.ids import new_id
+from lucius.lessons.catalogue import RECIPE_ACTIONS, normalize_args
 from lucius.planner.model import PlanAction
 from lucius.skills.schema import ActionTemplate, Selection
 from lucius.trajectory import vocabulary as vocab
@@ -225,4 +226,9 @@ def compile_template(t: ActionTemplate, params: dict[str, Any], ctx: CompileCont
                     for v in (args.get("views") or [args.get("view", "FRONT")])]
         return [_action("orbit_view", at, {"direction": args.get("direction", "ORBITLEFT"),
                                            "angle": float(args.get("angle", 0.2618))}, "orbit", source=source)]
+    if at in RECIPE_ACTIONS:
+        # A learned recipe step names its Blender action directly, with concrete values.
+        recipe_args, _notes = normalize_args(at, args)
+        ctx.mode = "UNKNOWN"   # recipe actions switch modes themselves; the next mode requirement re-asserts it
+        return [_action(at, vocab.BRIDGE_ACTION_TYPES.get(at, at), recipe_args, t.description or at, source=source)]
     raise Uncompilable(f"no compiler for action type {at}")

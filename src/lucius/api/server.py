@@ -202,6 +202,15 @@ class RetrievalDebug(BaseModel):
     top_k: int = 8
 
 
+class ProjectRating(BaseModel):
+    good: bool
+    note: str = Field(default="", max_length=2000)
+
+
+PROJECT_FILE_TYPES = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
+                      ".blend": "application/octet-stream", ".json": "application/json"}
+
+
 class RunRequest(BaseModel):
     task_text: str = Field(min_length=1, max_length=2000)
     backend: str = "live"                       # live | headless
@@ -998,6 +1007,57 @@ def create_app(lucius: Lucius, *, token: str | None = None) -> FastAPI:
         path = lucius.config.save()
         return {"saved": str(path), "changed": changed,
                 "restart_required": sorted(set(changed) & {"providers", "blender", "processing"})}
+
+    # -- projects: what Lucius made (lessons and tasks), making, rating -------------------------------------------------
+    from lucius.lessons import ProjectStore, rate_project
+
+    projects = ProjectStore(lucius.config.projects_dir)
+
+    @r.get("/projects")
+    def projects_list(kind: str | None = None, limit: int = 100) -> list[dict[str, Any]]:
+        return projects.list(kind=kind, limit=min(limit, 500))
+
+    @r.get("/projects/{project_id}")
+    def project_get(project_id: str) -> dict[str, Any]:
+        return projects.get(project_id).data
+
+    @r.get("/projects/{project_id}/files/{name}")
+    def project_file(project_id: str, name: str) -> FileResponse:
+        path = projects.file(project_id, name)
+        if path.suffix.lower() not in PROJECT_FILE_TYPES:
+            raise NotFoundError(f"{name} is not a project image or scene")
+        return FileResponse(path, media_type=PROJECT_FILE_TYPES[path.suffix.lower()],
+                            filename=path.name if path.suffix == ".blend" else None)
+
+    @r.post("/projects/{project_id}/rate")
+    def project_rate(project_id: str, body: ProjectRating) -> dict[str, Any]:
+        return rate_project(lucius, project_id, good=body.good, note=body.note)
+
+    @r.post("/make")
+    def make(task: str = Form(...), iterations: int = Form(3), allow_unlearned: bool = Form(False),
+             references: list[UploadFile] | None = File(None)) -> dict[str, Any]:
+        from lucius.lessons import Maker
+
+        task = task.strip()
+        if not 1 <= len(task) <= 2000:
+            raise ValidationError("describe what to make (1-2000 characters)")
+        paths = []
+        for upload in references or []:
+            if Path(upload.filename or "").suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp"):
+                raise ValidationError("reference images must be PNG, JPEG or WebP")
+            paths.append(_save_upload(upload, "references"))
+        maker = Maker(lucius, iterations=max(1, min(iterations, 6)))
+        job = jobs.submit("make", task, lambda backend: maker.make(task, references=paths,
+                                                                    allow_unlearned=allow_unlearned,
+                                                                    backend=backend).to_dict(),
+                          uses_blender=True, backend_factory=lucius.headless_backend, backend_name="headless")
+        return job.model_dump(mode="json")
+
+    @r.get("/techniques")
+    def techniques() -> dict[str, Any]:
+        from lucius.lessons import Maker
+
+        return Maker(lucius).techniques().to_dict()
 
     api.include_router(r)
 

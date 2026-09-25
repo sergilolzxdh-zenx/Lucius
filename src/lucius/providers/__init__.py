@@ -42,7 +42,8 @@ def build_providers(config: ProviderConfig, db: Database | None) -> tuple[Provid
                 else:
                     from lucius.providers.gemini_provider import GeminiProvider
 
-                    inner = GeminiProvider(config.gemini_model, thinking_level=config.gemini_thinking_level)
+                    inner = GeminiProvider(config.gemini_model, thinking_level=config.gemini_thinking_level,
+                                           fallback_models=config.gemini_fallback_models)
                 # The Anthropic SDK retries internally; the Gemini SDK does not by default.
                 bases[name] = LoggedLLM(inner, call_log, retries=config.max_retries if name == "gemini" else 1,
                                         requests_per_minute=config.requests_per_minute)

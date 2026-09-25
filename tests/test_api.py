@@ -184,3 +184,29 @@ def test_cli_config_sets_validated_values(tmp_path, capsys):
 
     cfg = load_config(data)
     assert cfg.providers.gemini_model == "gemini-x" and cfg.providers.requests_per_minute == 12
+
+
+def test_projects_can_be_viewed_made_and_rated(app, client):
+    from lucius.lessons import ProjectStore
+
+    project = ProjectStore(app.config.projects_dir).create("task", "a sword", task="a sword")
+    (project.path("sheet.png")).write_bytes(_png(lambda d: d.rectangle([10, 10, 50, 50], fill=(200, 0, 0))))
+    project.data.update(status="made", score=7.5, sheet="sheet.png")
+    project.save()
+    listed = client.get("/api/projects").json()
+    assert listed[0]["id"] == project.id and listed[0]["score"] == 7.5
+    assert client.get(f"/api/projects/{project.id}").json()["title"] == "a sword"
+    image = client.get(f"/api/projects/{project.id}/files/sheet.png")
+    assert image.status_code == 200 and image.headers["content-type"] == "image/png"
+    assert client.get(f"/api/projects/{project.id}/files/..%2Fproject.json").status_code == 404
+    assert client.get("/api/projects/..%2F..%2Fetc/files/passwd").status_code in (404, 422)
+    rated = client.post(f"/api/projects/{project.id}/rate", json={"good": False, "note": "blade too short"}).json()
+    assert rated["rating"]["good"] is False and rated["rating"]["note"] == "blade too short"
+    techniques = client.get("/api/techniques").json()
+    assert "actions" in techniques and "recipes" in techniques
+    bad = client.post("/api/make", data={"task": "a sword"},
+                      files=[("references", ("notes.txt", b"not an image", "text/plain"))])
+    assert bad.status_code == 422 and "PNG" in bad.json()["message"]
+    assert client.post("/api/make", data={"task": "  "}).status_code == 422
+    page = client.get("/").text
+    assert 'data-route="projects"' in page

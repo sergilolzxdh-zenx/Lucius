@@ -190,6 +190,82 @@ skills whose actions could not run, validation credited every skill retrieved in
 than the one under test, and the agent's own validation runs were sent for model relabelling
 (about 40% of a day's requests).
 
+## Lessons: learn a tutorial by rebuilding it
+
+`lucius tutorial` (above) extracts operations; `lucius learn` goes further and checks that Lucius can
+actually reproduce what the tutor built:
+
+```bash
+lucius learn "https://www.youtube.com/watch?v=..."          # all chapters, in order
+lucius learn "https://www.youtube.com/watch?v=..." --chapters 5-6 --practice 2
+lucius projects                                              # what it built, with scores
+lucius projects good <project-id> --note "nice mug"          # or: bad <project-id> --note "no handle"
+```
+
+For each chapter (a course builds one project across chapters, so each chapter continues from the
+previous chapter's scene):
+
+1. **Watch.** A video model (Gemini) watches the chapter by URL, in pieces of up to 5 minutes, at
+   high resolution with the narration, and writes lesson notes: each operation, what was selected,
+   the values read off the screen or heard (or estimated, and marked so), and the objects at the end.
+2. **Recipe.** The notes become a recipe of Blender actions with concrete values.
+3. **Rebuild.** The recipe runs in headless Blender. A failing step goes back to the model with the
+   error and the scene, and is corrected.
+4. **Compare.** The result is rendered (Cycles) and the model compares the renders with the end of
+   the chapter in the video: a score from 0 to 10 and a list of differences.
+5. **Practise.** The recipe is revised from the differences and rebuilt (`--practice` rounds, or
+   until `--target` is reached). The best attempt is kept.
+6. **Keep.** The best recipe becomes a skill: *validated* if it rebuilt without errors and was judged
+   at least 6/10. Everything is saved in `.lucius/projects/<id>/`: every attempt's renders and
+   recipe, the tutorial's own frame, `sheet.png` (tutorial next to Lucius' attempts) and
+   `scene.blend` (open it in Blender).
+
+The score is a model's judgement, not a measurement. The project folder and `sheet.png` exist so
+you can check it, and your rating (`lucius projects good|bad`, or the buttons in the control
+center) confirms or rejects the skill. Chapters already learned are skipped when you run the
+command again, and the notes are cached, so a run stopped by the model's daily quota resumes where
+it stopped.
+
+The actions a recipe can use: mesh primitives with sizes, box selection of faces, edges or vertices
+(Alt+click loops), extrude, inset, bevel, loop cuts, rotate/scale/move a selection, delete faces,
+bridge edge loops, fill, subdivide, separate, duplicate, modifiers (subdivision, mirror, solidify,
+bevel, array, boolean, displace…), shade smooth, Principled BSDF materials, lights, camera, world
+colour and particle scattering (sprinkles). There is no sculpting, curves, texture images or node
+editing yet: recipes approximate them and say so.
+
+## Make something new, or from a reference image
+
+```bash
+lucius make "a sword with a long thin blade and a round guard"
+lucius make "a mug like this" --reference photo_of_my_mug.jpg
+```
+
+Or in the control center (`lucius serve`, then http://127.0.0.1:8765/ → **Projects**): type what
+to make, optionally drop reference images (a photo, a drawing, a screenshot), press **Make it**, and
+the result appears with its pictures. Open it and press **Good** or **Bad**.
+
+The maker plans a recipe **only with the techniques Lucius has learned** (actions used by lesson
+recipes it passed) plus basic object handling, and uses the learned recipes as worked examples. A
+technique it has not learned is left out and named under "not learned yet" (`--allow-unlearned`
+lifts the restriction; the project records it). It builds, renders, has the model judge the result
+against your words and reference image, revises (three tries by default) and keeps the best try in
+a project folder like a lesson's. What it made becomes a skill that stays a candidate until you
+rate it good.
+
+### Windows (PowerShell)
+
+```powershell
+cd C:\path\to\Lucius
+.venv\Scripts\Activate.ps1
+$env:GEMINI_API_KEY = "your key"
+lucius learn "https://www.youtube.com/watch?v=lrlpwIumFnE"
+lucius make "a sword" --reference "C:\Users\you\Pictures\sword.jpg"
+lucius projects
+lucius serve          # then open http://127.0.0.1:8765/ and go to Projects
+```
+
+Pictures of every project are in `.lucius\projects\<project-id>\` (open `sheet.png`).
+
 ## Keyboard and mouse control
 
 `lucius run "<task>" --backend gui` performs the plan in your running Blender by keyboard and

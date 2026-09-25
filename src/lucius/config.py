@@ -55,6 +55,8 @@ class ProviderConfig(BaseModel):
     # Gemini: the model must be chosen explicitly (`lucius models --provider gemini` lists them).
     gemini_model: str | None = None
     gemini_thinking_level: Literal["minimal", "low", "medium", "high"] | None = None
+    # Used, in order, for a call the chosen model cannot serve right now (overloaded or out of daily quota).
+    gemini_fallback_models: list[str] = Field(default_factory=list)
     sentence_transformers_model: str = "all-MiniLM-L6-v2"
     hashing_dim: int = Field(default=512, ge=64, le=8192)
     max_retries: int = Field(default=2, ge=0, le=8)
@@ -136,8 +138,14 @@ class LuciusConfig(BaseModel):
     def journal_dir(self) -> Path:
         return self.data_dir / "journal"
 
+    @property
+    def projects_dir(self) -> Path:
+        """What Lucius builds (lessons, tasks): renders, .blend files and reports, for people to look at."""
+        return self.data_dir / "projects"
+
     def ensure_dirs(self) -> None:
-        for path in (self.data_dir, self.frames_dir, self.media_dir, self.exports_dir, self.journal_dir):
+        for path in (self.data_dir, self.frames_dir, self.media_dir, self.exports_dir, self.journal_dir,
+                     self.projects_dir):
             path.mkdir(parents=True, exist_ok=True)
 
     def save(self) -> Path:

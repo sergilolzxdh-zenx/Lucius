@@ -15,7 +15,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from lucius.errors import ProviderError, ProviderRefusal, ProviderUnavailable
+from lucius.logging_setup import get_logger
 from lucius.providers.base import ImageInput, ModelResult, VideoInput
+
+log = get_logger("providers.gemini")
 
 # Finish reasons that mean the model declined or was stopped by a content filter.
 REFUSAL_REASONS = {"SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "SPII", "IMAGE_SAFETY",
@@ -32,7 +35,7 @@ class GeminiProvider:
     supports_video = True       # public YouTube URLs, clipped with start/end offsets
 
     def __init__(self, model: str | None, *, thinking_level: str | None = None, timeout_s: float = 600.0,
-                 client: Any = None) -> None:
+                 client: Any = None, fallback_models: Sequence[str] = ()) -> None:
         try:
             from google import genai
             from google.genai import errors, types
@@ -51,6 +54,8 @@ class GeminiProvider:
         self.client = client
         self.model = model
         self.thinking_level = thinking_level
+        # Tried in order when the configured model is overloaded (503) or out of quota for the day.
+        self.fallback_models = [m for m in fallback_models if m and m != model]
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
                       images: Sequence[ImageInput] = (), max_tokens: int = 8000,
@@ -108,17 +113,35 @@ class GeminiProvider:
                            latency_s=latency)
 
     def _call(self, purpose: str, contents: list[Any], config: Any) -> Any:
+        try:
+            return self._call_model(self.model, purpose, contents, config)
+        except ProviderError as exc:
+            overloaded = exc.details.get("transient") and "503" in exc.message
+            exhausted = "quota" in exc.message and not exc.details.get("transient")
+            if not self.fallback_models or not (overloaded or exhausted):
+                raise
+            last = exc
+        for model in self.fallback_models:
+            log.warning("%s is %s; trying %s for %s", self.model, "overloaded" if overloaded else "out of quota",
+                        model, purpose)
+            try:
+                return self._call_model(model, purpose, contents, config)
+            except ProviderError as exc:
+                last = exc
+        raise last
+
+    def _call_model(self, model: str, purpose: str, contents: list[Any], config: Any) -> Any:
         errors = self._errors
         try:
-            return self.client.models.generate_content(model=self.model, contents=contents, config=config)
+            return self.client.models.generate_content(model=model, contents=contents, config=config)
         except errors.ClientError as exc:
             code = getattr(exc, "code", None)
             if code in (401, 403):
                 raise ProviderUnavailable(f"Gemini credentials rejected: {exc}", purpose=purpose) from exc
             if code == 404:
-                raise ProviderError(f"model {self.model!r} not found: {exc}", purpose=purpose, transient=False) from exc
+                raise ProviderError(f"model {model!r} not found: {exc}", purpose=purpose, transient=False) from exc
             if code == 429:
-                raise _quota_error(exc, self.model, purpose) from exc
+                raise _quota_error(exc, model, purpose) from exc
             raise ProviderError(f"bad request ({code}): {exc}", purpose=purpose, transient=False) from exc
         except errors.ServerError as exc:
             raise ProviderError(f"API error {getattr(exc, 'code', '')}: {exc}", purpose=purpose, transient=True) from exc
