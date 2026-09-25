@@ -53,7 +53,20 @@ def server(tmp_path_factory):
 def test_every_view_renders_without_errors(server):
     base, app, session_id = server
     failure_id = app.failures.list()[0].id
-    routes = ["agent", "watch", f"sessions/{session_id}", "import", "skills", "skills/hard_surface_blade_blockout",
+    from PIL import Image
+
+    from lucius.lessons import ProjectStore
+
+    project = ProjectStore(app.config.projects_dir).create("lesson", "Mug and plate", source={"video": "https://x"})
+    Image.new("RGB", (320, 240), (90, 90, 120)).save(project.path("attempt1_three_quarter.png"))
+    Image.new("RGB", (640, 300), (40, 40, 40)).save(project.path("sheet.png"))
+    project.data.update(status="learned", score=7.0, sheet="sheet.png", attempts=[{
+        "number": 1, "score": 7.0, "fixes": 1, "run": {"ok": True, "error": None},
+        "renders": ["attempt1_three_quarter.png"],
+        "comparison": {"matches": ["body"], "differences": [{"object": "Mug", "problem": "thin", "fix": "wider"}]}}])
+    project.save()
+    routes = ["agent", "watch", f"sessions/{session_id}", "import", "projects", f"projects/{project.id}",
+              "skills", "skills/hard_surface_blade_blockout",
               "memory", "memory/Semantic", "memory/Preferences", "memory/Learning graph", "memory/Retrieval debug",
               "failures", f"failures/{failure_id}", "practice", "practice/hard_surface", "datasets", "benchmarks",
               "settings"]
