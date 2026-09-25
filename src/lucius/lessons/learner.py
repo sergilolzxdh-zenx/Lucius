@@ -511,7 +511,13 @@ class LessonLearner:
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=part.task_text)
         passed = final_run.ok and (result.score or 0.0) >= self.pass_score
         result.status = "learned" if passed else ("partial" if final_run.ok else "failed")
-        result.skill_id = self.store_skill(best.recipe, part, video, final_run.ok, result.score, index, project)
+        if previous is not None and (result.score or -1.0) <= previous[1]:
+            # Practice did not beat the best recipe so far: the skill keeps it, and this run is not evidence
+            # against it (a practice attempt that went nowhere is not the skill failing).
+            result.skill_id = self._skill_id(video, index)
+            result.notes.append(f"practice did not beat the earlier best ({previous[1]}/10); the skill keeps it")
+        else:
+            result.skill_id = self.store_skill(best.recipe, part, video, final_run.ok, result.score, index, project)
         project.data.update(status=result.status, score=result.score, skill_id=result.skill_id,
                             sheet="sheet.png", final_render=result.final_render.name if result.final_render else None,
                             blend="scene.blend" if result.blend else None, best_attempt=best.number,
@@ -554,6 +560,10 @@ class LessonLearner:
         return storyboard_frame(info, t, cache, project.path("tutorial_frame.png"))
 
     # -- 6. skill ---------------------------------------------------------------------------------------------
+    @staticmethod
+    def _skill_id(video: DownloadedVideo, index: int) -> str:
+        return f"lesson_{video.video_id}_{index + 1:02d}".replace("-", "_").lower()
+
     def store_skill(self, recipe: Recipe, part: TutorialPart, video: DownloadedVideo, built: bool,
                     score: float | None, index: int, project: Project) -> str | None:
         from lucius.ids import new_id
@@ -563,7 +573,7 @@ class LessonLearner:
         if not recipe.steps:
             return None
         library = self.app.library
-        skill_id = f"lesson_{video.video_id}_{index + 1:02d}".replace("-", "_").lower()
+        skill_id = self._skill_id(video, index)
         names = [o.get("name", "") for o in recipe.objects if o.get("name")]
         definition = SkillDefinition(
             skill_id=skill_id, name=recipe.title, purpose=(recipe.summary + " " + recipe.expected_result).strip(),
