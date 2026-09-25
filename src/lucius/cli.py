@@ -307,6 +307,7 @@ def cmd_learn(args: argparse.Namespace) -> int:
         _say(f"{video.title}: {len([p for p in parts if not p.skipped])} chapters to learn "
              f"(projects in {app.config.projects_dir})")
         learner = LessonLearner(app, practice_rounds=args.practice, target_score=args.target)
+        learner.rewrite = args.rewrite
         results = learner.learn(video, parts, redo=args.redo, on_progress=_say)
         _print({"video": video.url, "chapters": [r.to_dict() for r in results]})
         return 0 if results and all(r.status in ("learned", "nothing_to_learn") for r in results) else 2
@@ -493,7 +494,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--end", help="only this part: end time")
     s.add_argument("--practice", type=int, default=2, help="practice rounds per chapter after the first attempt")
     s.add_argument("--target", type=float, default=8.0, help="stop practising a chapter at this score (0-10)")
-    s.add_argument("--redo", action="store_true", help="learn chapters again even if already learned")
+    s.add_argument("--redo", action="store_true", help="learn chapters again even if already learned (practice "
+                                                       "continues from the best earlier recipe)")
+    s.add_argument("--rewrite", action="store_true", help="with --redo: write new recipes from the notes instead")
     s.add_argument("--no-skip", action="store_true", help="also learn intro/installation/promotion chapters")
     s.add_argument("--no-translate", action="store_true", help="keep non-English chapter titles untranslated")
     s.set_defaults(func=cmd_learn)

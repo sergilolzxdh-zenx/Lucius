@@ -227,6 +227,10 @@ def test_a_chapter_is_learned_rebuilt_compared_and_practised(tmp_path, headless_
 
         # Resuming skips the learned chapter; the notes are cached.
         assert learner.learn(video, [part]) == []
+        # Relearning practises from the best recipe so far instead of writing a new one.
+        again = learner.learn(video, [part], redo=True)
+        assert [c["purpose"] for c in teacher.calls].count("lesson_recipe") == 1
+        assert learner.projects.get(again[0].project_id).data["continued_from"]["score"] == 9
 
         # The maker may use what the lesson taught (extrude, inset, modifiers...), plus basic actions.
         maker = Maker(app, iterations=2, render_samples=4)

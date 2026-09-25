@@ -933,6 +933,9 @@ def import_blend(p):
             scene.collection.objects.link(obj)
             names.append(obj.name)
     bpy.context.view_layer.update()   # appended objects get their world matrices only on an update
+    meshes = [o for o in scene.objects if o.type == "MESH"]
+    if meshes and bpy.context.view_layer.objects.active is None:
+        bpy.context.view_layer.objects.active = meshes[-1]   # as after working on it: something is active
     # A saved scene continues where it stopped: its camera and world come back too.
     cameras = sorted((o for o in scene.objects if o.type == "CAMERA"), key=lambda o: o.name)
     if cameras and (scene.camera is None or scene.camera.name not in scene.objects):

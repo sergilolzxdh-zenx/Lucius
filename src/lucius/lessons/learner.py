@@ -233,6 +233,7 @@ class LessonLearner:
         self.projects = ProjectStore(app.config.projects_dir)
         self.chunk_s = app.config.processing.video_model_chunk_s
         self.max_skips = 3               # steps an attempt may leave out when corrections cannot make them work
+        self.rewrite = False             # True: write a new recipe even when an earlier one was built and judged
         self.chunk_attempts = 3          # per piece of video, when every model is overloaded
         self.retry_wait_s = 90.0
 
@@ -420,14 +421,23 @@ class LessonLearner:
             project.save()
             result.status = "nothing_to_learn"
             return result
-        say(f"[{part.task_text}] {len(notes['operations'])} operations noted; writing the recipe")
-        try:
-            recipe, problems = self.write_recipe(part, notes, scene_before, source)
-        except ProviderError as exc:
-            result.notes.append(f"the recipe could not be written: {exc.message[:200]}")
-            project.data.update(status="failed", notes=result.notes)
-            project.save()
-            return result
+        previous = None if self.rewrite else self._previous_best(video, part)
+        if previous is not None:
+            # Learning accumulates: practise from the best recipe so far rather than writing a new one (a new
+            # recipe from the same notes is a fresh gamble, and often worse).
+            recipe, problems = previous[0], []
+            project.data["continued_from"] = {"project": previous[2], "score": previous[1]}
+            say(f"[{part.task_text}] continuing from the best earlier recipe ({previous[1]}/10, "
+                f"{len(recipe.steps)} steps)")
+        else:
+            say(f"[{part.task_text}] {len(notes['operations'])} operations noted; writing the recipe")
+            try:
+                recipe, problems = self.write_recipe(part, notes, scene_before, source)
+            except ProviderError as exc:
+                result.notes.append(f"the recipe could not be written: {exc.message[:200]}")
+                project.data.update(status="failed", notes=result.notes)
+                project.save()
+                return result
         attempts: list[Attempt] = []
         for number in range(1, self.practice_rounds + 2):
             run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
@@ -499,6 +509,23 @@ class LessonLearner:
                             recipe_steps=len(best.recipe.steps), actions=sorted(best.recipe.actions_used()))
         project.save()
         return result
+
+    def _previous_best(self, video: DownloadedVideo, part: TutorialPart) -> tuple[Recipe, float, str] | None:
+        """The best recipe an earlier run of this chapter built and had judged."""
+        best: tuple[Recipe, float, str] | None = None
+        for summary in self.projects.list(kind="lesson", limit=1000):
+            project = self.projects.get(summary["id"])
+            src = project.data.get("source") or {}
+            if (src.get("video_id") != video.video_id or int(src.get("start", -1)) != int(part.start)
+                    or int(src.get("end", -1)) != int(part.end)):
+                continue
+            score = project.data.get("score")
+            path = project.path("recipe.json")
+            if project.data.get("status") not in ("learned", "partial") or score is None or not path.exists():
+                continue
+            if best is None or float(score) > best[1]:
+                best = (Recipe.model_validate_json(path.read_text()), float(score), project.id)
+        return best
 
     def _reference_frame(self, video: DownloadedVideo, part: TutorialPart, best: Attempt, project: Project,
                          info: dict[str, Any] | None) -> Path | None:

@@ -9,6 +9,7 @@ converted here before the bridge validates them.
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from typing import Any
@@ -155,8 +156,14 @@ def normalize_args(action: str, args: dict[str, Any]) -> tuple[dict[str, Any], l
             notes.append(f"{key} read as degrees")
         elif key in COLOR_ARGS:
             out[key] = _color(value)
-        elif key == "props" and isinstance(value, dict):
-            out[key] = {k: _prop(k, v) for k, v in value.items()}
+        elif key == "props" and isinstance(value, (dict, str)):
+            if isinstance(value, str):   # a JSON object written as a string inside the arguments
+                try:
+                    value = json.loads(value) if value.strip() else {}
+                except json.JSONDecodeError:
+                    out[key] = value
+                    continue
+            out[key] = {k: _prop(k, v) for k, v in value.items()} if isinstance(value, dict) else value
         else:
             out[key] = value
     if action == "add_primitive" and isinstance(out.get("kind"), str):
