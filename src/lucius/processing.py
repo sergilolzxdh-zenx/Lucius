@@ -194,6 +194,10 @@ class ProcessingPipeline:
         if not self.app.providers.has("llm"):
             raise Skipped("no LLM provider configured")
         session = self.app.sessions.get(session_id)
+        if session.kind not in LEARNING_KINDS:
+            # The agent's own runs (validation, practice, benchmarks) teach nothing through their phase labels;
+            # relabelling them spent 196 of 500 daily requests in the first tutorial run.
+            raise Skipped("only demonstrations are relabelled by a model")
         steps = self.app.trajectories.for_session(session_id)
         segments = self.app.segments.for_session(session_id)
         frame_paths = {f.id: f.path for f in self.app.sessions.frames_for(session_id)}

@@ -161,6 +161,15 @@ def test_model_refinement_is_marked_discounted_and_respects_human_edits(tmp_path
         assert f"Segment {human.idx} " not in llm.prompts[-1]  # locked segments are never sent
         kept = app.segments.get(human.id)
         assert kept.label == "scene_setup" and kept.origin == "human"
+
+        # The agent's own runs are never sent for relabelling (they cost most of a daily quota once).
+        calls = len(llm.prompts)
+        run = app.sessions.create(user_id="local", kind=SessionKind.VALIDATION, policy=DataPolicy.for_live_demo(),
+                                  task_text="simple sword blockout", start_time=demo.events[0].ts)
+        app.sessions.append_events(run.id, demo.events)
+        app.sessions.finalize(run.id, end_time=demo.events[-1].ts, outcome=Outcome.SUCCESS)
+        app.pipeline.process(run.id)
+        assert len(llm.prompts) == calls and app.pipeline.status(run.id)["refinement"]["status"] == "skipped"
     finally:
         app.close()
 
