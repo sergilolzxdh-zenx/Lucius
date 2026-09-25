@@ -33,7 +33,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "object, element: VERT|EDGE|FACE, min [x,y,z], max [x,y,z] (null = unbounded), "
                    "space: local (object coordinates in metres, recommended) | normalized (0..1 of the bounding box) "
                    "| world, facing [x,y,z] (faces whose normal points that way; min_dot 0.7), sharp_deg (edges "
-                   "where faces meet at >= this angle, plus open rims), boundary (only edges of holes/open rims), "
+                   "where faces meet at >= this angle, plus open rims), boundary (edges of holes and open rims; on a "
+                   "closed mesh it falls back to the sharp edges in the box, like Alt+click on a rim loop), "
                    "extend (add to the selection). Fails if nothing is inside the box."),
     "extrude": ("E", "object, offset [x,y,z] (move the new region by this vector) OR distance (along the faces' "
                 "normal). Extrudes the selected faces (else edges, else vertices); the new cap stays selected."),
@@ -118,6 +119,21 @@ def _color(value: Any) -> Any:
     return value
 
 
+AXIS_FLAGS = ("use_axis", "use_bisect_axis")
+
+
+def _prop(key: str, value: Any) -> Any:
+    """Modifier properties as people write them: "use_axis": "X" or true (the X axis) -> [true, false, false]."""
+    if key.endswith("color"):
+        return _color(value)
+    if key in AXIS_FLAGS:
+        if isinstance(value, bool):
+            return [value, False, False]
+        if isinstance(value, str) and set(value.upper()) <= set("XYZ") and value:
+            return ["X" in value.upper(), "Y" in value.upper(), "Z" in value.upper()]
+    return value
+
+
 def normalize_args(action: str, args: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     """Degrees -> radians, hex colours -> linear floats. Returns the bridge arguments and notes."""
     out: dict[str, Any] = {}
@@ -139,11 +155,39 @@ def normalize_args(action: str, args: dict[str, Any]) -> tuple[dict[str, Any], l
         elif key in COLOR_ARGS:
             out[key] = _color(value)
         elif key == "props" and isinstance(value, dict):
-            out[key] = {k: (_color(v) if k.endswith("color") else v) for k, v in value.items()}
+            out[key] = {k: _prop(k, v) for k, v in value.items()}
         else:
             out[key] = value
     if action == "add_primitive" and isinstance(out.get("kind"), str):
         out["kind"] = out["kind"].lower().replace(" ", "_")
+    return out, notes
+
+
+def fix_keys(action: str, args: dict[str, Any], known: set[str]) -> tuple[dict[str, Any], list[str]]:
+    """Match misspelled argument names to the action's real ones (".max" -> "max", "offest" -> "offset").
+
+    Models writing recipes make such slips; the bridge would reject the step, and a model asked to correct it
+    often repeats the slip. Only close, unambiguous matches are renamed; anything else is left for the bridge
+    to reject."""
+    import difflib
+
+    if not known:
+        return args, []
+    out: dict[str, Any] = {}
+    notes: list[str] = []
+    accepted = known | set(DEGREE_ARGS)
+    for key, value in args.items():
+        if key in accepted:
+            out[key] = value
+            continue
+        cleaned = re.sub(r"[^a-z0-9_]", "", key.strip().lower().replace(" ", "_").replace("-", "_"))
+        match = cleaned if cleaned in accepted else next(iter(difflib.get_close_matches(cleaned, sorted(accepted),
+                                                                                     n=1, cutoff=0.8)), None)
+        if match is not None and match not in args and match not in out:
+            out[match] = value
+            notes.append(f"argument {key!r} read as {match!r}")
+        else:
+            out[key] = value
     return out, notes
 
 

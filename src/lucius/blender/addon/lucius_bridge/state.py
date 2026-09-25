@@ -151,6 +151,10 @@ def object_summary(obj):
         "materials": [slot.material.name for slot in getattr(obj, "material_slots", []) if slot.material],
         "parent": obj.parent.name if obj.parent else None,
     }
+    if obj.type == "MESH" and obj.data is not None and len(obj.data.vertices):
+        corners = [list(c) for c in obj.bound_box]   # object-local: what select_box space="local" addresses
+        data["bounds_local"] = [[round(min(c[i] for c in corners), 5) for i in range(3)],
+                                [round(max(c[i] for c in corners), 5) for i in range(3)]]
     if obj.type == "LIGHT" and obj.data is not None:
         data["light"] = {"type": obj.data.type, "energy": round(float(obj.data.energy), 3)}
     if obj.type == "CAMERA" and obj.data is not None:

@@ -68,7 +68,9 @@ RECIPE_RULES = (
     "Conventions: metres; Z is up; angles in degrees (rotation_deg, angle_deg); colours \"#RRGGBB\". Selections: "
     "use select_box with space \"local\" (object coordinates in metres, unaffected by moving the object) and "
     "bounds that contain only the intended elements -- compute them from the sizes you gave the geometry earlier "
-    "(e.g. a cylinder of depth 0.1 at the origin spans z -0.05..0.05 locally until its top is extruded). Edit "
+    "(e.g. a cylinder of depth 0.1 at the origin spans z -0.05..0.05 locally until its top is extruded), and "
+    "make the selection explicitly right before every bevel, inset, extrude, delete_elements, bridge_edge_loops "
+    "or fill that does not simply continue the region the previous extrude left selected. Edit "
     "operations (extrude, inset, bevel, scale/rotate/translate_selection, delete_elements, bridge_edge_loops, fill) "
     "act on the current selection and enter edit mode themselves; after extrude the new region stays selected, so "
     "a chain like extrude, rotate_selection, extrude works like E, R, E in Blender. Alt+click on an edge loop is "
@@ -89,8 +91,9 @@ RECIPE_SYSTEM = (
 
 FIX_SYSTEM = (
     "A recipe for Blender failed while executing. Correct it so that it runs and still builds the same thing. "
-    "Change only what is needed (usually the failing step or the steps that prepared its selection); return "
-    "the whole corrected recipe."
+    "Change only what is needed (usually the failing step or the steps that prepared its selection): read the "
+    "error, the local bounds of the object and what the previous steps selected, and fix the coordinates or "
+    "arguments. Return the whole corrected recipe."
 )
 
 COMPARE_SYSTEM = (
@@ -221,6 +224,7 @@ class LessonLearner:
         self.render_samples = render_samples
         self.projects = ProjectStore(app.config.projects_dir)
         self.chunk_s = app.config.processing.video_model_chunk_s
+        self.max_skips = 3               # steps an attempt may leave out when corrections cannot make them work
         self.chunk_attempts = 3          # per piece of video, when every model is overloaded
         self.retry_wait_s = 90.0
 
@@ -327,7 +331,9 @@ class LessonLearner:
             f"Actions:\n{catalogue()}",
             f"Recipe ({recipe.title}):\n{recipe.compact()}",
             f"Failure: {run.error_text()}" + (f"\nOther problems: {'; '.join(problems)}" if problems else ""),
-            f"Scene when it failed:\n{run.scene_text()}",
+            f"The steps before it did:\n{run.context_text()}",
+            f"Scene when it failed (object sizes, and local bounds -- the coordinates select_box space \"local\" "
+            f"uses):\n{run.scene_text()}",
             "Return the corrected recipe."])
         return self._recipe_call("lesson_recipe_fix", FIX_SYSTEM, prompt, recipe.source)
 
@@ -422,6 +428,16 @@ class LessonLearner:
                     result.notes.append(f"correction failed: {exc.message[:160]}")
                     break
                 run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
+            skipped: list[str] = []
+            while not run.ok and run.failed is not None and len(skipped) < self.max_skips:
+                # Corrections did not make this step work: build the rest without it, and say so.
+                step = recipe.steps[run.failed.index]
+                skipped.append(f"step {run.failed.index} {step.action} {step.args} ({run.failed.error})")
+                say(f"[{part.task_text}] attempt {number}: skipping step {run.failed.index} ({step.action})")
+                recipe = recipe.without_step(run.failed.index)
+                run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
+            if skipped:
+                result.notes.append(f"attempt {number} skipped {len(skipped)} step(s) it could not make work")
             attempt = Attempt(number=number, recipe=recipe, run=run, fixes=fixes)
             attempt.renders = self._render(runner, project, recipe, f"attempt{number}",
                                            uses_camera or "add_camera" in recipe.actions_used())
@@ -430,7 +446,7 @@ class LessonLearner:
             attempts.append(attempt)
             (project.path(f"attempt{number}_recipe.json")).write_text(recipe.model_dump_json(indent=1))
             project.add_attempt({"number": number, "score": attempt.comparison.get("score"), "run": run.to_dict(),
-                                 "fixes": fixes, "renders": [p.name for p in attempt.renders],
+                                 "fixes": fixes, "skipped_steps": skipped, "renders": [p.name for p in attempt.renders],
                                  "comparison": attempt.comparison, "problems": problems})
             say(f"[{part.task_text}] attempt {number}: {'built' if run.ok else 'failed'} "
                 f"({run.steps_ok}/{len(recipe.steps)} steps), score {attempt.comparison.get('score')}")

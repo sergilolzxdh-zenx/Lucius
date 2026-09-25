@@ -18,7 +18,7 @@ from lucius.errors import ActionRejected, BlenderBridgeError
 from lucius.executor.backend import ExecutionBackend
 from lucius.executor.safety import ActionValidator
 from lucius.ids import new_id
-from lucius.lessons.catalogue import normalize_args
+from lucius.lessons.catalogue import fix_keys, normalize_args
 from lucius.lessons.recipe import Recipe
 from lucius.logging_setup import get_logger
 from lucius.planner.model import PlanAction
@@ -58,6 +58,16 @@ class RecipeRun:
             return ""
         return f"step {self.failed.index} ({self.failed.action}) failed: {self.failed.error}"
 
+    def context_text(self, steps: int = 6) -> str:
+        """What the last steps before the failure did (selections made, geometry added), for the model."""
+        lines = []
+        for outcome in self.outcomes[-steps - 1:-1] if self.failed else self.outcomes[-steps:]:
+            result = {k: v for k, v in (outcome.result or {}).get("result", outcome.result or {}).items()
+                      if k in ("selected", "element", "verts", "faces", "new_verts", "new_faces", "mode", "object",
+                               "deleted", "cuts", "created", "moved", "scaled", "rotated", "fallback")}
+            lines.append(f"- step {outcome.index} {outcome.action}: {result}")
+        return "\n".join(lines)
+
     def scene_text(self) -> str:
         """The scene after the run, one object per line (for prompts)."""
         lines = []
@@ -71,6 +81,10 @@ class RecipeRun:
                 extra.append("materials " + "/".join(obj["materials"]))
             if obj.get("mesh"):
                 extra.append(f"{obj['mesh']['verts']} verts")
+            if obj.get("bounds_local"):
+                lo, hi = obj["bounds_local"]
+                extra.append("local bounds x {:.3g}..{:.3g}, y {:.3g}..{:.3g}, z {:.3g}..{:.3g}".format(
+                    lo[0], hi[0], lo[1], hi[1], lo[2], hi[2]))
             lines.append(f"- {obj['name']} ({obj['type']}): size [{dims}] m at [{loc}]"
                          + (f"; {'; '.join(extra)}" if extra else ""))
         return "\n".join(lines) or "(empty scene)"
@@ -122,6 +136,11 @@ class RecipeRunner:
         if default_cube:
             self._bridge("add_primitive", {"kind": "cube", "size": 2.0, "name": "Cube"})
 
+    def action_specs(self) -> dict[str, dict[str, Any]]:
+        """Parameter names of every action, as the bridge describes them."""
+        bridge = getattr(self.backend, "bridge", None)
+        return dict((getattr(bridge, "info", None) or {}).get("actions") or {})
+
     def scene(self) -> dict[str, Any]:
         bridge = getattr(self.backend, "bridge", None)
         if bridge is None:
@@ -139,9 +158,12 @@ class RecipeRunner:
         if prepare:
             self.prepare(start_from, default_cube=default_cube)
         validator: ActionValidator = self._validator_factory()
+        specs = self.action_specs()
         run = RecipeRun(ok=True)
         for index, step in enumerate(recipe.steps):
-            args, notes = normalize_args(step.action, step.args)
+            fixed, key_notes = fix_keys(step.action, step.args, set(specs.get(step.action, {})))
+            args, notes = normalize_args(step.action, fixed)
+            notes = key_notes + notes
             action = PlanAction(id=new_id("step"), layer="blender_api", name=step.action, args=args,
                                 action_type=vocab.BRIDGE_ACTION_TYPES.get(step.action, step.action),
                                 description=step.note, source=f"recipe:{index}")
@@ -157,6 +179,8 @@ class RecipeRunner:
                 if not result.ok:
                     error = result.error or {}
                     outcome.error = f"{error.get('code', 'error')}: {error.get('message', '')}"[:400]
+                    if error.get("code") in ("invalid_param", "missing_param") and step.action in specs:
+                        outcome.error += f" (parameters of {step.action}: {', '.join(specs[step.action])})"
             run.outcomes.append(outcome)
             if not outcome.ok:
                 run.ok = False

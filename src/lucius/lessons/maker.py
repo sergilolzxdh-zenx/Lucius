@@ -328,7 +328,9 @@ class Maker:
             prompt = "\n\n".join([
                 f"Actions available:\n{catalogue(allowed)}", f"Recipe ({recipe.title}):\n{recipe.compact()}",
                 f"Failure: {run.error_text()}" + (f"\nOther problems: {'; '.join(problems)}" if problems else ""),
-                f"Scene when it failed:\n{run.scene_text()}", "Return the corrected recipe."])
+                f"The steps before it did:\n{run.context_text()}",
+                f"Scene when it failed (local bounds are the coordinates select_box space \"local\" uses):\n"
+                f"{run.scene_text()}", "Return the corrected recipe."])
             try:
                 data = self._call("make_fix", system=FIX_SYSTEM + "\n\n" + rules, prompt=prompt,
                                   schema=recipe_schema(allowed))
@@ -336,6 +338,14 @@ class Maker:
                 log.warning("recipe correction failed: %s", exc.message)
                 break
             recipe, problems = parse_recipe(data, allowed=allowed, source=recipe.source)
+            run = runner.run(recipe)
+        skips = 0
+        while not run.ok and run.failed is not None and skips < 3:
+            # Corrections did not make this step work: build the rest without it.
+            skips += 1
+            say(f"attempt {number}: skipping step {run.failed.index} ({run.failed.action})")
+            problems.append(f"skipped step {run.failed.index} ({run.failed.action}): {run.failed.error}")
+            recipe = recipe.without_step(run.failed.index)
             run = runner.run(recipe)
         return run, recipe, problems, fixes
 

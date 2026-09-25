@@ -37,6 +37,13 @@ class Recipe(BaseModel):
     def modifier_types(self) -> set[str]:
         return {str(s.args.get("type", "")).upper() for s in self.steps if s.action == "add_modifier"} - {""}
 
+    def without_step(self, index: int) -> Recipe:
+        """The recipe minus one step (a step that could not be made to work), noted in the summary."""
+        steps = [s for i, s in enumerate(self.steps) if i != index]
+        dropped = self.steps[index]
+        note = f"[skipped: {dropped.action} {dropped.note or ''}]".strip()
+        return self.model_copy(update={"steps": steps, "summary": f"{self.summary} {note}".strip()})
+
     def object_names(self) -> list[str]:
         """Objects the recipe creates or changes, in order of first mention."""
         names: list[str] = []

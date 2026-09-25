@@ -279,3 +279,14 @@ def test_bridge_scene_actions_render(tmp_path, headless_blender):
         ex("render_image", path=str(out / "auto.png"), view="front", frame=["Mug"], samples=2, width=160, height=120)
         with pytest.raises(Exception, match="outside the directories"):
             ex("render_image", path=str(tmp_path / "elsewhere.png"), samples=1, width=32, height=32)
+
+
+def test_misspelled_arguments_are_matched_to_the_real_ones():
+    from lucius.lessons.catalogue import fix_keys
+
+    fixed, notes = fix_keys("select_box", {".max": [1, 1, 1], "elemnt": "FACE", "min": [0, 0, 0], "colour": 1},
+                            {"object", "min", "max", "element", "space"})
+    assert fixed == {"max": [1, 1, 1], "element": "FACE", "min": [0, 0, 0], "colour": 1}
+    assert len(notes) == 2
+    fixed, _ = fix_keys("rotate_selection", {"angle_deg": 45}, {"object", "axis", "angle"})
+    assert fixed == {"angle_deg": 45}          # degree spellings are converted later, not renamed

@@ -574,6 +574,7 @@ def select_box(p):
             elem.select = False
     facing = Vector(p["facing"]).normalized() if p["facing"] is not None else None
     count = 0
+    fallback = None
     if p["element"] == "FACE":
         bm.select_mode = {"FACE"}
         for face in bm.faces:
@@ -584,11 +585,14 @@ def select_box(p):
         import math
         bm.select_mode = {"EDGE"}
         limit = math.radians(p["sharp_deg"]) if p["sharp_deg"] is not None else None
-        for edge in bm.edges:
-            if not all(inside(v.co) for v in edge.verts):
-                continue
-            if p["boundary"] and len(edge.link_faces) != 1:
-                continue
+        boxed = [e for e in bm.edges if all(inside(v.co) for v in e.verts)]
+        chosen = [e for e in boxed if len(e.link_faces) == 1] if p["boundary"] else boxed
+        if p["boundary"] and not chosen:
+            # A closed mesh has no open rim: what a loop selection there means is its sharp edges (a mug's lip).
+            limit = limit if limit is not None else math.radians(30.0)
+            chosen = boxed
+            fallback = "sharp edges (the box holds no open rim)"
+        for edge in chosen:
             if limit is not None and len(edge.link_faces) == 2 and edge.calc_face_angle(0.0) < limit:
                 continue
             edge.select = True
@@ -602,9 +606,15 @@ def select_box(p):
     bm.select_flush_mode()
     bmesh.update_edit_mesh(obj.data)
     if count == 0:
-        raise BridgeCommandError("empty_selection", "nothing inside the box", object=obj.name)
-    return {"object": obj.name, "selected": count, "element": p["element"],
-            "verts": sum(v.select for v in bm.verts), "faces": sum(f.select for f in bm.faces)}
+        lo, hi = _local_bbox(bm)
+        raise BridgeCommandError("empty_selection", "nothing inside the box (the mesh spans x {:.3g}..{:.3g}, "
+                                 "y {:.3g}..{:.3g}, z {:.3g}..{:.3g} in local coordinates)".format(
+                                     lo[0], hi[0], lo[1], hi[1], lo[2], hi[2]), object=obj.name)
+    out = {"object": obj.name, "selected": count, "element": p["element"],
+           "verts": sum(v.select for v in bm.verts), "faces": sum(f.select for f in bm.faces)}
+    if fallback:
+        out["fallback"] = fallback
+    return out
 
 
 def rotate_selection(p):
