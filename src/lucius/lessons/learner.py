@@ -209,6 +209,7 @@ class ChapterResult:
     blend: Path | None = None
     attempts: int = 0
     notes: list[str] = field(default_factory=list)
+    out_of_quota: bool = False        # the model ran out while practising: the lesson stops after this chapter
 
     def to_dict(self) -> dict[str, Any]:
         return {"chapter": self.chapter, "project_id": self.project_id, "status": self.status, "score": self.score,
@@ -439,49 +440,57 @@ class LessonLearner:
                 project.save()
                 return result
         attempts: list[Attempt] = []
-        for number in range(1, self.practice_rounds + 2):
-            run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
-            fixes = 0
-            while not run.ok and fixes < self.max_fixes:
-                fixes += 1
-                say(f"[{part.task_text}] attempt {number}: {run.error_text()} -> correcting the recipe ({fixes})")
-                try:
-                    recipe, problems = self.fix_recipe(recipe, run, problems)
-                except ProviderError as exc:
-                    result.notes.append(f"correction failed: {exc.message[:160]}")
+        out_of_quota: QuotaExhausted | None = None
+        try:
+            for number in range(1, self.practice_rounds + 2):
+                run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
+                fixes = 0
+                while not run.ok and fixes < self.max_fixes:
+                    fixes += 1
+                    say(f"[{part.task_text}] attempt {number}: {run.error_text()} -> correcting the recipe ({fixes})")
+                    try:
+                        recipe, problems = self.fix_recipe(recipe, run, problems)
+                    except ProviderError as exc:
+                        result.notes.append(f"correction failed: {exc.message[:160]}")
+                        break
+                    run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
+                skipped: list[str] = []
+                while not run.ok and run.failed is not None and len(skipped) < self.max_skips:
+                    # Corrections did not make this step work: build the rest without it, and say so.
+                    step = recipe.steps[run.failed.index]
+                    skipped.append(f"step {run.failed.index} {step.action} {step.args} ({run.failed.error})")
+                    say(f"[{part.task_text}] attempt {number}: skipping step {run.failed.index} ({step.action})")
+                    recipe = recipe.without_step(run.failed.index)
+                    run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
+                if skipped:
+                    result.notes.append(f"attempt {number} skipped {len(skipped)} step(s) it could not make work")
+                attempt = Attempt(number=number, recipe=recipe, run=run, fixes=fixes)
+                attempt.renders = self._render(runner, project, recipe, f"attempt{number}",
+                                               uses_camera or "add_camera" in recipe.actions_used())
+                if run.ok and attempt.renders:
+                    attempt.comparison = self.compare(video, part, recipe, attempt.renders)
+                attempts.append(attempt)
+                (project.path(f"attempt{number}_recipe.json")).write_text(recipe.model_dump_json(indent=1))
+                project.add_attempt({"number": number, "score": attempt.comparison.get("score"), "run": run.to_dict(),
+                                     "fixes": fixes, "skipped_steps": skipped, "renders": [p.name for p in attempt.renders],
+                                     "comparison": attempt.comparison, "problems": problems})
+                say(f"[{part.task_text}] attempt {number}: {'built' if run.ok else 'failed'} "
+                    f"({run.steps_ok}/{len(recipe.steps)} steps), score {attempt.comparison.get('score')}")
+                if not run.ok or attempt.score >= self.target_score or number > self.practice_rounds:
                     break
-                run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
-            skipped: list[str] = []
-            while not run.ok and run.failed is not None and len(skipped) < self.max_skips:
-                # Corrections did not make this step work: build the rest without it, and say so.
-                step = recipe.steps[run.failed.index]
-                skipped.append(f"step {run.failed.index} {step.action} {step.args} ({run.failed.error})")
-                say(f"[{part.task_text}] attempt {number}: skipping step {run.failed.index} ({step.action})")
-                recipe = recipe.without_step(run.failed.index)
-                run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
-            if skipped:
-                result.notes.append(f"attempt {number} skipped {len(skipped)} step(s) it could not make work")
-            attempt = Attempt(number=number, recipe=recipe, run=run, fixes=fixes)
-            attempt.renders = self._render(runner, project, recipe, f"attempt{number}",
-                                           uses_camera or "add_camera" in recipe.actions_used())
-            if run.ok and attempt.renders:
-                attempt.comparison = self.compare(video, part, recipe, attempt.renders)
-            attempts.append(attempt)
-            (project.path(f"attempt{number}_recipe.json")).write_text(recipe.model_dump_json(indent=1))
-            project.add_attempt({"number": number, "score": attempt.comparison.get("score"), "run": run.to_dict(),
-                                 "fixes": fixes, "skipped_steps": skipped, "renders": [p.name for p in attempt.renders],
-                                 "comparison": attempt.comparison, "problems": problems})
-            say(f"[{part.task_text}] attempt {number}: {'built' if run.ok else 'failed'} "
-                f"({run.steps_ok}/{len(recipe.steps)} steps), score {attempt.comparison.get('score')}")
-            if not run.ok or attempt.score >= self.target_score or number > self.practice_rounds:
-                break
-            if not attempt.comparison.get("differences"):
-                break  # nothing to practise on (the comparison failed or found no difference)
-            try:
-                recipe, problems = self.revise_recipe(recipe, attempt, part)
-            except ProviderError as exc:
-                result.notes.append(f"revision failed: {exc.message[:160]}")
-                break
+                if not attempt.comparison.get("differences"):
+                    break  # nothing to practise on (the comparison failed or found no difference)
+                try:
+                    recipe, problems = self.revise_recipe(recipe, attempt, part)
+                except ProviderError as exc:
+                    result.notes.append(f"revision failed: {exc.message[:160]}")
+                    break
+        except QuotaExhausted as exc:
+            # Keep what was built and judged so far; the lesson stops after saving this chapter.
+            out_of_quota = exc
+            result.notes.append(f"stopped practising: {exc}")
+        if not attempts:
+            raise out_of_quota or QuotaExhausted("no attempt could be made")
         best = max(attempts, key=lambda a: a.score)
         # Rebuild the best attempt so the saved scene (the next chapter's start) is exactly that recipe's result.
         final_run = best.run if best is attempts[-1] else runner.run(best.recipe, start_from=start_from,
@@ -508,6 +517,7 @@ class LessonLearner:
                             blend="scene.blend" if result.blend else None, best_attempt=best.number,
                             recipe_steps=len(best.recipe.steps), actions=sorted(best.recipe.actions_used()))
         project.save()
+        result.out_of_quota = out_of_quota is not None
         return result
 
     def _previous_best(self, video: DownloadedVideo, part: TutorialPart) -> tuple[Recipe, float, str] | None:
@@ -519,12 +529,14 @@ class LessonLearner:
             if (src.get("video_id") != video.video_id or int(src.get("start", -1)) != int(part.start)
                     or int(src.get("end", -1)) != int(part.end)):
                 continue
-            score = project.data.get("score")
-            path = project.path("recipe.json")
-            if project.data.get("status") not in ("learned", "partial") or score is None or not path.exists():
-                continue
-            if best is None or float(score) > best[1]:
-                best = (Recipe.model_validate_json(path.read_text()), float(score), project.id)
+            # Every attempt that built and was judged counts, also from a run that was interrupted.
+            for attempt in project.data.get("attempts", []):
+                score = attempt.get("score")
+                path = project.path(f"attempt{attempt.get('number')}_recipe.json")
+                if not (attempt.get("run") or {}).get("ok") or score is None or not path.exists():
+                    continue
+                if best is None or float(score) > best[1]:
+                    best = (Recipe.model_validate_json(path.read_text()), float(score), project.id)
         return best
 
     def _reference_frame(self, video: DownloadedVideo, part: TutorialPart, best: Attempt, project: Project,
@@ -637,6 +649,11 @@ class LessonLearner:
             state["chapters"][key] = {**result.to_dict(), "blend": str(result.blend) if result.blend else None,
                                       "scene_after": scene_before, "uses_camera": uses_camera}
             self._save_state(video, state)
+            if result.out_of_quota:
+                results.append(ChapterResult(chapter="(next chapters)", project_id="", status="quota",
+                                             notes=["the model's quota ran out; run the same command again later "
+                                                    "to continue (and to practise this chapter more, with --redo)"]))
+                break
         if info is not None:
             thumbnail(info, self._lesson_dir(video))
         self.overview(video)
