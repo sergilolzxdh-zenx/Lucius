@@ -200,3 +200,24 @@ def test_visual_judgement_is_subjective_never_objective(db):
     no_model = Evaluator(db, Providers(embeddings=HashingEmbeddingProvider(64)))
     assert no_model.evaluate(subject_kind="test", subject_id="d", checkpoints=[silhouette, exists], params={},
                              structure=_structure()).verdict == "needs_human"
+
+
+def test_long_sessions_are_labelled_in_batches(tmp_path, monkeypatch):
+    """A 641-step tutorial chapter overflowed one labelling answer; segments now go in batches."""
+    monkeypatch.setattr("lucius.segmentation.refine.BATCH_SEGMENTS", 2)
+    llm = ScriptedLLM()
+    app = Lucius(data_dir=tmp_path / "data", background_processing=False,
+                 providers=Providers(llm=llm, embeddings=HashingEmbeddingProvider(256)))
+    try:
+        demo = sword_blockout_demo()
+        session = app.sessions.create(user_id="local", kind=SessionKind.LIVE_DEMO, policy=DataPolicy.for_live_demo(),
+                                      task_text="simple sword blockout", start_time=demo.events[0].ts)
+        app.sessions.append_events(session.id, demo.events)
+        app.sessions.finalize(session.id, end_time=demo.events[-1].ts, outcome=Outcome.SUCCESS)
+        app.bus.publish(EventType.SESSION_ENDED, session.id)
+        segments = app.segments.for_session(session.id)
+        assert len(llm.prompts) == -(-len(segments) // 2) > 1
+        assert all(sum(f"\nSegment {s.idx} [" in prompt for prompt in llm.prompts) == 1 for s in segments)
+        assert any(s.origin == "model" for s in app.segments.for_session(session.id))
+    finally:
+        app.close()

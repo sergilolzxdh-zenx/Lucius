@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from lucius.errors import ProviderError
+from lucius.errors import ProviderError, ProviderUnavailable
 from lucius.logging_setup import get_logger
 from lucius.providers.base import ImageInput, Providers
 from lucius.segmentation.model import LabelEvidence, Segment, SegmentStore
@@ -24,6 +24,7 @@ from lucius.trajectory.model import TrajectoryStep
 log = get_logger("segmentation.refine")
 
 MODEL_CONFIDENCE_DISCOUNT = 0.85
+BATCH_SEGMENTS = 40
 
 SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -81,7 +82,30 @@ class SegmentRefiner:
         candidates = [s for s in segments if not s.locked]
         if not candidates:
             return RefineReport("skipped", "all segments are human-locked")
-        labels = self.taxonomy.terms("segment_label")
+        changed: list[str] = []
+        models: list[str] = []
+        errors: list[str] = []
+        # Long tutorial chapters have hundreds of segments: one call's answer would exceed its output limit
+        # (seen live on a 641-step chapter), so segments are labelled in batches.
+        for first in range(0, len(candidates), BATCH_SEGMENTS):
+            try:
+                batch_changed, model = self._refine_batch(session, candidates[first:first + BATCH_SEGMENTS], steps,
+                                                          frame_paths)
+            except ProviderError as exc:
+                log.warning("segment refinement failed: %s", exc.message)
+                errors.append(f"{exc.code}: {exc.message}")
+                if isinstance(exc, ProviderUnavailable) or "quota" in exc.message:
+                    break  # later batches would fail the same way
+                continue
+            changed += batch_changed
+            models.append(model)
+        if not models:
+            return RefineReport("failed", errors[0] if errors else "no batch was labelled")
+        return RefineReport("applied", "; ".join(errors), changed=changed, model=models[0])
+
+    def _refine_batch(self, session: Session, candidates: list[Segment], steps: list[TrajectoryStep],
+                      frame_paths: dict[str, str]) -> tuple[list[str], str]:
+        labels = self.taxonomy.terms("segment_label")  # grows when a batch proposes a new label
         lines = [f"Task: {session.task_text or 'unspecified'}", "Taxonomy:"]
         lines += [f"- {term}: {info['description'] or ''}" for term, info in labels.items()]
         t0 = steps[0].t_start if steps else session.start_time
@@ -103,12 +127,8 @@ class SegmentRefiner:
                     if rel:
                         images.append(ImageInput.from_path(self.frames.path(rel), label=f"Segment {seg.idx} frame:"))
         llm = self.providers.vlm if images else self.providers.llm
-        try:
-            result = llm.complete_json(purpose="segment_labeling", system=SYSTEM, prompt="\n".join(lines),
-                                       schema=SCHEMA, images=images, max_tokens=6000)
-        except ProviderError as exc:
-            log.warning("segment refinement failed: %s", exc.message)
-            return RefineReport("failed", f"{exc.code}: {exc.message}")
+        result = llm.complete_json(purpose="segment_labeling", system=SYSTEM, prompt="\n".join(lines),
+                                   schema=SCHEMA, images=images, max_tokens=8000)
         by_idx = {s.idx: s for s in candidates}
         changed = []
         for item in result.data.get("segments", []):
@@ -139,4 +159,4 @@ class SegmentRefiner:
             else:
                 continue
             self.segments.save(seg)
-        return RefineReport("applied", changed=changed, model=result.model)
+        return changed, result.model
