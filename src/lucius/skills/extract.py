@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
@@ -28,7 +29,7 @@ from lucius.intent import AXIS_TARGETS
 from lucius.memory.failure import FailureEvidence, FailureMemory, FailureObservation
 from lucius.provenance import EVIDENCE_WEIGHT, SOURCE_WEIGHT, SourceClass
 from lucius.segmentation.model import Segment
-from lucius.sessions.models import Session
+from lucius.sessions.models import Session, SessionKind
 from lucius.skills.generalize import generalize, human_edited_fields
 from lucius.skills.library import SkillLibrary, slugify
 from lucius.skills.schema import (
@@ -59,6 +60,17 @@ SHAPING_LABELS = {"primary_blockout", "secondary_forms", "detail_pass"}
 ATTACHED_LABELS = {"inspection", "verification", "corrective_pass", "recovery", "navigation"}
 DEFAULT_OBJECT_NAMES = {"cube", "plane", "cylinder", "cone", "sphere", "icosphere", "torus", "suzanne", "camera",
                         "light"}
+# Names that say nothing about what the object is: Blender defaults and the placeholders a video model
+# reports when it cannot read the outliner. Numbered copies ("Cube.001") count too.
+GENERIC_OBJECT_NAMES = DEFAULT_OBJECT_NAMES | {"object", "unnamed", "untitled", "mesh", "empty", "curve", "bezier",
+                                               "beziercurve", "circle", "grid", "armature", "text"}
+# Words that do not tell one tutorial chapter's task from another's.
+TASK_FILLER = {"a", "an", "the", "of", "and", "or", "to", "in", "on", "at", "for", "with", "from", "into", "by", "our",
+               "your", "my", "we", "you", "how", "let", "lets", "s", "part", "chapter", "lesson", "episode", "section",
+               "step", "tutorial", "blender", "intro", "introduction",
+               # Spanish, for titles that were not translated
+               "el", "la", "los", "las", "un", "una", "de", "del", "y", "en", "con", "para", "por", "parte",
+               "capitulo", "capítulo"}
 SKIPPED_ACTIONS = {"undo", "redo", "save", "text_entry", "add_menu", "search_menu", "context_menu", "ui_click",
                    "select_click", "select_box", "select_all", "deselect_all", "select_mode", "tool_change",
                    "workspace_change", "rename", "snapshot", "restore", "unknown_action"}
@@ -85,6 +97,23 @@ class ExtractionResult:
     updated: list[str] = field(default_factory=list)
     failure_ids: list[str] = field(default_factory=list)
     skipped_units: list[str] = field(default_factory=list)
+
+
+def generic_object_name(name: str) -> bool:
+    return re.sub(r"\.\d+$", "", name.strip().lower()) in GENERIC_OBJECT_NAMES
+
+
+def task_key(text: str | None) -> str | None:
+    """The task a tutorial chapter shows, normalised so that chapters with the same title share a key.
+
+    A translated title reads "English (original)"; only the English part counts. Case, numbering and
+    filler words ("the", "part 2") are dropped, the first six remaining words kept in order.
+    """
+    if not text:
+        return None
+    english = re.sub(r"\s*\([^()]*\)\s*$", "", text).strip() or text
+    words = [w for w in re.findall(r"[^\W\d_]+", english.lower()) if w not in TASK_FILLER]
+    return " ".join(list(dict.fromkeys(words))[:6]) or None
 
 
 def _dims(state: dict[str, Any] | None) -> list[float] | None:
@@ -157,7 +186,8 @@ class _CandidateBuilder:
     """Builds one per-instance definition for a unit."""
 
     def __init__(self, session: Session, unit: Unit, steps: list[TrajectoryStep], role: str | None,
-                 object_name: str | None, object_class: str | None, categories: tuple[str, ...]) -> None:
+                 object_name: str | None, object_class: str | None, categories: tuple[str, ...],
+                 task: str | None = None) -> None:
         self.session = session
         self.unit = unit
         self.steps = steps
@@ -165,6 +195,7 @@ class _CandidateBuilder:
         self.object_name = object_name
         self.object_class = object_class
         self.categories = categories
+        self.task = task
         self.params: dict[str, ParamSpec] = {}
 
     # -- parameters --------------------------------------------------------------------------------
@@ -327,11 +358,16 @@ class SkillExtractor:
         previous_skill: str | None = None
         for unit in self.units(segments):
             object_name = self._main_object(unit, steps)
-            role = object_name.lower() if object_name and object_name.lower() not in DEFAULT_OBJECT_NAMES else None
+            role = object_name.lower() if object_name and not generic_object_name(object_name) else None
             unit_class = object_class
             if role and not unit_class:
                 unit_class, categories = classify_task(role)
-            builder = _CandidateBuilder(session, unit, steps, role, object_name, unit_class, categories)
+            # A tutorial chapter whose object says nothing about what is built is known only by its task:
+            # without it, every chapter working on a "Cube" would merge into one skill.
+            task = None
+            if session.kind == SessionKind.EXTERNAL_MEDIA and (role is None or unit_class is None):
+                task = task_key(session.task_text)
+            builder = _CandidateBuilder(session, unit, steps, role, object_name, unit_class, categories, task)
             candidate = self._candidate(builder)
             if candidate is None:
                 result.skipped_units.append(",".join(s.id for s in unit.segments))
@@ -364,7 +400,7 @@ class SkillExtractor:
                 counts.update(seg.meta.get("objects") or [])
         if not counts:
             return None
-        named = [(o, c) for o, c in counts.most_common() if o.lower() not in DEFAULT_OBJECT_NAMES]
+        named = [(o, c) for o, c in counts.most_common() if not generic_object_name(o)]
         return (named or counts.most_common())[0][0]
 
     def _candidate(self, b: _CandidateBuilder) -> SkillDefinition | None:
@@ -481,15 +517,17 @@ class SkillExtractor:
             b.param("object_name", (b.object_name or role).title(), kind="str", description="name of the created object")
         what = "blockout" if first_shaping.name == "primary_form" else first_shaping.name.replace("_", " ")
         base_category = b.categories[0] if b.categories else "general"
-        skill_id = slugify(f"{base_category} {role} {what}")
+        skill_id = slugify(" ".join(p for p in (base_category, b.task, role, what) if p))
         triggers = sorted({role, what, *(b.categories or ()), *(b.object_class.split("_") if b.object_class else ()),
-                           *(k for k in OBJECT_CLASSES.get(b.object_class or "", ((), ()))[0][:4])} - {"object"})
+                           *(k for k in OBJECT_CLASSES.get(b.object_class or "", ((), ()))[0][:4]),
+                           *(b.task.split() if b.task else ())} - {"object"})
         return SkillDefinition(
-            skill_id=skill_id, name=f"{role.replace('_', ' ').title()} {what}",
+            skill_id=skill_id, name=f"{role.replace('_', ' ').title()} {what}" + (f" ({b.task})" if b.task else ""),
             purpose=f"Establish the {role} {'primary form and proportions' if what == 'blockout' else what}"
-                    + (f" for a {b.object_class.replace('_', ' ')}" if b.object_class else ""),
+                    + (f" for a {b.object_class.replace('_', ' ')}" if b.object_class else "")
+                    + (f" in the tutorial task '{b.task}'" if b.task else ""),
             categories=list(b.categories) + ([what] if what not in b.categories else []), object_class=b.object_class,
-            object_role=role, applicable_contexts=[c for c in (
+            object_role=role, task=b.task, applicable_contexts=[c for c in (
                 f"object_class:{b.object_class}" if b.object_class else None,
                 f"blender:{b.session.environment.blender_version}" if b.session.environment.blender_version else None,
             ) if c], triggers=triggers, parameters=list(b.params.values()), phases=phases, checkpoints=checkpoints,
@@ -620,7 +658,8 @@ class SkillExtractor:
         signature = candidate.signature()
         for skill in self.library.list():
             d = skill.definition
-            if d.object_class != candidate.object_class or d.object_role != candidate.object_role:
+            if (d.object_class, d.object_role, d.task) != (candidate.object_class, candidate.object_role,
+                                                          candidate.task):
                 continue
             ratio = difflib.SequenceMatcher(a=signature, b=d.signature(), autojunk=False).ratio()
             if ratio > best_score:

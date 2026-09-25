@@ -82,7 +82,9 @@ roll back or delete any of it. This document describes the system as built. The
    processing never overwrites a locked segment.
 3. **Intents.** Several ranked hypotheses per segment. No chain-of-thought is requested or stored:
    model outputs are schema-constrained JSON with reason codes.
-4. **Skill extraction.** Segments are grouped into units per object role and phase. Concrete values
+4. **Skill extraction.** Segments are grouped into units per object role and phase; for external
+   media whose object is generic or of unknown class, the normalised chapter task is part of the
+   key too, so unrelated tutorial chapters do not merge. Concrete values
    become parameters when they vary across demonstrations or are result-parameterised (a scale
    becomes a `target_size`). Selections are stored as normalised regions, not indices. Checkpoints
    (dimensions, ratios, symmetry, taper, silhouettes), failure conditions (from undone work and

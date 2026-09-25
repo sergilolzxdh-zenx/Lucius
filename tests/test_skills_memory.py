@@ -7,9 +7,11 @@ from lucius.memory.failure import FailureEvidence
 from lucius.memory.preferences import WorkflowPreferences
 from lucius.memory.semantic import SemanticMemory
 from lucius.provenance import SourceClass
+from lucius.sessions import SessionKind
 from lucius.skills import SkillStatus
+from lucius.skills.extract import task_key
 from lucius.skills.seeds import seed_system_skills
-from tests.fixtures.demos import sword_blockout_demo
+from tests.fixtures.demos import generic_object_demo, sword_blockout_demo
 from tests.helpers import MiniPipeline
 
 
@@ -61,6 +63,41 @@ def test_reprocessing_is_idempotent(pipe):
     after = pipe.library.get("hard_surface_blade_blockout")
     assert len(pipe.library.examples(after.id)) == len(pipe.library.examples(before.id))
     assert pipe.failures.list()[0].occurrence_count == 1
+
+
+def _tutorial(pipe, task, **demo):
+    _s, _b, _segs, result, _ep = pipe.run(generic_object_demo(**demo), task=task, source=SourceClass.EXTERNAL_VIDEO,
+                                           kind=SessionKind.EXTERNAL_MEDIA)
+    assert len(result.skill_ids) == 1
+    return result.skill_ids[0]
+
+
+def test_tutorial_chapters_with_generic_objects_stay_separate(pipe):
+    # "body" and "head" classify as organic, "backflip" and "texturing" as nothing: all four chapters work on
+    # a "Cube" and used to merge into organic_object_* / general_object_* skills.
+    physics = _tutorial(pipe, "Rigid Body Physics", t0=1_700_000_000.0)
+    head = _tutorial(pipe, "Modeling the Head", name="Cube.001", t0=1_700_100_000.0)
+    backflip = _tutorial(pipe, "Animating a backflip", name="object", t0=1_700_200_000.0)
+    texture = _tutorial(pipe, "Texturing the floor", name="unnamed", t0=1_700_300_000.0)
+    assert len({physics, head, backflip, texture}) == 4
+    assert head == "organic_modeling_head_object_blockout"
+    assert pipe.library.get(texture).definition.task == "texturing floor"
+    # the same task in another tutorial (translated title, numbering, other values) is the same skill
+    again = _tutorial(pipe, "Part 2: modeling the head (Modelando la cabeza)", size=1.4, t0=1_700_400_000.0)
+    assert again == head
+    skill = pipe.library.get(head)
+    assert len(pipe.library.examples(head, role="demonstration")) == 2
+    assert skill.definition.notes == ["generalised from 2 examples"]
+    # a live demonstration of the same generic object is not scoped by task
+    live = pipe.run(generic_object_demo(t0=1_700_500_000.0), task="Modeling the Head")[3].skill_ids
+    assert live == ["organic_object_blockout"]
+
+
+def test_task_key_normalises_titles():
+    assert task_key("Modeling the Head") == task_key("modeling the head (Modelando la cabeza)") == "modeling head"
+    assert task_key("Chapter 3 - Rigid Body Physics") == "rigid body physics"
+    assert task_key("Modelado de la cabeza") == "modelado cabeza"
+    assert task_key("") is None and task_key("The part") is None
 
 
 def test_versioning_rollback_edit_disable_merge_split(pipe):

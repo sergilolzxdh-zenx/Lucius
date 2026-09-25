@@ -179,9 +179,15 @@ What that knowledge is worth, honestly:
   only checks are "the object exists", and validation proves that the steps replay, not that they
   build the right thing.
 * Skills are merged across demonstrations by object role and phase. Tutorial objects mostly have
-  generic names, so unrelated chapters (texturing and an animated backflip) end up in one large
-  "object blockout" skill, and such merged skills are the ones that validate most easily. Scoping
-  video-derived skills by chapter is the next step before relying on them.
+  generic names, so in those runs unrelated chapters (texturing and an animated backflip) ended up
+  in one large "object blockout" skill, and such merged skills were the ones that validated most
+  easily. Video-derived skills are now scoped by chapter: when the object's name says nothing
+  (Cube, Cube.001, object, unnamed...) or the chapter maps to no object class, the chapter's task
+  (the English title, without numbering or filler words) becomes part of the skill, as in
+  `organic_modeling_head_object_blockout`. Chapters with the same task in different tutorials
+  still merge; different tasks never do. Live demonstrations are grouped as before. Skills learned
+  before this change keep their old grouping: `lucius tutorial <url> --reprocess` learns the
+  chapters again into scoped skills, and the old merged ones can be disabled in **Skills**.
 
 They are useful now as workflow knowledge for retrieval and planning, and become reliable after a
 WATCH ME demonstration of the same workflow or a person's review in **Skills**. The runs found and

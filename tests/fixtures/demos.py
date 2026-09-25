@@ -250,3 +250,20 @@ def sword_blockout_demo(*, with_mistake: bool = True, blade_length: float = 6.0,
     d.key("S", modifiers=["CTRL"]).operator("WM_OT_save_mainfile")
     d.state(reason="final")
     return d
+
+
+def generic_object_demo(*, name: str = "Cube", size: float = 1.0, t0: float = 1_700_000_000.0) -> DemoScript:
+    """A tutorial-style unit: work on an object whose name says nothing about what it is."""
+    d = DemoScript(t0)
+    d.wait(1.5).add_cube(name)
+    d.wait(5.0)
+    d.tab("EDIT_MESH")
+    d.scale("x", size, dims=[2.0 * size, 2.0, 2.0])
+    d.scale("z", 0.5, dims=[2.0 * size, 2.0, 1.0])
+    d.loop_cut(2)
+    d.wait(4.5)
+    d.inspect(["front", "right"])
+    d.wait(4.5)
+    d.tab("OBJECT")
+    d.state(reason="final")
+    return d

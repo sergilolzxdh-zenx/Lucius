@@ -130,6 +130,8 @@ class SkillDefinition(BaseModel):
     categories: list[str] = Field(default_factory=list)
     object_class: str | None = None
     object_role: str | None = None        # e.g. "blade", "guard"
+    task: str | None = None               # normalised task a tutorial chapter showed, when the object alone
+                                          # does not tell skills apart (see extract.task_key)
     applicable_contexts: list[str] = Field(default_factory=list)
     triggers: list[str] = Field(default_factory=list)
     prerequisites: list[str] = Field(default_factory=list)
@@ -161,7 +163,7 @@ class SkillDefinition(BaseModel):
     def text(self) -> str:
         """Text used for embedding and lexical retrieval."""
         parts = [self.name, self.purpose, " ".join(self.categories), self.object_class or "", self.object_role or "",
-                 " ".join(self.triggers), " ".join(p.name for p in self.parameters),
+                 self.task or "", " ".join(self.triggers), " ".join(p.name for p in self.parameters),
                  " ".join(f"{ph.name}: " + " ".join(a.action_type for a in ph.actions) for ph in self.phases),
                  " ".join(c.description for c in self.checkpoints),
                  " ".join(f.description for f in self.failure_conditions)]

@@ -30,9 +30,9 @@ class MiniPipeline:
         self.extractor = SkillExtractor(self.library, self.failures, self.graph)
         self.episodes = EpisodicMemory(db)
 
-    def run(self, demo, task="simple sword blockout", source=SourceClass.USER_DEMO):
+    def run(self, demo, task="simple sword blockout", source=SourceClass.USER_DEMO, kind=SessionKind.LIVE_DEMO):
         policy = DataPolicy.for_live_demo() if source == SourceClass.USER_DEMO else DataPolicy.for_external(source)
-        session = self.sessions.create(user_id="u", kind=SessionKind.LIVE_DEMO, policy=policy, task_text=task,
+        session = self.sessions.create(user_id="u", kind=kind, policy=policy, task_text=task,
                                        task_class=classify_task(task)[0])
         self.sessions.append_events(session.id, demo.events)
         session = self.sessions.finalize(session.id)
