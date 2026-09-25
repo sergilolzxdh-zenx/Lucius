@@ -25,7 +25,7 @@ REFUSAL_REASONS = {"SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "S
                    "IMAGE_PROHIBITED_CONTENT", "IMAGE_RECITATION"}
 
 
-OVERLOAD_COOLDOWN_S = 300.0     # skip a model this long after it answered 503 (overloaded)
+OVERLOAD_COOLDOWN_S = 180.0     # skip a model this long after it answered 503 (overloaded)
 QUOTA_COOLDOWN_S = 3600.0       # ... or said its daily quota is exhausted
 
 MEDIA_RESOLUTION = {"low": "MEDIA_RESOLUTION_LOW", "medium": "MEDIA_RESOLUTION_MEDIUM",
@@ -59,7 +59,7 @@ class GeminiProvider:
         self.thinking_level = thinking_level
         # Tried in order when the configured model is overloaded (503) or out of quota for the day.
         self.fallback_models = [m for m in fallback_models if m and m != model]
-        self._unavailable: dict[str, float] = {}     # model -> monotonic time until which it is skipped
+        self._unavailable: dict[str, tuple[float, str]] = {}   # model -> (skipped until (monotonic), why)
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
                       images: Sequence[ImageInput] = (), max_tokens: int = 8000,
@@ -120,7 +120,18 @@ class GeminiProvider:
         """Call the configured model, then the fallbacks, skipping models that were overloaded or out of quota
         moments ago (an overloaded model can take minutes to say so on a large video request)."""
         models = [self.model, *self.fallback_models]
-        ready = [m for m in models if self._unavailable.get(m, 0.0) <= time.monotonic()] or models[:1]
+        ready = [m for m in models if self._unavailable.get(m, (0.0, ""))[0] <= time.monotonic()]
+        if not ready:
+            # Every model is resting. Overloads pass within minutes: wait for the first one to come back.
+            resting = [(self._unavailable[m][0], i, m) for i, m in enumerate(models) if self._unavailable[m][1] == "overloaded"]
+            until, _order, model = min(resting) if resting else (None, None, None)
+            if until is not None and until - time.monotonic() <= OVERLOAD_COOLDOWN_S:
+                log.warning("every model is overloaded or out of quota; waiting %.0f s for %s", until - time.monotonic(),
+                            model)
+                time.sleep(max(0.0, until - time.monotonic()))
+                ready = [model]
+            else:
+                ready = models[:1]
         last: ProviderError | None = None
         for i, model in enumerate(ready):
             if i:
@@ -133,8 +144,8 @@ class GeminiProvider:
                 exhausted = "quota" in exc.message and not exc.details.get("transient")
                 if not (overloaded or exhausted):
                     raise
-                self._unavailable[model] = time.monotonic() + (OVERLOAD_COOLDOWN_S if overloaded
-                                                               else QUOTA_COOLDOWN_S)
+                self._unavailable[model] = (time.monotonic() + (OVERLOAD_COOLDOWN_S if overloaded else QUOTA_COOLDOWN_S),
+                                            "overloaded" if overloaded else "quota")
                 last = exc
                 if not self.fallback_models:
                     raise

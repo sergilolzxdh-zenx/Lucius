@@ -402,8 +402,9 @@ def extrude(p):
     """Extrude the selected region (faces, else edges, else vertices) and move it by ``offset``.
 
     Implemented with bmesh so it behaves identically in the GUI and in headless Blender: the
-    original region is replaced by the moved cap connected through side walls, and the cap
-    stays selected, like Blender's own extrude.
+    region is moved and connected through side walls, the original faces are removed when they
+    would end up inside the mesh (and kept for a lone region, as Blender does), and the moved
+    region stays selected, like Blender's own extrude.
     """
     obj = _obj(p["object"])
     bm = _edit_bmesh(obj)
@@ -420,8 +421,13 @@ def extrude(p):
         raise BridgeCommandError("missing_param", "extrude needs offset or distance", param="offset")
     before = len(bm.verts)
     if faces:
+        region = set(faces)
+        # Blender's rule: the original faces go only when the region is attached to other faces (a cylinder's
+        # cap); a lone region (a filled circle, a plane) keeps them, so extruding a disc makes a closed cup.
+        attached = any(other not in region for face in faces for edge in face.edges for other in edge.link_faces)
         ret = bmesh.ops.extrude_face_region(bm, geom=faces)
-        bmesh.ops.delete(bm, geom=faces, context="FACES_ONLY")
+        if attached:
+            bmesh.ops.delete(bm, geom=faces, context="FACES")
     elif edges:
         ret = bmesh.ops.extrude_edge_only(bm, edges=edges)
     else:

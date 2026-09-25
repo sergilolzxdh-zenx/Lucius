@@ -251,3 +251,23 @@ def test_overloaded_model_falls_back_and_is_skipped_for_a_while(monkeypatch):
     monkeypatch.setattr("lucius.providers.gemini_provider.time.monotonic", lambda: 10**9)
     fake.responses.append(_response('{"n": 3}'))
     assert provider.complete_json(**kw).data == {"n": 3} and fake.calls[-1]["model"] == "gemini-test"
+
+
+def test_when_every_model_is_overloaded_the_first_to_recover_is_awaited(monkeypatch):
+    busy = genai_errors.ServerError(503, {"error": {"code": 503, "message": "high demand"}})
+    provider, fake = _provider([busy, busy, _response('{"n": 1}')], fallback_models=["gemini-backup"])
+    clock = {"t": 1000.0}
+    slept = []
+    monkeypatch.setattr("lucius.providers.gemini_provider.time.monotonic", lambda: clock["t"])
+
+    def sleep(seconds):
+        slept.append(seconds)
+        clock["t"] += seconds
+
+    monkeypatch.setattr("lucius.providers.gemini_provider.time.sleep", sleep)
+    kw = {"purpose": "t", "system": "s", "prompt": "p", "schema": {"type": "object"}}
+    with pytest.raises(ProviderError):
+        provider.complete_json(**kw)          # both overloaded now
+    clock["t"] += 10
+    assert provider.complete_json(**kw).data == {"n": 1}
+    assert slept and slept[0] > 0 and fake.calls[-1]["model"] == "gemini-test"

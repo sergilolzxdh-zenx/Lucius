@@ -290,3 +290,21 @@ def test_misspelled_arguments_are_matched_to_the_real_ones():
     assert len(notes) == 2
     fixed, _ = fix_keys("rotate_selection", {"angle_deg": 45}, {"object", "axis", "angle"})
     assert fixed == {"angle_deg": 45}          # degree spellings are converted later, not renamed
+
+
+def test_extrude_keeps_the_bottom_of_a_lone_face_like_blender(headless_blender):
+    def ex(action, **args):
+        return headless_blender.execute(action, args, timeout=120)["result"]
+
+    ex("reset_scene", keep_camera_light=False)
+    ex("add_primitive", kind="circle", name="Base", vertices=8, fill=True)
+    ex("select_all", object="Base")
+    ex("extrude", object="Base", offset=[0, 0, 1])
+    base = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Base")
+    assert base["mesh"]["faces"] == 10                  # 8 walls, top and the kept bottom: a closed cup
+    ex("select_box", object="Base", max=[None, None, 0.01], space="local", element="FACE")   # the bottom exists
+    ex("add_primitive", kind="cylinder", name="Can", vertices=8, radius=1, depth=1)
+    ex("select_box", object="Can", min=[None, None, 0.49], space="local", element="FACE", facing=[0, 0, 1])
+    ex("extrude", object="Can", offset=[0, 0, 1])
+    can = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Can")
+    assert can["mesh"]["faces"] == 18 and can["mesh"]["edges"] == 40   # the old cap is gone, no loose edges
