@@ -42,8 +42,9 @@ def headless_available() -> str | None:
 class HeadlessBlender:
     def __init__(self, *, allowed_save_dirs: list[str] | None = None,
                  allowed_read_dirs: list[str] | None = None, startup_timeout: float = 90.0) -> None:
-        self.allowed_save_dirs = allowed_save_dirs or []
-        self.allowed_read_dirs = allowed_read_dirs or []
+        # Absolute: Blender runs in its own working directory.
+        self.allowed_save_dirs = [os.path.abspath(d) for d in allowed_save_dirs or []]
+        self.allowed_read_dirs = [os.path.abspath(d) for d in allowed_read_dirs or []]
         self.startup_timeout = startup_timeout
         self.process: subprocess.Popen[bytes] | None = None
         self.bridge: BlenderBridge | None = None

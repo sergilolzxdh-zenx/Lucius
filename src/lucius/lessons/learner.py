@@ -24,6 +24,7 @@ can check it (``lucius projects rate``).
 from __future__ import annotations
 
 import json
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -165,6 +166,10 @@ class QuotaExhausted(Exception):
     """The model cannot be called any more today; the lesson resumes where it stopped when run again."""
 
 
+class ModelUnavailable(QuotaExhausted):
+    """The models are overloaded right now; the lesson resumes where it stopped when run again."""
+
+
 @dataclass
 class Attempt:
     number: int
@@ -216,6 +221,8 @@ class LessonLearner:
         self.render_samples = render_samples
         self.projects = ProjectStore(app.config.projects_dir)
         self.chunk_s = app.config.processing.video_model_chunk_s
+        self.chunk_attempts = 3          # per piece of video, when every model is overloaded
+        self.retry_wait_s = 90.0
 
     # -- state (resume) --------------------------------------------------------------------------------
     def _lesson_dir(self, video: DownloadedVideo) -> Path:
@@ -270,13 +277,22 @@ class LessonLearner:
                 if spoken:
                     lines += [f"Narration ({narration.language or 'unknown language'}):", spoken]
             lines.append("Write the lesson notes for this clip.")
-            try:
-                data = self._call("lesson_notes", system=NOTES_SYSTEM, prompt="\n".join(lines), schema=notes_schema(),
-                                  videos=[VideoInput(video.url, a, b, self.notes_fps, self.notes_resolution)])
-            except ProviderError as exc:
-                notes["errors"].append(f"{_clock(a)}-{_clock(b)}: {exc.message[:200]}")
-                log.warning("lesson notes for %s-%s failed: %s", _clock(a), _clock(b), exc.message)
-                continue
+            data = None
+            for attempt in range(self.chunk_attempts):
+                try:
+                    data = self._call("lesson_notes", system=NOTES_SYSTEM, prompt="\n".join(lines),
+                                      schema=notes_schema(),
+                                      videos=[VideoInput(video.url, a, b, self.notes_fps, self.notes_resolution)])
+                    break
+                except ProviderError as exc:
+                    notes["errors"].append(f"{_clock(a)}-{_clock(b)}: {exc.message[:200]}")
+                    log.warning("lesson notes for %s-%s failed (%d): %s", _clock(a), _clock(b), attempt + 1,
+                                exc.message[:200])
+                    if attempt + 1 < self.chunk_attempts:
+                        time.sleep(self.retry_wait_s)
+            if data is None:
+                # A missing piece would leave a hole in the recipe: stop, and resume here later.
+                raise ModelUnavailable(f"no model could watch {_clock(a)}-{_clock(b)}: {notes['errors'][-1]}")
             notes["operations"] += data.get("operations", [])
             notes["objects_at_end"] = data.get("objects_at_end", []) or notes["objects_at_end"]
             notes["summaries"].append(f"[{_clock(a)}] {data.get('summary', '')}")
@@ -545,8 +561,11 @@ class LessonLearner:
                                          uses_camera=uses_camera, index=chapter_index, info=info,
                                          on_progress=on_progress)
             except QuotaExhausted as exc:
-                results.append(ChapterResult(chapter=part.task_text, project_id="", status="quota",
-                                             notes=[f"model quota exhausted: {exc}; run again later to continue"]))
+                unavailable = isinstance(exc, ModelUnavailable)
+                results.append(ChapterResult(
+                    chapter=part.task_text, project_id="", status="unavailable" if unavailable else "quota",
+                    notes=[f"{'models overloaded' if unavailable else 'model quota exhausted'}: {exc}; "
+                           "run the same command again later to continue from this chapter"]))
                 break
             results.append(result)
             recipe_path = self.projects.get(result.project_id).path("recipe.json") if result.project_id else None

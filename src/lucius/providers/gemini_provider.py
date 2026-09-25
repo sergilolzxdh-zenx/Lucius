@@ -25,6 +25,9 @@ REFUSAL_REASONS = {"SAFETY", "RECITATION", "BLOCKLIST", "PROHIBITED_CONTENT", "S
                    "IMAGE_PROHIBITED_CONTENT", "IMAGE_RECITATION"}
 
 
+OVERLOAD_COOLDOWN_S = 300.0     # skip a model this long after it answered 503 (overloaded)
+QUOTA_COOLDOWN_S = 3600.0       # ... or said its daily quota is exhausted
+
 MEDIA_RESOLUTION = {"low": "MEDIA_RESOLUTION_LOW", "medium": "MEDIA_RESOLUTION_MEDIUM",
                     "high": "MEDIA_RESOLUTION_HIGH"}
 
@@ -56,6 +59,7 @@ class GeminiProvider:
         self.thinking_level = thinking_level
         # Tried in order when the configured model is overloaded (503) or out of quota for the day.
         self.fallback_models = [m for m in fallback_models if m and m != model]
+        self._unavailable: dict[str, float] = {}     # model -> monotonic time until which it is skipped
 
     def complete_json(self, *, purpose: str, system: str, prompt: str, schema: dict[str, Any],
                       images: Sequence[ImageInput] = (), max_tokens: int = 8000,
@@ -113,21 +117,28 @@ class GeminiProvider:
                            latency_s=latency)
 
     def _call(self, purpose: str, contents: list[Any], config: Any) -> Any:
-        try:
-            return self._call_model(self.model, purpose, contents, config)
-        except ProviderError as exc:
-            overloaded = exc.details.get("transient") and "503" in exc.message
-            exhausted = "quota" in exc.message and not exc.details.get("transient")
-            if not self.fallback_models or not (overloaded or exhausted):
-                raise
-            last = exc
-        for model in self.fallback_models:
-            log.warning("%s is %s; trying %s for %s", self.model, "overloaded" if overloaded else "out of quota",
-                        model, purpose)
+        """Call the configured model, then the fallbacks, skipping models that were overloaded or out of quota
+        moments ago (an overloaded model can take minutes to say so on a large video request)."""
+        models = [self.model, *self.fallback_models]
+        ready = [m for m in models if self._unavailable.get(m, 0.0) <= time.monotonic()] or models[:1]
+        last: ProviderError | None = None
+        for i, model in enumerate(ready):
+            if i:
+                log.warning("%s unavailable (%s); trying %s for %s", ready[i - 1],
+                            "overloaded" if last and last.details.get("transient") else "out of quota", model, purpose)
             try:
                 return self._call_model(model, purpose, contents, config)
             except ProviderError as exc:
+                overloaded = bool(exc.details.get("transient")) and "503" in exc.message
+                exhausted = "quota" in exc.message and not exc.details.get("transient")
+                if not (overloaded or exhausted):
+                    raise
+                self._unavailable[model] = time.monotonic() + (OVERLOAD_COOLDOWN_S if overloaded
+                                                               else QUOTA_COOLDOWN_S)
                 last = exc
+                if not self.fallback_models:
+                    raise
+        assert last is not None
         raise last
 
     def _call_model(self, model: str, purpose: str, contents: list[Any], config: Any) -> Any:

@@ -115,7 +115,7 @@ class RecipeRunner:
     def prepare(self, start_from: Path | None = None) -> None:
         """Start from Blender's default scene without the cube (camera and light kept), or from a saved scene."""
         if start_from is not None:
-            self._bridge("import_blend", {"path": str(start_from)})
+            self._bridge("import_blend", {"path": str(Path(start_from).resolve())})
         else:
             self._bridge("reset_scene", {"keep_camera_light": True})
 
@@ -164,6 +164,7 @@ class RecipeRunner:
 
     def render(self, path: Path, *, camera: str = "auto", view: str = "three_quarter", frame: list[str] | None = None,
                samples: int = 24, width: int = 800, height: int = 600) -> Path:
+        path = Path(path).resolve()   # Blender runs in its own working directory
         args: dict[str, Any] = {"path": str(path), "camera": camera, "view": view, "samples": samples, "width": width,
                                 "height": height}
         if frame:
@@ -172,5 +173,6 @@ class RecipeRunner:
         return path
 
     def save_blend(self, path: Path) -> Path:
+        path = Path(path).resolve()
         self._bridge("save_file", {"path": str(path), "copy": True})
         return path

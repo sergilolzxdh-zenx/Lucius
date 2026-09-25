@@ -230,3 +230,24 @@ def test_probe_reports_which_listed_models_lucius_can_use():
         "retired": "retired_or_missing", "pro": "no_quota", "tts": "unsupported_request",
         "busy": "temporarily_unavailable"}
     assert sorted(fake.calls) == ["busy", "good", "pro", "retired", "tts"]
+
+
+def test_overloaded_model_falls_back_and_is_skipped_for_a_while(monkeypatch):
+    busy = genai_errors.ServerError(503, {"error": {"code": 503, "message": "high demand"}})
+    provider, fake = _provider([busy, _response('{"n": 1}'), _response('{"n": 2}'), busy, busy],
+                               fallback_models=["gemini-backup", "gemini-last"])
+    kw = {"purpose": "t", "system": "s", "prompt": "p", "schema": {"type": "object"}}
+    assert provider.complete_json(**kw).data == {"n": 1}
+    assert [c["model"] for c in fake.calls] == ["gemini-test", "gemini-backup"]
+    # The overloaded model is not asked again right away: the backup answers directly.
+    assert provider.complete_json(**kw).data == {"n": 2}
+    assert fake.calls[-1]["model"] == "gemini-backup"
+    # When every model is overloaded the last error surfaces (transient: a caller may retry later).
+    with pytest.raises(ProviderError) as exhausted:
+        provider.complete_json(**kw)
+    assert exhausted.value.details["transient"] is True
+    assert [c["model"] for c in fake.calls[-2:]] == ["gemini-backup", "gemini-last"]
+    # After the cool-down the configured model is tried first again.
+    monkeypatch.setattr("lucius.providers.gemini_provider.time.monotonic", lambda: 10**9)
+    fake.responses.append(_response('{"n": 3}'))
+    assert provider.complete_json(**kw).data == {"n": 3} and fake.calls[-1]["model"] == "gemini-test"
