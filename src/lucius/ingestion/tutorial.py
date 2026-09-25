@@ -18,7 +18,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from lucius.errors import MediaError, ProviderError, ProviderUnavailable
-from lucius.ingestion.download import Chapter, DownloadedVideo, chapters_of, download_video, select_chapters
+from lucius.ingestion.download import (
+    Chapter,
+    DownloadedVideo,
+    captions_from_info,
+    chapters_of,
+    download_video,
+    select_chapters,
+)
 from lucius.ingestion.media import MediaKind, MediaRole
 from lucius.logging_setup import get_logger
 from lucius.provenance import DataPolicy, SourceClass
@@ -117,10 +124,14 @@ class TutorialImporter:
         import json
 
         meta: dict[str, Any] = json.loads(Path(info).read_text())
+        source: str | None = "unknown" if captions else None
+        if captions is None:
+            # The metadata lists signed caption URLs; fetching them needs no request the platform blocks.
+            captions, source = captions_from_info(meta, Path(info).parent, language=language)
         return DownloadedVideo(video_id=meta.get("id") or url, url=url, title=meta.get("title") or url,
                                duration=float(meta.get("duration") or 0.0), language=language or meta.get("language"),
                                video_path=None, captions_path=Path(captions) if captions else None,
-                               captions_source="unknown" if captions else None, info_path=Path(info),
+                               captions_source=source, info_path=Path(info),
                                chapters=chapters_of(meta), license=meta.get("license"), channel=meta.get("channel"))
 
     # -- planning ----------------------------------------------------------------------------------------

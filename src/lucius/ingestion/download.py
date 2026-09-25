@@ -147,6 +147,36 @@ def _caption_format(info: dict[str, Any], key: str, source: str) -> str:
     return next((ext for ext in ("json3", "vtt", "srt") if ext in available), "best")
 
 
+def captions_from_info(info: dict[str, Any], dest: str | Path, *, language: str | None = None) -> tuple[Path | None,
+                                                                                                        str | None]:
+    """Fetch captions through the URLs listed in saved metadata (no page or player request: those are what
+    the platform rate-limits). The URLs are signed and expire after some hours."""
+    import urllib.error
+    import urllib.request
+
+    keys, source = _pick_captions(info, language)
+    if not keys:
+        return None, None
+    tracks = (info.get("subtitles") if source == "manual" else info.get("automatic_captions")) or {}
+    by_ext = {t.get("ext"): t.get("url") for t in tracks.get(keys[0], []) if t.get("url")}
+    ext = next((e for e in ("json3", "vtt", "srt") if by_ext.get(e)), None)
+    if ext is None:
+        return None, None
+    target = Path(dest) / f"{info['id']}.{keys[0]}.{ext}"
+    if target.exists():
+        return target, source
+    try:
+        with urllib.request.urlopen(by_ext[ext], timeout=60) as response:
+            body = response.read()
+    except (urllib.error.URLError, TimeoutError) as exc:
+        log.warning("captions of %s not fetched from saved metadata: %s", info.get("id"), exc)
+        return None, None
+    if not body.strip():
+        return None, None
+    target.write_bytes(body)
+    return target, source
+
+
 def chapters_of(info: dict[str, Any]) -> list[Chapter]:
     duration = float(info.get("duration") or 0.0)
     out = []
@@ -183,6 +213,8 @@ def download_video(url: str, dest: str | Path, *, language: str | None = None, c
                            "subtitlesformat": fmt}, download=True)
                 found = sorted(dest.glob(f"{video_id}.{keys[0]}.*"))
                 caption_path = found[0] if found else None
+            if caption_path is None:
+                caption_path, caption_source = captions_from_info(info, dest, language=language)
             if caption_path is None:
                 log.warning("captions %s for %s could not be downloaded", keys, video_id)
     video_path: Path | None = None

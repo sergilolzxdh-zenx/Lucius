@@ -454,3 +454,35 @@ def test_validating_a_skill_credits_only_that_skill(app):
         assert app.library.get("hard_surface_blade_blockout").usage_count == uses["hard_surface_blade_blockout"] + 1
     assert credited == {"hard_surface_blade_blockout"}
     assert app.library.get("hard_surface_guard_blockout").usage_count == uses["hard_surface_guard_blockout"]
+
+
+def test_captions_are_fetched_through_urls_in_saved_metadata(tmp_path, monkeypatch):
+    """When the platform rate-limits page and player requests, the signed caption URLs in saved metadata still work."""
+    from lucius.ingestion import download
+
+    fetched = []
+
+    class Response:
+        def __init__(self, body):
+            self.body = body
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return self.body
+
+    def urlopen(url, timeout):
+        fetched.append(url)
+        return Response(b'{"events": []}')
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    info = {"id": "vid", "language": "en", "automatic_captions": {"en-orig": [
+        {"ext": "vtt", "url": "https://example.invalid/vtt"}, {"ext": "json3", "url": "https://example.invalid/json3"}]}}
+    path, source = download.captions_from_info(info, tmp_path)
+    assert path == tmp_path / "vid.en-orig.json3" and source == "auto" and fetched == ["https://example.invalid/json3"]
+    assert download.captions_from_info(info, tmp_path) == (path, "auto") and len(fetched) == 1   # reused
+    assert download.captions_from_info({"id": "x"}, tmp_path) == (None, None)
