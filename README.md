@@ -165,18 +165,30 @@ again, so a run stopped by a model quota continues where it stopped.
 External videos are learning material only: they are never training-eligible, and the licence
 and URL travel with every sample.
 
-**First run (2026-09-24, free-tier `gemini-3.5-flash-lite`, videos watched by URL).** Two Spanish
-beginner courses (Aura Prods, 1.3 h and 2.3 h) and the English *Complete Blender Mastercourse* Part 1
-(12 h) were processed completely, Part 2 (10.6 h) for one chapter before the free tier's daily
-quota (about 500 requests) ran out: 59 chapters, 2,493 steps of which 2,356 were identified, 71
-skills. Only 4 are `validated`, and for video-derived skills that means little: a video shows which
-operations were done but not the resulting Blender state, so their only checks are "the object
-exists" and validation proves the steps replay without errors, not that they build the right thing.
-Most skills also lack values (distances are rarely visible or said). They are useful as workflow
-knowledge for retrieval and planning, and become reliable after a WATCH ME demonstration of the same
-workflow or a person's review in **Skills**. The run found and fixed three evidence bugs: unknown
-object kinds were guessed to be cubes, validation credited skills whose actions could not run, and
-validation credited every skill retrieved into the plan rather than the one under test.
+**First runs (2026-09-24/25, free-tier `gemini-3.5-flash-lite`, videos watched by URL).** Thirteen
+tutorials: two Spanish beginner courses, the English *Complete Blender Mastercourse* (Parts 1 and 2,
+22.6 h), a topology course (4.1 h), a sculpting course (4.4 h), three body-modelling videos, and
+shorter ones on rigging, animation, VFX and texturing. 199 chapters, 8,037 steps of which 7,536 were
+identified, 199 skills (15 validated or high-confidence), 919 model requests over two days (the free
+tier allows about 500 a day).
+
+What that knowledge is worth, honestly:
+
+* Most skills lack values: a video shows which operations were done but rarely how much.
+* "Validated" means little for video-derived skills. A video does not show Blender's state, so their
+  only checks are "the object exists", and validation proves that the steps replay, not that they
+  build the right thing.
+* Skills are merged across demonstrations by object role and phase. Tutorial objects mostly have
+  generic names, so unrelated chapters (texturing and an animated backflip) end up in one large
+  "object blockout" skill, and such merged skills are the ones that validate most easily. Scoping
+  video-derived skills by chapter is the next step before relying on them.
+
+They are useful now as workflow knowledge for retrieval and planning, and become reliable after a
+WATCH ME demonstration of the same workflow or a person's review in **Skills**. The runs found and
+fixed several evidence bugs: unknown object kinds were guessed to be cubes, validation credited
+skills whose actions could not run, validation credited every skill retrieved into the plan rather
+than the one under test, and the agent's own validation runs were sent for model relabelling
+(about 40% of a day's requests).
 
 ## Keyboard and mouse control
 
