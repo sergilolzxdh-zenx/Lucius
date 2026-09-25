@@ -165,8 +165,16 @@ class ScriptedTeacher:
                                     "material": None}]}, "scripted", self.model)
         if purpose == "lesson_recipe":
             return ModelResult(_recipe(BROKEN), "scripted", self.model)
-        if purpose in ("lesson_recipe_fix", "lesson_recipe_revise", "make_fix", "make_revise"):
-            return ModelResult(_recipe(MUG_OK), "scripted", self.model)
+        if purpose in ("lesson_recipe_fix", "make_fix"):
+            # The broken selection (step 1) is replaced; everything else is kept.
+            return ModelResult({"explanation": "the top face is at z 0.05", "edits": [
+                {"op": "replace", "index": 1, "action": "select_box", "args": json.dumps(MUG_OK[1]["args"]),
+                 "note": "top face"}]}, "scripted", self.model)
+        if purpose in ("lesson_recipe_revise", "make_revise"):
+            return ModelResult({"explanation": "rounder", "edits": [
+                {"op": "insert_before", "index": 7, "action": "add_modifier",
+                 "args": json.dumps({"object": "Mug", "type": "BEVEL", "props": {"width": 0.01}}), "note": ""}]},
+                "scripted", self.model)
         if purpose == "lesson_compare":
             self.compares += 1
             score = 5 if self.compares == 1 else 9
@@ -308,3 +316,21 @@ def test_extrude_keeps_the_bottom_of_a_lone_face_like_blender(headless_blender):
     ex("extrude", object="Can", offset=[0, 0, 1])
     can = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Can")
     assert can["mesh"]["faces"] == 18 and can["mesh"]["edges"] == 40   # the old cap is gone, no loose edges
+
+
+def test_patches_edit_a_recipe_by_step_index():
+    from lucius.lessons.recipe import Recipe, RecipeStep, apply_patch
+
+    recipe = Recipe(title="t", steps=[RecipeStep(action="add_primitive", args={"kind": "cube"}),
+                                      RecipeStep(action="extrude", args={"offset": [0, 0, 1]}, video_time="1:00"),
+                                      RecipeStep(action="shade", args={"smooth": True})])
+    patched, problems = apply_patch(recipe, {"explanation": "x", "edits": [
+        {"op": "replace", "index": 1, "action": "extrude", "args": '{"offset": [0, 0, 2]}', "note": ""},
+        {"op": "insert_before", "index": 0, "action": "set_mode", "args": '{"mode": "OBJECT"}', "note": ""},
+        {"op": "insert_before", "index": 3, "action": "fill", "args": "{}", "note": "end"},
+        {"op": "delete", "index": 2, "action": None, "args": None, "note": ""},
+        {"op": "replace", "index": 9, "action": "fill", "args": "{}", "note": ""},
+        {"op": "replace", "index": 0, "action": "run_python", "args": "{}", "note": ""}]})
+    assert [s.action for s in patched.steps] == ["set_mode", "add_primitive", "extrude", "fill"]
+    assert patched.steps[2].args == {"offset": [0, 0, 2]} and patched.steps[2].video_time == "1:00"
+    assert len(problems) == 2

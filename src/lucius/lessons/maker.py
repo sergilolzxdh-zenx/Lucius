@@ -21,9 +21,9 @@ from typing import TYPE_CHECKING, Any
 
 from lucius.errors import ProviderError, ValidationError
 from lucius.lessons.catalogue import BASIC_ACTIONS, RECIPE_ACTIONS, catalogue
-from lucius.lessons.learner import RECIPE_RULES, QuotaExhausted, _quota
+from lucius.lessons.learner import PATCH_RULES, RECIPE_RULES, QuotaExhausted, _quota
 from lucius.lessons.projects import ProjectStore, contact_sheet
-from lucius.lessons.recipe import Recipe, parse_recipe, recipe_schema
+from lucius.lessons.recipe import Recipe, apply_patch, parse_recipe, patch_schema, recipe_schema
 from lucius.lessons.runner import RecipeRun, RecipeRunner, record_run
 from lucius.logging_setup import get_logger
 from lucius.providers.base import ImageInput
@@ -56,13 +56,13 @@ CRITIQUE_SYSTEM = (
 )
 
 REVISE_SYSTEM = (
-    "Improve a Blender recipe from a critique of its result. Apply the fixes, keep what works, keep the recipe "
-    "runnable (selections consistent with the geometry each step creates) and return the whole revised recipe."
+    "Improve a Blender recipe from a critique of its result. Apply the fixes, keep what works, and keep the "
+    "recipe runnable (selections consistent with the geometry each step creates)."
 )
 
 FIX_SYSTEM = (
-    "A Blender recipe failed while executing. Correct it so that it runs and still builds the same thing; change "
-    "only what is needed and return the whole corrected recipe."
+    "A Blender recipe failed while executing. Correct it so that it runs and still builds the same thing: read "
+    "the error, the local bounds of the object and what the previous steps selected, and change only what is needed."
 )
 
 
@@ -330,14 +330,14 @@ class Maker:
                 f"Failure: {run.error_text()}" + (f"\nOther problems: {'; '.join(problems)}" if problems else ""),
                 f"The steps before it did:\n{run.context_text()}",
                 f"Scene when it failed (local bounds are the coordinates select_box space \"local\" uses):\n"
-                f"{run.scene_text()}", "Return the corrected recipe."])
+                f"{run.scene_text()}", "Return the edits that correct the recipe."])
             try:
-                data = self._call("make_fix", system=FIX_SYSTEM + "\n\n" + rules, prompt=prompt,
-                                  schema=recipe_schema(allowed))
+                data = self._call("make_fix", system=FIX_SYSTEM + "\n\n" + PATCH_RULES + "\n\n" + rules,
+                                  prompt=prompt, schema=patch_schema(allowed), max_tokens=16000)
             except ProviderError as exc:
                 log.warning("recipe correction failed: %s", exc.message)
                 break
-            recipe, problems = parse_recipe(data, allowed=allowed, source=recipe.source)
+            recipe, problems = apply_patch(recipe, data, allowed=allowed)
             run = runner.run(recipe)
         skips = 0
         while not run.ok and run.failed is not None and skips < 3:
@@ -378,10 +378,10 @@ class Maker:
             f"Task: {task}", f"Actions available:\n{catalogue(allowed)}", f"Recipe ({recipe.title}):\n{recipe.compact()}",
             f"Scene it built:\n{run.scene_text()}",
             f"Critique ({critique.get('score')}/10, looks like: {critique.get('looks_like')}):\n{diffs}",
-            "Return the revised recipe."])
-        data = self._call("make_revise", system=REVISE_SYSTEM + "\n\n" + rules, prompt=prompt,
-                          schema=recipe_schema(allowed))
-        return parse_recipe(data, allowed=allowed, source=recipe.source)
+            "Return the edits that fix these problems."])
+        data = self._call("make_revise", system=REVISE_SYSTEM + "\n\n" + PATCH_RULES + "\n\n" + rules,
+                          prompt=prompt, schema=patch_schema(allowed), max_tokens=16000)
+        return apply_patch(recipe, data, allowed=allowed)
 
     def _store_skill(self, task: str, recipe: Recipe, result: MakeResult, project_id: str) -> str:
         from lucius.skills.library import slugify

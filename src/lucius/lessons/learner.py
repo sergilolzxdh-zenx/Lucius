@@ -35,7 +35,7 @@ from lucius.ingestion.captions import CaptionTrack
 from lucius.ingestion.download import DownloadedVideo, parse_timestamp
 from lucius.lessons.catalogue import RECIPE_ACTIONS, catalogue
 from lucius.lessons.projects import Project, ProjectStore, contact_sheet
-from lucius.lessons.recipe import Recipe, parse_recipe, recipe_schema
+from lucius.lessons.recipe import Recipe, apply_patch, parse_recipe, patch_schema, recipe_schema
 from lucius.lessons.references import storyboard_frame, thumbnail
 from lucius.lessons.runner import RecipeRun, RecipeRunner, record_run
 from lucius.logging_setup import get_logger
@@ -90,11 +90,18 @@ RECIPE_SYSTEM = (
     "what is needed to express an operation with these actions. video_time is where the tutor does the step."
 )
 
+PATCH_RULES = (
+    "Answer with edits to the recipe, by step index as numbered above: replace a step, insert a new step before "
+    "one (insert_before with index = number of steps appends at the end), or delete one. Indices always refer "
+    "to the recipe as shown, not after earlier edits. Change only what the problem needs; every step you do not "
+    "edit is kept."
+)
+
 FIX_SYSTEM = (
     "A recipe for Blender failed while executing. Correct it so that it runs and still builds the same thing. "
     "Change only what is needed (usually the failing step or the steps that prepared its selection): read the "
     "error, the local bounds of the object and what the previous steps selected, and fix the coordinates or "
-    "arguments. Return the whole corrected recipe."
+    "arguments."
 )
 
 COMPARE_SYSTEM = (
@@ -110,8 +117,8 @@ COMPARE_SYSTEM = (
 
 REVISE_SYSTEM = (
     "Improve a Blender recipe so that its result looks more like the tutor's. Apply the listed fixes (and any "
-    "other change the differences call for), keep what already matches, and return the whole revised recipe. "
-    "The revised recipe must still run: keep selections consistent with the geometry each step creates."
+    "other change the differences call for) and keep what already matches. The recipe must still run: keep "
+    "selections consistent with the geometry each step creates."
 )
 
 
@@ -327,6 +334,11 @@ class LessonLearner:
             "Write the recipe for this chapter."])
         return self._recipe_call("lesson_recipe", RECIPE_SYSTEM, prompt, source)
 
+    def _patch_call(self, purpose: str, system: str, prompt: str, recipe: Recipe) -> tuple[Recipe, list[str]]:
+        data = self._call(purpose, system=system + "\n\n" + PATCH_RULES + "\n\n" + RECIPE_RULES, prompt=prompt,
+                          schema=patch_schema(RECIPE_ACTIONS), max_tokens=16000)
+        return apply_patch(recipe, data, allowed=RECIPE_ACTIONS)
+
     def fix_recipe(self, recipe: Recipe, run: RecipeRun, problems: list[str]) -> tuple[Recipe, list[str]]:
         prompt = "\n\n".join([
             f"Actions:\n{catalogue()}",
@@ -335,8 +347,8 @@ class LessonLearner:
             f"The steps before it did:\n{run.context_text()}",
             f"Scene when it failed (object sizes, and local bounds -- the coordinates select_box space \"local\" "
             f"uses):\n{run.scene_text()}",
-            "Return the corrected recipe."])
-        return self._recipe_call("lesson_recipe_fix", FIX_SYSTEM, prompt, recipe.source)
+            "Return the edits that correct the recipe."])
+        return self._patch_call("lesson_recipe_fix", FIX_SYSTEM, prompt, recipe)
 
     def revise_recipe(self, recipe: Recipe, attempt: Attempt, part: TutorialPart) -> tuple[Recipe, list[str]]:
         diffs = "\n".join(f"- {d.get('object')}: {d.get('problem')} -> fix: {d.get('fix')}"
@@ -347,8 +359,8 @@ class LessonLearner:
             f"Recipe ({recipe.title}):\n{recipe.compact()}",
             f"Scene it built:\n{attempt.run.scene_text()}",
             f"Judged {attempt.comparison.get('score')}/10 against the tutorial. Differences:\n{diffs or '(none listed)'}",
-            "Return the revised recipe."])
-        return self._recipe_call("lesson_recipe_revise", REVISE_SYSTEM, prompt, recipe.source)
+            "Return the edits that fix these differences."])
+        return self._patch_call("lesson_recipe_revise", REVISE_SYSTEM, prompt, recipe)
 
     # -- 4. compare ----------------------------------------------------------------------------------------
     def compare(self, video: DownloadedVideo, part: TutorialPart, recipe: Recipe, renders: list[Path]) -> dict[str, Any]:
