@@ -102,38 +102,60 @@ class ProjectStore:
 
 
 def contact_sheet(tiles: list[tuple[Path | None, str]], dest: Path, *, tile_w: int = 480, tile_h: int = 360,
-                  title: str = "") -> Path:
+                  title: str = "", columns: int | None = None) -> Path:
     """Images side by side with a caption under each (a missing image is a grey tile)."""
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw
 
     caption_h, title_h = 44, (34 if title else 0)
-    columns = min(4, max(1, len(tiles)))
+    columns = columns or min(4, max(1, len(tiles)))
     rows = (len(tiles) + columns - 1) // columns
     sheet = Image.new("RGB", (columns * tile_w, title_h + rows * (tile_h + caption_h)), (24, 24, 28))
     draw = ImageDraw.Draw(sheet)
-    try:
-        font = ImageFont.load_default(size=18)
-    except TypeError:  # Pillow < 10.1
-        font = ImageFont.load_default()
+    font = _font(18)
     if title:
-        draw.text((12, 8), title[:110], fill=(235, 235, 235), font=font)
+        draw.text((12, 8), _printable(title)[:110], fill=(235, 235, 235), font=font)
     for i, (path, caption) in enumerate(tiles):
         x, y = (i % columns) * tile_w, title_h + (i // columns) * (tile_h + caption_h)
         if path is not None and Path(path).exists():
             img = Image.open(path).convert("RGB")
-            img.thumbnail((tile_w - 8, tile_h - 8), Image.Resampling.LANCZOS)
-            if max(img.size) < min(tile_w, tile_h) // 2:   # tiny storyboard frames: enlarge for viewing
-                factor = min((tile_w - 8) / img.width, (tile_h - 8) / img.height)
-                img = img.resize((int(img.width * factor), int(img.height * factor)), Image.Resampling.LANCZOS)
+            # Fit the tile both ways: tutorial storyboard frames are tiny and are enlarged for viewing.
+            factor = min((tile_w - 8) / img.width, (tile_h - 8) / img.height)
+            img = img.resize((max(1, int(img.width * factor)), max(1, int(img.height * factor))),
+                             Image.Resampling.LANCZOS)
             sheet.paste(img, (x + (tile_w - img.width) // 2, y + (tile_h - img.height) // 2))
         else:
             draw.rectangle((x + 4, y + 4, x + tile_w - 4, y + tile_h - 4), fill=(60, 60, 64))
             draw.text((x + 16, y + tile_h // 2), "no image", fill=(200, 200, 200), font=font)
-        for line_no, line in enumerate(_wrap(caption, 46)[:2]):
+        for line_no, line in enumerate(_wrap(_printable(caption), max(12, tile_w // 10))[:2]):
             draw.text((x + 8, y + tile_h + 4 + line_no * 20), line, fill=(230, 230, 230), font=font)
     dest.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(dest)
     return dest
+
+
+FONT_CANDIDATES = ("DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "arial.ttf",
+                   "C:/Windows/Fonts/arial.ttf", "/System/Library/Fonts/Supplemental/Arial.ttf",
+                   "/Library/Fonts/Arial.ttf", "LiberationSans-Regular.ttf")
+
+
+def _font(size: int):  # type: ignore[no-untyped-def]
+    """A font with accented letters (course titles are often not in English), else Pillow's own."""
+    from PIL import ImageFont
+
+    for name in FONT_CANDIDATES:
+        try:
+            return ImageFont.truetype(name, size)
+        except OSError:
+            continue
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:  # Pillow < 10.1
+        return ImageFont.load_default()
+
+
+def _printable(text: str) -> str:
+    """Drop emoji and other symbols a plain font cannot draw."""
+    return "".join(ch for ch in text if ord(ch) < 0x2000 or 0x2010 <= ord(ch) <= 0x2027).strip()
 
 
 def _wrap(text: str, width: int) -> list[str]:

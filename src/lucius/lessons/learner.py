@@ -639,7 +639,34 @@ class LessonLearner:
             self._save_state(video, state)
         if info is not None:
             thumbnail(info, self._lesson_dir(video))
+        self.overview(video)
         return results
+
+    def overview(self, video: DownloadedVideo) -> Path | None:
+        """One picture of the whole lesson: per chapter, the tutorial's frame next to Lucius' best result."""
+        best: dict[tuple[int, int], dict[str, Any]] = {}
+        for summary in self.projects.list(kind="lesson", limit=1000):
+            data = self.projects.get(summary["id"]).data
+            src = data.get("source") or {}
+            if src.get("video_id") != video.video_id or data.get("status") not in ("learned", "partial"):
+                continue
+            key = (int(src.get("start", 0)), int(src.get("end", 0)))
+            if key not in best or (data.get("score") or 0) > (best[key].get("score") or 0):
+                best[key] = data
+        if not best:
+            return None
+        tiles: list[tuple[Path | None, str]] = []
+        for key in sorted(best):
+            data = best[key]
+            folder = self.projects.get(data["id"]).dir
+            chapter = (data.get("title") or "").split(" — ")[-1]
+            frame = folder / "tutorial_frame.png"
+            tiles.append((frame if frame.exists() else None, f"Tutorial: {chapter}"))
+            render = folder / (data.get("final_render") or "")
+            tiles.append((render if data.get("final_render") and render.exists() else None,
+                          f"Lucius: {data.get('score')}/10 ({data.get('status')})"))
+        return contact_sheet(tiles, self._lesson_dir(video) / "overview.png", tile_w=400, tile_h=300,
+                             title=f"{video.title[:70]} - what Lucius rebuilt", columns=2)
 
     def runner(self, backend: Any) -> RecipeRunner:
         from lucius.executor.safety import ActionValidator
