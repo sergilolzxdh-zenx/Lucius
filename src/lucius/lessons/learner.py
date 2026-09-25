@@ -77,7 +77,8 @@ RECIPE_RULES = (
     "select_box element EDGE with a thin box around the loop (sharp_deg or boundary help). Ctrl+1/2/3 on an "
     "object is add_modifier SUBSURF with levels 1/2/3. Shade auto smooth is shade smooth. Sculpting, proportional "
     "editing, curves, texture images and node setups are not available: approximate them with the actions you "
-    "have (e.g. a DISPLACE or SMOOTH modifier, a flat colour) and say so in the step's note. Use the object names "
+    "have (e.g. a DISPLACE modifier with a CLOUDS texture for hand-deformed or sculpted irregularity, a SMOOTH "
+    "modifier, a flat colour) and say so in the step's note. Use the object names "
     "the tutor uses, in English (Mug, Plate, Donut...). Every step needs \"object\" (except add_primitive, "
     "add_light, add_camera, set_world, delete_objects)."
 )

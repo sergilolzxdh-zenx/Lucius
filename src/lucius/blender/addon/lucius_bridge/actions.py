@@ -57,7 +57,8 @@ MODIFIER_PROPS = {
     "SOLIDIFY": {"thickness": "float", "offset": "float", "use_even_offset": "bool"},
     "ARRAY": {"count": "int", "relative_offset_displace": "vec3"},
     "BOOLEAN": {"object": "object", "operation": ("DIFFERENCE", "UNION", "INTERSECT")},
-    "DISPLACE": {"strength": "float", "mid_level": "float"},
+    "DISPLACE": {"strength": "float", "mid_level": "float", "texture": ("CLOUDS", "VORONOI", "MUSGRAVE", "NOISE"),
+                 "texture_scale": "float"},
     "SMOOTH": {"factor": "float", "iterations": "int"},
     "CAST": {"factor": "float", "cast_type": ("SPHERE", "CYLINDER", "CUBOID")},
     "SIMPLE_DEFORM": {"deform_method": ("TWIST", "BEND", "TAPER", "STRETCH"), "factor": "float",
@@ -758,6 +759,14 @@ def add_modifier(p):
             raise BridgeCommandError("invalid_param", f"property {key!r} not allowed for {p['type']}", param=key)
         clean[key] = _check(value, allowed[key], key)
     modifier = obj.modifiers.new(name=p["name"] or p["type"].title(), type=p["type"])
+    texture_kind = clean.pop("texture", None)
+    texture_scale = clean.pop("texture_scale", None)
+    if texture_kind is not None:
+        # A procedural texture makes the displacement irregular (a lumpy donut, a rough stone).
+        texture = bpy.data.textures.new(f"{obj.name}_{texture_kind.lower()}", type=texture_kind)
+        if texture_scale is not None and hasattr(texture, "noise_scale"):
+            texture.noise_scale = texture_scale
+        modifier.texture = texture
     for key, value in clean.items():
         setattr(modifier, key, value)
     return {"object": obj.name, "modifier": modifier.name, "type": modifier.type}

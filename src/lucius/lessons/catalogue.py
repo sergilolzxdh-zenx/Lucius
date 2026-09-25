@@ -63,7 +63,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "SOLIDIFY {thickness, offset (-1..1), use_even_offset}, BEVEL {width, segments, limit_method: "
                      "NONE|ANGLE}, ARRAY {count, relative_offset_displace [x,y,z]}, SIMPLE_DEFORM {deform_method: "
                      "TWIST|BEND|TAPER|STRETCH, factor, deform_axis}, BOOLEAN {object, operation: "
-                     "DIFFERENCE|UNION|INTERSECT}, DISPLACE {strength}, SMOOTH {factor, iterations}, "
+                     "DIFFERENCE|UNION|INTERSECT}, DISPLACE {strength, texture: CLOUDS|VORONOI|NOISE, texture_scale} (with a "
+                     "texture: an irregular, hand-deformed surface), SMOOTH {factor, iterations}, "
                      "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}"),
     "apply_modifier": ("Ctrl+A over the modifier", "object, modifier (its name)"),
     "remove_modifier": ("X on the modifier", "object, modifier (its name)"),
