@@ -193,6 +193,7 @@ def set_render(p):
 # -- rendering -----------------------------------------------------------------------------------
 
 def _visible_bounds(names=None):
+    bpy.context.view_layer.update()   # world matrices of objects just added or appended
     points = []
     for obj in bpy.context.scene.objects:
         if names and obj.name not in names:
@@ -208,7 +209,7 @@ def _visible_bounds(names=None):
 
 
 def _studio(view, names=None):
-    """A temporary camera framing the visible objects (or ``names``) and, if the scene has no light, three lights."""
+    """A temporary camera framing the visible objects (or ``names``) and three studio lights."""
     scene = bpy.context.scene
     made = []
     centre, radius = _visible_bounds(names)
@@ -217,33 +218,35 @@ def _studio(view, names=None):
     cam = bpy.data.objects.new(cam_data.name, cam_data)
     scene.collection.objects.link(cam)
     made.append(cam)
-    half_fov = math.atan(cam_data.sensor_width / 2 / cam_data.lens)
+    # The sensor spans the image's longer side; the shorter side sees less, and limits the framing.
+    half_long = math.atan(cam_data.sensor_width / 2 / cam_data.lens)
     aspect = scene.render.resolution_x / max(1, scene.render.resolution_y)
-    distance = radius / math.sin(half_fov * min(1.0, aspect)) * 1.08
+    half_short = math.atan(math.tan(half_long) / max(aspect, 1.0 / aspect))
+    distance = radius / math.sin(half_short) * 1.05
     direction = Vector(VIEW_DIRECTIONS[view]).normalized()
     cam.location = centre + direction * distance
     cam_data.clip_end = max(100.0, distance * 4)
     _look_at(cam, centre)
-    if not any(o.type == "LIGHT" and not o.hide_render for o in scene.objects):
-        for name, kind, energy, offset in (("LuciusKey", "AREA", 700.0, (1.2, -1.0, 1.6)),
-                                           ("LuciusFill", "AREA", 250.0, (-1.4, -0.6, 0.8)),
-                                           ("LuciusRim", "AREA", 400.0, (-0.3, 1.5, 1.4))):
-            data = bpy.data.lights.new(name, type=kind)
-            data.energy = energy * max(1.0, radius) ** 2
-            data.size = max(1.0, radius * 1.5)
-            light = bpy.data.objects.new(name, data)
-            scene.collection.objects.link(light)
-            light.location = centre + Vector(offset) * max(radius * 2.5, 2.0)
-            _look_at(light, centre)
-            made.append(light)
+    # Previews are for seeing the shape: studio lights always (the scene's own lights are for its own camera).
+    for name, kind, energy, offset in (("LuciusKey", "AREA", 700.0, (1.2, -1.0, 1.6)),
+                                       ("LuciusFill", "AREA", 250.0, (-1.4, -0.6, 0.8)),
+                                       ("LuciusRim", "AREA", 400.0, (-0.3, 1.5, 1.4))):
+        data = bpy.data.lights.new(name, type=kind)
+        data.energy = energy * max(1.0, radius) ** 2
+        data.size = max(1.0, radius * 1.5)
+        light = bpy.data.objects.new(name, data)
+        scene.collection.objects.link(light)
+        light.location = centre + Vector(offset) * max(radius * 2.5, 2.0)
+        _look_at(light, centre)
+        made.append(light)
     return cam, made
 
 
 def render_image(p):
     """Render the scene to a PNG/JPEG inside the allowed directories.
 
-    ``camera='scene'`` uses the scene's camera (a finished tutorial shot); ``'auto'`` frames the visible
-    objects from ``view`` with a temporary camera (and temporary lights if the scene has none).
+    ``camera='scene'`` uses the scene's camera and lights (a finished tutorial shot); ``'auto'`` frames the
+    visible objects (or ``frame``) from ``view`` with a temporary camera and temporary studio lights.
     """
     path = _check_path(p["path"], "LUCIUS_ALLOWED_SAVE_DIRS", RENDER_EXTENSIONS)
     if not (16 <= p["width"] <= 4096 and 16 <= p["height"] <= 4096 and 1 <= p["samples"] <= 4096):
@@ -265,16 +268,24 @@ def render_image(p):
     render.image_settings.file_format = "JPEG" if path.lower().endswith((".jpg", ".jpeg")) else "PNG"
     render.filepath = path
     temporary = []
+    hidden = []
     world_created = False
     try:
         if p["camera"] == "auto" or scene.camera is None:
             camera, temporary = _studio(p["view"], set(p["frame"] or []))
+        if p["camera"] == "auto":
+            for obj in scene.objects:   # the scene's own lights stay out of a studio preview
+                if obj.type == "LIGHT" and obj not in temporary and not obj.hide_render:
+                    obj.hide_render = True
+                    hidden.append(obj)
             scene.camera = camera
         if scene.world is None:
             scene.world = bpy.data.worlds.new("LuciusPreviewWorld")
             world_created = True
         bpy.ops.render.render(write_still=True)
     finally:
+        for obj in hidden:
+            obj.hide_render = False
         for obj in temporary:
             data = obj.data
             bpy.data.objects.remove(obj, do_unlink=True)

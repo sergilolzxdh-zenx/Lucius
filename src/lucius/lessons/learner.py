@@ -277,8 +277,9 @@ class LessonLearner:
                 if spoken:
                     lines += [f"Narration ({narration.language or 'unknown language'}):", spoken]
             lines.append("Write the lesson notes for this clip.")
-            data = None
-            for attempt in range(self.chunk_attempts):
+            piece = cache.with_name(f"{cache.stem}.piece_{int(a)}_{int(b)}.json")
+            data = json.loads(piece.read_text()) if piece.exists() else None
+            for attempt in range(0 if data is not None else self.chunk_attempts):
                 try:
                     data = self._call("lesson_notes", system=NOTES_SYSTEM, prompt="\n".join(lines),
                                       schema=notes_schema(),
@@ -293,6 +294,7 @@ class LessonLearner:
             if data is None:
                 # A missing piece would leave a hole in the recipe: stop, and resume here later.
                 raise ModelUnavailable(f"no model could watch {_clock(a)}-{_clock(b)}: {notes['errors'][-1]}")
+            piece.write_text(json.dumps(data, indent=1, ensure_ascii=False))   # a restart resumes after this piece
             notes["operations"] += data.get("operations", [])
             notes["objects_at_end"] = data.get("objects_at_end", []) or notes["objects_at_end"]
             notes["summaries"].append(f"[{_clock(a)}] {data.get('summary', '')}")
@@ -409,7 +411,7 @@ class LessonLearner:
             return result
         attempts: list[Attempt] = []
         for number in range(1, self.practice_rounds + 2):
-            run = runner.run(recipe, start_from=start_from)
+            run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
             fixes = 0
             while not run.ok and fixes < self.max_fixes:
                 fixes += 1
@@ -419,7 +421,7 @@ class LessonLearner:
                 except ProviderError as exc:
                     result.notes.append(f"correction failed: {exc.message[:160]}")
                     break
-                run = runner.run(recipe, start_from=start_from)
+                run = runner.run(recipe, start_from=start_from, default_cube=start_from is None)
             attempt = Attempt(number=number, recipe=recipe, run=run, fixes=fixes)
             attempt.renders = self._render(runner, project, recipe, f"attempt{number}",
                                            uses_camera or "add_camera" in recipe.actions_used())
@@ -443,7 +445,8 @@ class LessonLearner:
                 break
         best = max(attempts, key=lambda a: a.score)
         # Rebuild the best attempt so the saved scene (the next chapter's start) is exactly that recipe's result.
-        final_run = runner.run(best.recipe, start_from=start_from) if best is not attempts[-1] else best.run
+        final_run = best.run if best is attempts[-1] else runner.run(best.recipe, start_from=start_from,
+                                                                     default_cube=start_from is None)
         result.attempts = len(attempts)
         result.score = best.comparison.get("score")
         (project.path("recipe.json")).write_text(best.recipe.model_dump_json(indent=1))
@@ -542,7 +545,8 @@ class LessonLearner:
         backend = self.app.headless_backend()
         runner = self.runner(backend)
         start_from: Path | None = None
-        scene_before = "Blender's default scene: a Camera and a Light (the default cube was deleted)."
+        scene_before = ("Blender's default scene: Cube (mesh, 2 x 2 x 2 m at the origin), Camera (at 7.36, -6.93, "
+                        "4.96 looking at the origin) and Light (point, at 4.08, 1.0, 5.9).")
         uses_camera = False
         for index, part in enumerate(parts):
             if part.skipped:

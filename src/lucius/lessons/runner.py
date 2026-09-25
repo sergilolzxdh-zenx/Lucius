@@ -112,12 +112,15 @@ class RecipeRunner:
             raise BlenderBridgeError(error.get("message", f"{name} failed"), code=error.get("code", "bridge_error"))
         return outcome.result
 
-    def prepare(self, start_from: Path | None = None) -> None:
-        """Start from Blender's default scene without the cube (camera and light kept), or from a saved scene."""
+    def prepare(self, start_from: Path | None = None, *, default_cube: bool = False) -> None:
+        """Start from a saved scene, or from Blender's default scene (camera and light; the 2 m cube too when
+        ``default_cube`` -- tutorials start from it -- else no mesh)."""
         if start_from is not None:
             self._bridge("import_blend", {"path": str(Path(start_from).resolve())})
-        else:
-            self._bridge("reset_scene", {"keep_camera_light": True})
+            return
+        self._bridge("reset_scene", {"keep_camera_light": True})
+        if default_cube:
+            self._bridge("add_primitive", {"kind": "cube", "size": 2.0, "name": "Cube"})
 
     def scene(self) -> dict[str, Any]:
         bridge = getattr(self.backend, "bridge", None)
@@ -130,10 +133,11 @@ class RecipeRunner:
             return {}
 
     # -- execution -------------------------------------------------------------------------------------
-    def run(self, recipe: Recipe, *, start_from: Path | None = None, prepare: bool = True) -> RecipeRun:
+    def run(self, recipe: Recipe, *, start_from: Path | None = None, prepare: bool = True,
+            default_cube: bool = False) -> RecipeRun:
         started = time.monotonic()
         if prepare:
-            self.prepare(start_from)
+            self.prepare(start_from, default_cube=default_cube)
         validator: ActionValidator = self._validator_factory()
         run = RecipeRun(ok=True)
         for index, step in enumerate(recipe.steps):

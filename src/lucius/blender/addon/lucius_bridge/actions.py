@@ -907,6 +907,7 @@ def import_blend(p):
         if obj is not None:
             scene.collection.objects.link(obj)
             names.append(obj.name)
+    bpy.context.view_layer.update()   # appended objects get their world matrices only on an update
     # A saved scene continues where it stopped: its camera and world come back too.
     cameras = sorted((o for o in scene.objects if o.type == "CAMERA"), key=lambda o: o.name)
     if cameras and (scene.camera is None or scene.camera.name not in scene.objects):
@@ -973,6 +974,7 @@ def restore(p):
         if obj is not None:
             scene_collection.objects.link(obj)
             restored.append(obj.name)
+    bpy.context.view_layer.update()
     meta_path = path + ".json"
     if os.path.exists(meta_path):
         with open(meta_path) as handle:
@@ -1064,16 +1066,20 @@ ACTIONS = {
 
 GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
-# Materials, lights, camera and rendering live in their own module.
-from . import scene as _scene  # noqa: E402
 
-ACTIONS.update(_scene.ACTIONS)
+
+def registry():
+    """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
+    from . import scene
+
+    return {**ACTIONS, **scene.ACTIONS}
 
 
 def execute_action(name, args):
-    if name not in ACTIONS:
+    actions = registry()
+    if name not in actions:
         raise BridgeCommandError("unknown_action", f"action {name!r} is not allowlisted", action=name)
-    handler, spec = ACTIONS[name]
+    handler, spec = actions[name]
     if not isinstance(args, dict):
         raise BridgeCommandError("invalid_param", "args must be an object")
     params = validate(spec, args)
@@ -1084,5 +1090,5 @@ def execute_action(name, args):
 def describe_actions():
     return {
         name: {param: (list(kind) if isinstance(kind, tuple) else kind) for param, (kind, _d) in spec.items()}
-        for name, (_h, spec) in ACTIONS.items()
+        for name, (_h, spec) in registry().items()
     }
