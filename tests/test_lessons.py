@@ -1178,7 +1178,7 @@ def test_light_linking_and_node_aliases(tmp_path):
         ex("reset_scene", keep_camera_light=False)
         ex("add_primitive", kind="cube", name="Lit")
         ex("add_primitive", kind="cube", name="Dark", location=[4, 0, 0])
-        ex("add_light", type="SUN", name="Sun", power=5)
+        ex("add_light", type="SUN", name="Sun", power=5, location=[0, 0, 5])
         linked = ex("light_link", light="Sun", receivers=["Lit"], blockers=["Lit"])
         assert linked["receivers"] == ["Lit"] and linked["blockers"] == ["Lit"]
         assert ex("light_link", light="Sun", clear=True)["receivers"] == "all"
