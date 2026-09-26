@@ -10,8 +10,9 @@ import re
 import bpy
 
 from .actions import OBJ, REQUIRED, _check_path, _leave_edit_mode, _obj
+from .nodes import chosen_engine
 from .protocol import BridgeCommandError
-from .scene import _look_at
+from .scene import _engine_id, _look_at
 
 INTERPOLATIONS = ("BEZIER", "LINEAR", "CONSTANT")
 HANDLES = ("AUTO_CLAMPED", "AUTO", "VECTOR", "ALIGNED", "FREE")
@@ -168,14 +169,17 @@ def render_animation(p):
              "media": getattr(settings, "media_type", None),
              "pct": render.resolution_percentage, "fps": render.fps, "engine": render.engine,
              "x": render.resolution_x, "y": render.resolution_y,
-             "samples": scene.cycles.samples if hasattr(scene, "cycles") else None}
+             "samples": scene.cycles.samples if hasattr(scene, "cycles") else None,
+             "eevee_samples": scene.eevee.taa_render_samples if hasattr(scene, "eevee") else None}
     try:
-        if bpy.app.background and render.engine != "CYCLES":
-            render.engine = "CYCLES"   # Eevee needs a GPU context headless Blender does not have
+        if bpy.app.background:
+            render.engine = _engine_id(chosen_engine(scene))   # Eevee only where it can run, else Cycles
         if render.engine == "CYCLES" and bpy.app.background:
             scene.cycles.device = "CPU"
-        if p["samples"] is not None and hasattr(scene, "cycles"):
+        if p["samples"] is not None and render.engine == "CYCLES":
             scene.cycles.samples = p["samples"]
+        elif p["samples"] is not None and hasattr(scene, "eevee"):
+            scene.eevee.taa_render_samples = p["samples"]
         # The video's size at that percentage, rounded to even pixels (H.264 needs them).
         render.resolution_x = max(16, round(saved["x"] * saved["pct"] / 100 * p["percentage"] / 100 / 2) * 2)
         render.resolution_y = max(16, round(saved["y"] * saved["pct"] / 100 * p["percentage"] / 100 / 2) * 2)
@@ -202,6 +206,8 @@ def render_animation(p):
         render.engine = saved["engine"]
         if saved["samples"] is not None:
             scene.cycles.samples = saved["samples"]
+        if saved["eevee_samples"] is not None:
+            scene.eevee.taa_render_samples = saved["eevee_samples"]
     if not os.path.exists(path):
         raise BridgeCommandError("operator_failed", "the animation was not written")
     frames = len(range(scene.frame_start, scene.frame_end + 1, p["step"]))
@@ -334,13 +340,29 @@ def retime_keys(p):
     return {"object": obj.name, "moved": moved, "first": frames[0], "last": frames[-1]}
 
 
+def _moves(block):
+    """Keyframes or drivers on a datablock (an object, its data or shape keys, a material's nodes)."""
+    anim = getattr(block, "animation_data", None) if block is not None else None
+    return anim is not None and (bool(_fcurves(block)) or len(anim.drivers) > 0)
+
+
 def animation_summary():
     scene = bpy.context.scene
     animated = []
     for obj in scene.objects:
-        blocks = [obj, obj.data] if obj.type == "CAMERA" else [obj]
-        if any(_fcurves(b) for b in blocks if b is not None):
+        blocks = [obj, obj.data, getattr(obj.data, "shape_keys", None)]
+        for slot in obj.material_slots:
+            if slot.material is not None:
+                blocks += [slot.material, slot.material.node_tree]
+        for modifier in obj.modifiers:
+            texture = getattr(modifier, "texture", None)
+            blocks.append(texture)
+            if getattr(modifier, "node_group", None) is not None:
+                blocks.append(modifier.node_group)
+        if any(_moves(b) for b in blocks):
             animated.append(obj.name)
+    if scene.world is not None and (_moves(scene.world) or _moves(scene.world.node_tree)):
+        animated.append("World")
     return {"start": scene.frame_start, "end": scene.frame_end, "fps": scene.render.fps, "animated": animated,
             "resolution": [scene.render.resolution_x, scene.render.resolution_y]}
 

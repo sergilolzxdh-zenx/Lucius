@@ -630,10 +630,12 @@ def test_collections_and_scattered_collections_survive_the_next_chapter(tmp_path
         scattered = ex("add_scatter", object="Ground", collection="Grass", name="Lawn", count=50, children=5,
                        rotation_axis="OB_Y")
         assert scattered["children"] == 5
+        ex("set_render", engine="BLENDER_EEVEE", samples=8, width=320, height=180)
         ex("save_file", path=str(out / "chapter.blend"))
         ex("reset_scene", keep_camera_light=False)
         loaded = ex("import_blend", path=str(out / "chapter.blend"))
         assert "Ground" in loaded["objects"] and "Blade" not in loaded["objects"]   # hidden originals stay hidden
+        assert loaded["engine"] == "BLENDER_EEVEE"   # the engine a step chose comes back with the scene
         ex("add_scatter", object="Ground", collection="Grass", name="Lawn", count=80)   # the collection is back
 
 
@@ -758,3 +760,105 @@ def test_ik_fk_switch_visual_pose_interpolation_and_retiming(tmp_path):
             ex("retime_keys", object="Rig", scale=0.5, pivot=1)    # frames 10 and 11 would both become 6
         whole = ex("retime_keys", object="Rig", scale=0.8, pivot=1)
         assert whole["first"] == 1 and whole["last"] == 19     # 24 -> 1 + 23 * 0.8 = 19.4 -> 19 (snapped)
+
+
+def test_node_editor_properties_shape_keys_curves_and_geometry_nodes(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def obj(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)
+
+        ex("reset_scene", keep_camera_light=True)
+        ex("add_primitive", kind="uv_sphere", name="Fire", radius=1, location=[0, 0, 1])
+        ex("add_primitive", kind="empty", name="FlameAnim", location=[0, 0, 0])
+        # the fire shader: a rotated gradient through a colour ramp into an emission, eaten by a voronoi mask
+        made = ex("edit_nodes", material="FireMat", object="Fire", clear=True, nodes=[
+            {"name": "Coords", "type": "ShaderNodeTexCoord", "object": "FlameAnim"},
+            {"name": "Map", "type": "ShaderNodeMapping", "inputs": {"Rotation_deg": [0, 90, 0]}},
+            {"name": "Gradient", "type": "ShaderNodeTexGradient"},
+            {"name": "Ramp", "type": "ShaderNodeValToRGB", "ramp_interpolation": "B_SPLINE",
+             "ramp": [[0, "#FFFFFF"], [0.5, "#FFC800"], [1, [1, 0, 0]]]},
+            {"name": "Glow", "type": "ShaderNodeEmission", "inputs": {"Strength": 3}},
+            {"name": "Cells", "type": "ShaderNodeTexVoronoi", "inputs": {"Scale": 4}},
+            {"name": "Mask", "type": "ShaderNodeMath", "props": {"operation": "GREATER_THAN"},
+             "inputs": {"1": 0.3}},
+            {"name": "See", "type": "ShaderNodeBsdfTransparent"},
+            {"name": "Mix", "type": "ShaderNodeMixShader"},
+            {"name": "Out", "type": "ShaderNodeOutputMaterial"}],
+            links=[{"from": "Coords", "output": "Object", "to": "Map", "input": "Vector"},
+                   {"from": "Map", "to": "Gradient"}, {"from": "Gradient", "output": "Color", "to": "Ramp"},
+                   {"from": "Ramp", "output": "Color", "to": "Glow"},
+                   {"from": "Cells", "output": "Distance", "to": "Mask"}, {"from": "Mask", "to": "Mix", "input": 0},
+                   {"from": "See", "to": "Mix", "input": 1}, {"from": "Glow", "to": "Mix", "input": 2},
+                   {"from": "Mix", "to": "Out", "input": "Surface"}])
+        assert made["unconnected_outputs"] == [] and made["links"] == 9 and "Ramp" in made["made"]
+        assert obj("Fire")["materials"] == ["FireMat"]
+        with pytest.raises(Exception, match="not allowed"):
+            ex("edit_nodes", material="FireMat", nodes=[{"type": "ShaderNodeScript"}])
+        with pytest.raises(Exception, match="can't be set"):
+            ex("edit_nodes", tree="world", nodes=[{"name": "T", "type": "ShaderNodeTexImage",
+                                                   "props": {"image": "x"}}])
+        with pytest.raises(Exception, match="no socket"):
+            ex("edit_nodes", material="FireMat", links=[{"from": "Mask", "output": "Nope", "to": "Mix"}])
+        ex("edit_nodes", material="EmbersMat", copy_from="FireMat", object="Fire", assign="none")
+        # any property, keyed: a colour ramp handle, the material's blend mode, a legacy texture's metric
+        for frame, pos in ((1, 0.1), (21, 0.7)):
+            key = ex("set_property", target="nodes", name="FireMat", frame=frame, value=pos,
+                     path='nodes["Ramp"].color_ramp.elements[1].position')
+            assert key["keyed"] and key["value"] == pytest.approx(pos)
+        ex("set_property", target="material", name="FireMat", path="surface_render_method", value="BLENDED")
+        with pytest.raises(Exception, match="is not one of"):
+            ex("set_property", target="material", name="FireMat", path="surface_render_method", value="NOPE")
+        with pytest.raises(Exception, match="property path"):
+            ex("set_property", target="object", name="Fire", path="__class__", value=1)
+        with pytest.raises(Exception, match="can't be set"):
+            ex("set_property", target="scene", path="render.filepath", value="/tmp/x")
+        ex("add_modifier", object="Fire", type="DISPLACE", props={
+            "texture": "VORONOI", "texture_scale": 0.5, "texture_coords": "OBJECT",
+            "texture_coords_object": "FlameAnim", "strength": -0.3})
+        assert ex("set_property", target="texture", name="Fire_voronoi", path="distance_metric",
+                  value="DISTANCE_SQUARED")["value"] == "DISTANCE_SQUARED"
+        ex("set_property", target="object", name="Fire", path="rotation_euler[2]", value=90, degrees=True)
+        assert obj("Fire")["rotation_euler"][2] == pytest.approx(math.pi / 2, abs=1e-4)
+        # a driver of the frame alone (#frame / 10)
+        ex("add_driver", object="FlameAnim", path="location", index=2, expression="#frame / 10")
+        ex("set_frames", start=1, end=40, current=20)
+        assert obj("FlameAnim")["location"][2] == pytest.approx(2.0, abs=1e-3)
+        # a shape key shaped in edit mode, then dialled in
+        ex("add_primitive", kind="cube", name="Blast", size=1, location=[4, 0, 1])
+        assert ex("shape_key", object="Blast", name="Grow", slider_min=-1)["active"] == "Grow"
+        ex("select_all", object="Blast")
+        ex("scale_selection", object="Blast", factor=[2, 2, 2])
+        ex("set_mode", object="Blast", mode="OBJECT")
+        ex("shape_key", object="Blast", name="Grow", value=0, frame=1)
+        assert obj("Blast")["dimensions"] == pytest.approx([1, 1, 1], abs=1e-3)
+        ex("shape_key", object="Blast", name="Grow", value=1, frame=10)
+        ex("set_frames", current=10)
+        assert obj("Blast")["dimensions"] == pytest.approx([2, 2, 2], abs=1e-3)
+        # curves: two strokes in one object, drawn on by animating the bevel end
+        curve = ex("add_curve", name="Lines", bevel_depth=0.05, splines=[
+            {"points": [[0, 0, 0], [1, 0, 1], [2, 0, 1]], "handle": "VECTOR", "radius": [1, 1, 0.2]},
+            {"points": [[0, 0, 0], [-1, 0, 1]]}])
+        assert curve["splines"] == 2 and curve["points"] == 5
+        ex("set_property", target="data", name="Lines", path="bevel_factor_end", value=0.0, frame=1)
+        ex("set_property", target="data", name="Lines", path="bevel_factor_end", value=1.0, frame=10)
+        moving = bridge.request("scene_summary")["animation"]["animated"]
+        assert {"Fire", "FlameAnim", "Blast", "Lines"} <= set(moving)
+        # geometry nodes: a transform between the group input and output
+        ex("add_primitive", kind="cube", name="Box", size=1, location=[0, 5, 0])
+        geo = ex("edit_nodes", tree="geometry", object="Box", nodes=[
+            {"name": "Grow", "type": "GeometryNodeTransform", "inputs": {"Scale": [3, 1, 1]}}],
+            links=[{"from": "Group Input", "output": "Geometry", "to": "Grow", "input": "Geometry"},
+                   {"from": "Grow", "output": "Geometry", "to": "Group Output", "input": "Geometry"}])
+        assert geo["unconnected_outputs"] == []
+        assert obj("Box")["dimensions"] == pytest.approx([3, 1, 1], abs=1e-3)
+        # Eevee when asked (falls back to Cycles where it can't run)
+        ex("set_render", engine="BLENDER_EEVEE", samples=4, width=64, height=48)
+        shot = ex("render_image", path=str(tmp_path / "fire.png"), camera="scene", width=64, height=48, samples=2,
+                  lights="scene")
+        assert Path(shot["path"]).exists()

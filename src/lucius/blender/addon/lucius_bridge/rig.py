@@ -464,8 +464,9 @@ def add_driver(p):
             raise BridgeCommandError("invalid_param", f"bone {p['bone']!r} not found", param="bone")
         path = f'pose.bones["{p["bone"]}"].{path}'
     variables = p["variables"] or []
-    if not isinstance(variables, list) or not 1 <= len(variables) <= 8:
-        raise BridgeCommandError("invalid_param", "give 1..8 variables", param="variables")
+    if not isinstance(variables, list) or len(variables) > 8 or (not variables and not p["expression"]):
+        raise BridgeCommandError("invalid_param", "give 1..8 variables, or an expression of the frame alone "
+                                 "(#frame/10 is frame/10)", param="variables")
     names = []
     specs = []
     for i, var in enumerate(variables):
@@ -494,7 +495,7 @@ def add_driver(p):
                 raise BridgeCommandError("invalid_param", "variable path must be a property path", param="variables")
             specs.append((vname, kind, source, None, None, None, var_path))
         names.append(vname)
-    expression = p["expression"] or names[0]
+    expression = (p["expression"] or names[0]).lstrip("#").strip()   # "#frame / 10" typed in a field
     _check_expression(expression, set(names))
     try:
         fcurve = obj.driver_add(path, p["index"]) if p["index"] is not None else obj.driver_add(path)
@@ -559,5 +560,5 @@ ACTIONS = {
     "add_driver": (add_driver, {
         "object": OBJ, "material": ("name", None), "bone": ("name", None), "path": ("path_expr", REQUIRED),
         "index": ("int", None),
-        "expression": ("expression", None), "variables": ("list", REQUIRED)}),
+        "expression": ("expression", None), "variables": ("list", None)}),
 }

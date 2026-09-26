@@ -13,6 +13,7 @@ import bpy
 from mathutils import Vector
 
 from .actions import OBJ, REQUIRED, _check_path, _leave_edit_mode, _obj
+from .nodes import chosen_engine, eevee_available
 from .protocol import BridgeCommandError
 
 COLOR = ("vec3", None)
@@ -338,16 +339,30 @@ def set_world(p):
     return {"strength": p["strength"], "sky": bool(p["sky"])}
 
 
+def _engine_id(engine):
+    """Blender 4.2+ calls Eevee Next plain BLENDER_EEVEE."""
+    items = {i.identifier for i in bpy.types.RenderSettings.bl_rna.properties["engine"].enum_items}
+    if engine == "BLENDER_EEVEE_NEXT" and engine not in items:
+        return "BLENDER_EEVEE"
+    if engine == "BLENDER_EEVEE" and engine not in items and "BLENDER_EEVEE_NEXT" in items:
+        return "BLENDER_EEVEE_NEXT"
+    return engine
+
+
 def set_render(p):
     scene = bpy.context.scene
-    scene.render.engine = p["engine"]
+    engine = _engine_id(p["engine"])
+    scene["lucius_engine"] = engine   # what renders use (Eevee falls back to Cycles where it can't run)
+    if engine.startswith("BLENDER_EEVEE") and not eevee_available():
+        engine = "CYCLES"
+    scene.render.engine = engine
     scene.render.resolution_x, scene.render.resolution_y = p["width"], p["height"]
     scene.render.resolution_percentage = 100
-    if p["engine"] == "CYCLES":
+    if engine == "CYCLES":
         scene.cycles.samples = p["samples"]
         scene.cycles.device = "CPU" if bpy.app.background else scene.cycles.device
         scene.cycles.use_denoising = p["denoise"]
-    elif hasattr(scene, "eevee"):
+    if hasattr(scene, "eevee"):
         scene.eevee.taa_render_samples = p["samples"]
     if p["view_transform"] is not None:
         scene.view_settings.view_transform = p["view_transform"]
@@ -546,17 +561,26 @@ def render_image(p):
     saved = {"engine": render.engine, "x": render.resolution_x, "y": render.resolution_y,
              "pct": render.resolution_percentage, "path": render.filepath, "camera": scene.camera,
              "format": render.image_settings.file_format}
+    # The engine: the one a step chose (set_render) or asked for here; Cycles when Eevee can't run (headless
+    # without EGL) or nothing was chosen. With scene_settings: the size and samples the scene was set up with.
+    if p["scene_settings"]:
+        engine = chosen_engine(scene) if bpy.app.background else render.engine
+    else:
+        engine = p["engine"] or chosen_engine(scene)
+    engine = _engine_id(engine)
+    if engine == "BLENDER_EEVEE" and not eevee_available():
+        engine = "CYCLES"
+    render.engine = engine
     if not p["scene_settings"]:
-        # (with scene_settings: the engine, size and samples the scene was set up with -- a finished shot)
-        render.engine = p["engine"]
         render.resolution_x, render.resolution_y, render.resolution_percentage = p["width"], p["height"], 100
-        if p["engine"] == "CYCLES":
+        if engine == "CYCLES":
             saved["samples"] = scene.cycles.samples
             scene.cycles.samples = p["samples"]
+        elif engine == "BLENDER_EEVEE":
+            saved["eevee_samples"] = scene.eevee.taa_render_samples
+            scene.eevee.taa_render_samples = p["samples"]
     if render.engine == "CYCLES" and bpy.app.background:
         scene.cycles.device = "CPU"
-    elif render.engine != "CYCLES" and bpy.app.background:
-        render.engine = "CYCLES"   # Eevee needs a GPU context headless Blender does not have
     render.image_settings.file_format = "JPEG" if path.lower().endswith((".jpg", ".jpeg")) else "PNG"
     render.filepath = path
     if p["frame_number"] is not None:
@@ -628,6 +652,8 @@ def render_image(p):
         render.image_settings.file_format = saved["format"]
         if "samples" in saved:
             scene.cycles.samples = saved["samples"]
+        if "eevee_samples" in saved:
+            scene.eevee.taa_render_samples = saved["eevee_samples"]
     if not os.path.exists(path):
         raise BridgeCommandError("operator_failed", "the render wrote no image")
     return {"path": path, "camera": "auto" if temporary else "scene", "size": [p["width"], p["height"]]}
@@ -760,7 +786,7 @@ ACTIONS = {
                                   "gap": ("float", 0.0)}),
     "render_image": (render_image, {
         "path": ("path", REQUIRED), "camera": (("scene", "auto"), "auto"), "view": (tuple(VIEW_DIRECTIONS), "three_quarter"),
-        "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
+        "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), None),
         "samples": ("int", 24), "width": ("int", 800), "height": ("int", 600), "frame": ("names", None),
         "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio"), "frame_number": ("int", None),
         "bones": (("auto", "show", "hide"), "auto")}),

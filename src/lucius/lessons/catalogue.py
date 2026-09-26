@@ -75,9 +75,13 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "SOLIDIFY {thickness, offset (-1..1), use_even_offset}, BEVEL {width, segments, limit_method: "
                      "NONE|ANGLE}, ARRAY {count, relative_offset_displace [x,y,z]}, SIMPLE_DEFORM {deform_method: "
                      "TWIST|BEND|TAPER|STRETCH, factor, deform_axis}, BOOLEAN {object, operation: "
-                     "DIFFERENCE|UNION|INTERSECT}, DISPLACE {strength, texture: CLOUDS|VORONOI|NOISE, texture_scale} (with a "
-                     "texture: an irregular, hand-deformed surface), SMOOTH {factor, iterations}, "
-                     "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}"),
+                     "DIFFERENCE|UNION|INTERSECT}, DISPLACE {strength (negative pushes in), texture: CLOUDS|VORONOI|MUSGRAVE|"
+                     "NOISE|MARBLE|WOOD|..., texture_scale, texture_coords LOCAL|GLOBAL|OBJECT|UV, "
+                     "texture_coords_object (an empty that moves the texture), direction} (the new texture is named "
+                     "<object>_<kind>, e.g. Fire_voronoi: its settings via set_property target texture), "
+                     "SMOOTH {factor, iterations}, "
+                     "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}, SKIN "
+                     "{use_smooth_shade}, WAVE {height, width, speed}"),
     "apply_modifier": ("Ctrl+A over the modifier", "object, modifier (its name)"),
     "remove_modifier": ("X on the modifier", "object, modifier (its name)"),
     "shade": ("right click > Shade Smooth / Flat (Auto Smooth)", "object, smooth (true|false), auto_smooth_deg "
@@ -101,7 +105,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "changes only the values given)", "name, location [x,y,z], look_at [x,y,z] or rotation_deg, "
                    "lens (mm, default 50), active (true), depth of field: focus_object (sharp there) or dof_distance "
                    "(metres), fstop (lower = more blur, default 2.8), dof (false turns the blur off)"),
-    "set_render": ("Render / Output / Color Management properties", "engine CYCLES|BLENDER_EEVEE, samples, motion_blur, width, "
+    "set_render": ("Render / Output / Color Management properties", "engine CYCLES|BLENDER_EEVEE (renders then use "
+                   "it; Eevee-only nodes such as Shader to RGB need BLENDER_EEVEE), samples, motion_blur, width, "
                    "height (pixels), denoise, view_transform Standard|AgX|Filmic"),
     "scale_scene": ("A, then S", "factor, pivot [x,y,z]: every object scaled about the pivot (bring a scene to "
                     "real-world size; lights then need less power)"),
@@ -147,6 +152,31 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                           "frames (optional), interpolation CONSTANT (blocking: poses pop) | BEZIER | LINEAR, handle "
                           "AUTO_CLAMPED | VECTOR (no slowing down: take-off, landing, free fall), ease_in / ease_out "
                           "(0..100 % of the gap to the neighbouring key, flat handles: a gentle arrival / departure)"),
+    "edit_nodes": ("the shader / geometry node editor: Shift+A, drag links", "tree material|world|group|geometry, "
+                   "material (made if new; copy_from another = the single-user copy), object (gets the material; "
+                   "geometry: its Geometry Nodes modifier), group + group_type + interface [{name, in_out, type "
+                   "NodeSocketFloat|Color|Vector|..., default, min, max}] for a node group (Ctrl+G), clear, remove "
+                   "[names], nodes [{name, type (ShaderNodeTexNoise, ShaderNodeValToRGB, ShaderNodeMath, "
+                   "ShaderNodeMix, ShaderNodeMapping, ShaderNodeTexCoord, ShaderNodeEmission, ShaderNodeMixShader, "
+                   "ShaderNodeBsdfTransparent, ShaderNodeShaderToRGB, GeometryNode..., ...), inputs {socket name: "
+                   "value; Rotation_deg for degrees}, props {operation, blend_type, data_type, ...}, ramp [[pos, "
+                   "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file), object (texture "
+                   "coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "
+                   "(socket names or numbers), unlink [{to, input}]. Keep the material output's Surface linked"),
+    "set_property": ("hover any field (its Python tooltip path); I to key it", "target object|data|material|nodes|"
+                     "world|world_nodes|shape_keys|texture|scene|particles|group, name (the object / material / "
+                     "texture ...), path (e.g. modifiers[\"Displace\"].strength, bevel_factor_end, "
+                     "surface_render_method, nodes[\"Ramp\"].color_ramp.elements[0].position, "
+                     "key_blocks[\"Grow\"].value, distance_metric, location[2]), value (number, true/false, menu "
+                     "choice, list), degrees (value in degrees), frame (key it there), interpolation"),
+    "shape_key": ("Object Data > Shape Keys (+)", "object, name: made with a Basis first and made active, so the "
+                  "edit-mode steps after it shape the key (set active to go back to one); value 0..1, slider_min "
+                  "(negative values allowed), slider_max, frame (key the value), interpolation"),
+    "add_curve": ("Shift+A > Curve, then edit mode", "name, splines [{points [[x,y,z], ...], type BEZIER|POLY, handle "
+                  "AUTO|VECTOR|ALIGNED|FREE, radius [per point: taper], cyclic}] (several splines = one object, like "
+                  "Shift+D in edit mode), location, bevel_depth (thickness), bevel_resolution, extrude, resolution, "
+                  "fill_caps. Animate bevel_factor_start / bevel_factor_end with set_property (target data) to draw "
+                  "it on"),
     "retime_keys": ("dope sheet / graph editor: select keys, S X (2D cursor pivot) or G X", "object, bones, channels, "
                     "start/end frames of the keys to move, scale (below 1 = faster) around pivot (a frame, default "
                     "start), offset (frames); keys snap to whole frames. Overlapping action: offset a follower's keys "
@@ -161,7 +191,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "path (location, rotation_euler, "
                    "constraints[\"IK\"].influence, ...), index (0/1/2 for a vector), expression (arithmetic on the "
                    "variables, e.g. var/2 or one - two), variables [{name, type TRANSFORMS|SINGLE_PROP, object, bone, "
-                   "transform LOC_X..ROT_Z..SCALE_Z, space WORLD_SPACE|TRANSFORM_SPACE|LOCAL_SPACE, path}]"),
+                   "transform LOC_X..ROT_Z..SCALE_Z, space WORLD_SPACE|TRANSFORM_SPACE|LOCAL_SPACE, path}]; no variables "
+                   "for a value that follows the timeline: expression frame / 10 (typed #frame/10 in a field)"),
     "set_world": ("World properties", "color \"#RRGGBB\", strength; or sky true (a physical sky with a sun, "
                   "like an outdoor HDRI: it lights everything), sun_elevation_deg, sun_rotation_deg, strength ~0.3"),
     "add_scatter": ("Particle system (hair, render as object or collection)", "object (surface), instance (object "

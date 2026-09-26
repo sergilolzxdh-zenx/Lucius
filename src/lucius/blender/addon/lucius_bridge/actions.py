@@ -61,8 +61,13 @@ MODIFIER_PROPS = {
     "SOLIDIFY": {"thickness": "float", "offset": "float", "use_even_offset": "bool"},
     "ARRAY": {"count": "int", "relative_offset_displace": "vec3"},
     "BOOLEAN": {"object": "object", "operation": ("DIFFERENCE", "UNION", "INTERSECT")},
-    "DISPLACE": {"strength": "float", "mid_level": "float", "texture": ("CLOUDS", "VORONOI", "MUSGRAVE", "NOISE"),
-                 "texture_scale": "float"},
+    "DISPLACE": {"strength": "float", "mid_level": "float",
+                 "texture": ("CLOUDS", "VORONOI", "MUSGRAVE", "NOISE", "MARBLE", "WOOD", "STUCCI", "DISTORTED_NOISE",
+                             "MAGIC", "BLEND"),
+                 "texture_scale": "float", "texture_coords": ("LOCAL", "GLOBAL", "OBJECT", "UV"),
+                 "texture_coords_object": "object", "direction": ("X", "Y", "Z", "NORMAL", "RGB_TO_XYZ")},
+    "SKIN": {"use_smooth_shade": "bool", "branch_smoothing": "float"},
+    "WAVE": {"height": "float", "width": "float", "speed": "float", "narrowness": "float"},
     "SMOOTH": {"factor": "float", "iterations": "int"},
     "CAST": {"factor": "float", "cast_type": ("SPHERE", "CYLINDER", "CUBOID")},
     "SIMPLE_DEFORM": {"deform_method": ("TWIST", "BEND", "TAPER", "STRETCH"), "factor": "float",
@@ -136,6 +141,17 @@ def _check(value, kind, name):
         if value == "":
             return value
         return _check(value, "name", name)
+    if kind == "any":
+        # a plain JSON value for a setting: a number, a switch, a short text, or a short list of those
+        def plain(v, depth=0):
+            if isinstance(v, (bool, int, float)) or (isinstance(v, str) and len(v) <= 200):
+                return True
+            return isinstance(v, list) and depth < 2 and len(v) <= 64 and all(plain(x, depth + 1) for x in v)
+
+        if not plain(value):
+            raise BridgeCommandError("invalid_param", f"{name} must be a number, true/false, a short text or a list",
+                                     param=name)
+        return value
     if kind in ("path_expr", "expression"):
         if not isinstance(value, str) or not 0 < len(value) <= 300:
             raise BridgeCommandError("invalid_param", f"{name} must be a short text", param=name)
@@ -1161,6 +1177,13 @@ def import_blend(p):
     if hasattr(scene, "cycles") and hasattr(saved, "cycles"):
         scene.cycles.samples = saved.cycles.samples
         scene.cycles.use_denoising = saved.cycles.use_denoising
+    if hasattr(scene, "eevee") and hasattr(saved, "eevee"):
+        scene.eevee.taa_render_samples = saved.eevee.taa_render_samples
+    render.use_motion_blur = old.use_motion_blur
+    render.film_transparent = old.film_transparent
+    for key in list(saved.keys()):
+        if key.startswith("lucius_") and isinstance(saved[key], (str, int, float)):
+            scene[key] = saved[key]   # choices a step made for the scene, e.g. the render engine
     camera = saved.camera
     bpy.data.scenes.remove(saved)
     bpy.context.view_layer.update()   # appended objects get their world matrices only on an update
@@ -1174,7 +1197,8 @@ def import_blend(p):
     elif cameras and (scene.camera is None or scene.camera.name not in scene.objects):
         scene.camera = cameras[0]
     return {"objects": names, "camera": scene.camera.name if scene.camera else None,
-            "collections": [c.name for c in scene.collection.children]}
+            "collections": [c.name for c in scene.collection.children],
+            "engine": scene.get("lucius_engine") or scene.render.engine}
 
 
 def _snapshot_dir():
@@ -1337,9 +1361,9 @@ GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
 def registry():
     """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
-    from . import anim, rig, scene
+    from . import anim, nodes, rig, scene
 
-    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS}
+    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS, **nodes.ACTIONS}
 
 
 def execute_action(name, args):
