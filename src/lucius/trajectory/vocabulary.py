@@ -73,6 +73,7 @@ BRIDGE_ACTION_TYPES = {
     "delete_elements": "delete", "delete_objects": "delete", "bridge_edge_loops": "bridge_loops",
     "separate_selection": "separate", "duplicate_object": "duplicate", "shade": "shade_smooth", "add_scatter": "scatter",
     "render_image": "render", "set_render": "render", "rename_object": "rename", "save_file": "save",
+    "recalc_normals": "geometry_edit",
 }
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).

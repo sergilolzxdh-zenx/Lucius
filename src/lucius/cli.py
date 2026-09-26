@@ -331,6 +331,51 @@ def cmd_make(args: argparse.Namespace) -> int:
         app.close()
 
 
+def cmd_teach(args: argparse.Namespace) -> int:
+    """Teach without a model API: build a teacher's recipe, show the tutorial next to it, keep it when scored."""
+    from lucius.ingestion.download import parse_timestamp
+    from lucius.lessons.teacher import Teacher, load_recipe
+
+    app = _app(args)
+    try:
+        teacher = Teacher(app, name=args.teacher)
+        if args.what == "frames":
+            video = teacher.video(args.video)
+            out = Path(args.out or app.config.data_dir / "lessons" / args.video / "frames.png")
+            _print({"sheet": str(teacher.frames(video, parse_timestamp(args.start), parse_timestamp(args.end), out,
+                                                every=args.every))})
+            return 0
+        if args.what == "narration":
+            from lucius.ingestion.captions import CaptionTrack
+
+            video = teacher.video(args.video)
+            if video.captions_path is None:
+                print("this video has no saved captions", file=sys.stderr)
+                return 2
+            track = CaptionTrack.from_file(video.captions_path, language=video.language)
+            line, start = [], None
+            for cue in track.window(parse_timestamp(args.start), parse_timestamp(args.end)).cues:
+                start = cue.start if start is None else start
+                line.append(cue.text)
+                if cue.start - start > 20:
+                    print(f"[{int(start // 60)}:{int(start % 60):02d}] {' '.join(line)}")
+                    line, start = [], None
+            if line and start is not None:
+                print(f"[{int(start // 60)}:{int(start % 60):02d}] {' '.join(line)}")
+            return 0
+        recipe = load_recipe(args.recipe)
+        if args.what == "chapter":
+            result = teacher.teach_chapter(recipe, args.video, args.chapter, score=args.score, frame_at=args.frame_at,
+                                           note=args.note or "")
+        else:
+            result = teacher.teach_task(recipe, args.task, references=args.reference or [], score=args.score,
+                                        note=args.note or "")
+        _print(result.to_dict())
+        return 0 if result.ok else 2
+    finally:
+        app.close()
+
+
 def cmd_projects(args: argparse.Namespace) -> int:
     from lucius.lessons import ProjectStore, rate_project
 
@@ -510,6 +555,28 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--backend", choices=["headless", "live", "gui"], default="headless",
                    help="headless Blender (default), your Blender through the add-on, or keyboard and mouse")
     s.set_defaults(func=cmd_make)
+
+    s = sub.add_parser("teach", help="teach without a model API: build a recipe you wrote (for a tutorial chapter "
+                                     "or a task), see it next to the tutorial, keep it with --score")
+    s.add_argument("what", choices=["chapter", "task", "frames", "narration"],
+                   help="chapter/task: build RECIPE; frames: the tutorial's preview frames; narration: what the "
+                        "tutor says (captions) between --start and --end")
+    s.add_argument("recipe", nargs="?", help="recipe JSON file (chapter, task)")
+    s.add_argument("--video", help="video id of a saved tutorial (e.g. lrlpwIumFnE)")
+    s.add_argument("--chapter", type=int, help="1-based chapter number")
+    s.add_argument("--task", help="what the recipe makes (task)")
+    s.add_argument("--reference", action="append", help="reference image (task); repeat for several")
+    s.add_argument("--score", type=float, help="your judgement 0-10: keeps the recipe as the skill (without it, a "
+                                               "trial run)")
+    s.add_argument("--frame-at", help="tutorial time to show next to the renders (default: 15 s before the end)")
+    s.add_argument("--start", help="frames/narration: from (12:30)")
+    s.add_argument("--end", help="frames/narration: to")
+    s.add_argument("--every", type=float, default=10.0, help="frames: seconds between frames (the preview has one "
+                                                           "every ~10 s)")
+    s.add_argument("--out", help="frames: where the picture goes")
+    s.add_argument("--teacher", default="teacher", help="who wrote and judged it (recorded with the skill)")
+    s.add_argument("--note", help="what you changed or noticed")
+    s.set_defaults(func=cmd_teach)
 
     s = sub.add_parser("projects", help="what Lucius built: list, show, or rate a project good/bad")
     s.add_argument("action", choices=["list", "show", "good", "bad"], nargs="?", default="list")

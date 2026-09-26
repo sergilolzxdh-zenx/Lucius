@@ -338,3 +338,22 @@ def test_patches_edit_a_recipe_by_step_index():
     assert [s.action for s in patched.steps] == ["set_mode", "add_primitive", "extrude", "fill"]
     assert patched.steps[2].args == {"offset": [0, 0, 2]} and patched.steps[2].video_time == "1:00"
     assert len(problems) == 2
+
+
+def test_inset_works_on_a_lone_face_like_blender(headless_blender):
+    def ex(action, **args):
+        return headless_blender.execute(action, args, timeout=120)["result"]
+
+    ex("reset_scene", keep_camera_light=False)
+    ex("add_primitive", kind="circle", name="Dish", vertices=16, radius=2, fill=True)
+    ex("select_all", object="Dish")
+    assert ex("inset", object="Dish", thickness=0.4)["new_faces"] > 0
+    assert ex("inset", object="Dish", thickness=0.4)["new_faces"] > 0     # the inner face stayed selected
+    dish = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Dish")
+    assert dish["mesh"]["verts"] == 48 and dish["mesh"]["faces"] == 33
+    # Extruding the open rim and scaling it moves only the new loop, not the rim.
+    ex("select_box", object="Dish", element="EDGE", space="local", boundary=True)
+    ex("extrude", object="Dish", offset=[0, 0, -0.2])
+    ex("scale_selection", object="Dish", factor=[0.5, 0.5, 1])
+    dish = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Dish")
+    assert dish["dimensions"][0] == pytest.approx(4.0, abs=0.01)

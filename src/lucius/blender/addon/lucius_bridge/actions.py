@@ -436,7 +436,8 @@ def extrude(p):
     new_geom = ret["geom"]
     new_verts = [g for g in new_geom if isinstance(g, bmesh.types.BMVert)]
     bmesh.ops.translate(bm, vec=offset, verts=new_verts)
-    _select_only(bm, new_geom)
+    # Like E: what stays selected is the moved region -- for edges, the new edge loop, not the new walls.
+    _select_only(bm, new_geom if faces else [g for g in new_geom if not isinstance(g, bmesh.types.BMFace)])
     bm.normal_update()
     bmesh.update_edit_mesh(obj.data)
     return {"object": obj.name, "new_verts": len(bm.verts) - before, "mode": "faces" if faces else
@@ -494,7 +495,11 @@ def inset(p):
     faces = [f for f in bm.faces if f.select]
     if not faces:
         raise BridgeCommandError("empty_selection", "no faces selected")
-    result = bmesh.ops.inset_region(bm, faces=faces, thickness=p["thickness"], depth=p["depth"])
+    # Blender's I key insets open borders too and keeps the rim even; bmesh's own defaults do neither
+    # (a lone face -- a filled circle, a plane -- would not inset at all).
+    result = bmesh.ops.inset_region(bm, faces=faces, thickness=p["thickness"], depth=p["depth"], use_boundary=True,
+                                    use_even_offset=True)
+    _select_only(bm, [f for f in faces if f.is_valid])   # like I: the inner faces stay selected
     bmesh.update_edit_mesh(obj.data)
     return {"object": obj.name, "new_faces": len(result.get("faces", []))}
 
@@ -731,6 +736,17 @@ def separate_selection(p):
         o.select_set(o == new)
     bpy.context.view_layer.objects.active = new
     return {"object": new.name, "from": obj.name, "faces": len(new.data.polygons)}
+
+
+def recalc_normals(p):
+    """Shift+N: make every face point outwards (or inwards) consistently."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+    if p["inside"]:
+        bmesh.ops.reverse_faces(bm, faces=list(bm.faces))
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "faces": len(bm.faces)}
 
 
 def duplicate_object(p):
@@ -1055,6 +1071,7 @@ ACTIONS = {
     "bridge_edge_loops": (bridge_edge_loops, {"object": OBJ, "cuts": ("int", 0)}),
     "fill": (fill, {"object": OBJ, "grid": ("bool", False)}),
     "subdivide": (subdivide, {"object": OBJ, "cuts": ("int", 1), "smoothness": ("float", 0.0)}),
+    "recalc_normals": (recalc_normals, {"object": OBJ, "inside": ("bool", False)}),
     "separate_selection": (separate_selection, {"object": OBJ, "new_name": ("name", None), "duplicate": ("bool", True)}),
     "duplicate_object": (duplicate_object, {"object": OBJ, "new_name": ("name", None), "offset": V3,
                                             "rotation": ("vec3", None), "linked": ("bool", False)}),

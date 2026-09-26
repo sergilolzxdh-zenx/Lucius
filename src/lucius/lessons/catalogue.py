@@ -56,6 +56,7 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "fill": ("F", "object, grid (grid fill instead of one face). Makes faces from the selected boundary."),
     "subdivide": ("Edge > Subdivide", "object, cuts, smoothness"),
     "merge_by_distance": ("M > By Distance", "object, distance"),
+    "recalc_normals": ("Shift+N", "object, inside (false: faces point outwards)"),
     "separate_selection": ("Shift+D then P > Selection", "object, new_name, duplicate (true: copy the selected "
                            "faces into a new object, e.g. donut icing; false: move them)"),
     "add_modifier": ("Properties > Modifiers (Ctrl+1..3 adds Subdivision)",

@@ -565,7 +565,8 @@ class LessonLearner:
         return f"lesson_{video.video_id}_{index + 1:02d}".replace("-", "_").lower()
 
     def store_skill(self, recipe: Recipe, part: TutorialPart, video: DownloadedVideo, built: bool,
-                    score: float | None, index: int, project: Project) -> str | None:
+                    score: float | None, index: int, project: Project,
+                    judge: str = "model comparison with the tutorial clip") -> str | None:
         from lucius.ids import new_id
         from lucius.skills.schema import ActionTemplate, SkillDefinition, SkillExample, SkillPhase
         from lucius.timeutil import now
@@ -605,8 +606,7 @@ class LessonLearner:
         library.record_use(skill_id, success=success, run_id=run_id,
                            instance_signature=f"{video.video_id}:{int(part.start)}", objective=built,
                            environment="blender_headless", role="validation", source_class="external_video",
-                           detail={"visual_score": score, "judge": "model comparison with the tutorial clip",
-                                   "project": project.id})
+                           detail={"visual_score": score, "judge": judge, "project": project.id})
         try:
             self.app.retriever.refresh()
         except Exception as exc:  # indexing is best effort; the skill exists either way

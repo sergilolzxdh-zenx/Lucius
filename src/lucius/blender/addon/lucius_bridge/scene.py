@@ -228,9 +228,9 @@ def _studio(view, names=None):
     cam_data.clip_end = max(100.0, distance * 4)
     _look_at(cam, centre)
     # Previews are for seeing the shape: studio lights always (the scene's own lights are for its own camera).
-    for name, kind, energy, offset in (("LuciusKey", "AREA", 700.0, (1.2, -1.0, 1.6)),
-                                       ("LuciusFill", "AREA", 250.0, (-1.4, -0.6, 0.8)),
-                                       ("LuciusRim", "AREA", 400.0, (-0.3, 1.5, 1.4))):
+    for name, kind, energy, offset in (("LuciusKey", "AREA", 450.0, (1.2, -1.0, 1.2)),
+                                       ("LuciusFill", "AREA", 120.0, (-1.4, -0.6, 0.8)),
+                                       ("LuciusRim", "AREA", 250.0, (-0.3, 1.5, 1.4))):
         data = bpy.data.lights.new(name, type=kind)
         data.energy = energy * max(1.0, radius) ** 2
         data.size = max(1.0, radius * 1.5)
@@ -240,6 +240,13 @@ def _studio(view, names=None):
         _look_at(light, centre)
         made.append(light)
     return cam, made
+
+
+def _background(world):
+    if world is None:
+        return None
+    world.use_nodes = True
+    return next((n for n in world.node_tree.nodes if n.type == "BACKGROUND"), None)
 
 
 def render_image(p):
@@ -282,8 +289,34 @@ def render_image(p):
         if scene.world is None:
             scene.world = bpy.data.worlds.new("LuciusPreviewWorld")
             world_created = True
+        if p["camera"] == "auto":
+            # A shape preview, like the viewport's solid mode: grey clay when nothing has a material yet, and soft
+            # ambient light so hollows (a dish, the inside of a mug) read.
+            meshes = [o for o in scene.objects if o.type == "MESH" and not o.hide_render]
+            if meshes and not any(slot.material for o in meshes for slot in o.material_slots):
+                clay = bpy.data.materials.new("LuciusPreviewClay")
+                clay.diffuse_color = (0.42, 0.42, 0.44, 1.0)
+                clay.use_nodes = True
+                bsdf = next(n for n in clay.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+                bsdf.inputs["Base Color"].default_value = (0.42, 0.42, 0.44, 1.0)
+                bsdf.inputs["Roughness"].default_value = 0.55
+                saved["override"] = bpy.context.view_layer.material_override
+                bpy.context.view_layer.material_override = clay
+                saved["clay"] = clay
+            background = _background(scene.world)
+            if background is not None:
+                saved["background"] = (tuple(background.inputs["Color"].default_value),
+                                       background.inputs["Strength"].default_value)
+                background.inputs["Color"].default_value = (0.25, 0.25, 0.27, 1.0)
+                background.inputs["Strength"].default_value = 1.0
         bpy.ops.render.render(write_still=True)
     finally:
+        if "clay" in saved:
+            bpy.context.view_layer.material_override = saved["override"]
+            bpy.data.materials.remove(saved["clay"])
+        if "background" in saved and _background(scene.world) is not None:
+            background = _background(scene.world)
+            background.inputs["Color"].default_value, background.inputs["Strength"].default_value = saved["background"]
         for obj in hidden:
             obj.hide_render = False
         for obj in temporary:
