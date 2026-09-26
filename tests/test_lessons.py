@@ -1288,3 +1288,33 @@ def test_text_objects_on_curves_keyed_and_converted(tmp_path):
         assert mesh["type"] == "MESH" and mesh["faces"] > 100
         ex("select_box", object="Title", element="FACE", max=[None, None, 0.45])
         ex("set_material", object="Title", name="Red", base_color=[0.8, 0.02, 0.02], assign="selected_faces")
+
+
+def test_geometry_node_group_inputs_reach_the_modifier(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(cmd, **args):
+            return bridge.execute(cmd, args, timeout=600)["result"]
+
+        def dims(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)["dimensions"]
+
+        ex("reset_scene", keep_camera_light=False)
+        for name in ("Tall", "Short"):
+            ex("add_primitive", kind="cube", name=name, size=1)
+        ex("edit_nodes", tree="geometry", object="Tall", group="Box", clear=True,
+           interface=[{"name": "Height", "in_out": "INPUT", "type": "NodeSocketFloat", "default": 3.0}],
+           nodes=[{"name": "Group Input", "type": "NodeGroupInput"}, {"name": "Group Output",
+                                                                     "type": "NodeGroupOutput"},
+                  {"name": "Size", "type": "ShaderNodeCombineXYZ", "inputs": {"X": 1.0, "Y": 1.0}},
+                  {"name": "Cube", "type": "GeometryNodeMeshCube"}],
+           links=[{"from": "Group Input", "output": "Height", "to": "Size", "input": "Z"},
+                  {"from": "Size", "to": "Cube", "input": "Size"},
+                  {"from": "Cube", "to": "Group Output", "input": "Geometry"}])
+        assert dims("Tall")[2] == pytest.approx(3.0, abs=1e-3)          # the default reached the modifier
+        ex("edit_nodes", tree="geometry", object="Short", group="Box", modifier_inputs={"Height": 0.5})
+        assert dims("Short")[2] == pytest.approx(0.5, abs=1e-3) and dims("Tall")[2] == pytest.approx(3.0, abs=1e-3)
+        with pytest.raises(Exception, match="no input"):
+            ex("edit_nodes", tree="geometry", object="Short", group="Box", modifier_inputs={"Width": 1})

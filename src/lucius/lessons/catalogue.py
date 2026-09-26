@@ -271,7 +271,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "a name}, generated_image {name, type UV_GRID|COLOR_GRID|BLANK, width, height, color} "
                    "(Image > New), "
                    "object (texture coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "
-                   "(socket names or numbers), unlink [{to, input}]. Keep the material output's Surface linked"),
+                   "(socket names or numbers), unlink [{to, input}], modifier_inputs {input name: value} (a Geometry Nodes "
+                   "modifier's panel values; an interface default also sets it). Keep the material output's Surface linked"),
     "set_property": ("hover any field (its Python tooltip path); I to key it", "target object|data|material|nodes|"
                      "world|world_nodes|shape_keys|texture|scene|particles|group, name (the object / material / "
                      "texture ...), path (e.g. modifiers[\"Displace\"].strength, bevel_factor_end, "

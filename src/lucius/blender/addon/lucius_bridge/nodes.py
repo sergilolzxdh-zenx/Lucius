@@ -197,7 +197,29 @@ def _group_io(group):
         node.location = (400, 0)
 
 
-def _interface(group, specs):
+def _modifier_input(modifier, group, name, value, param="modifier_inputs"):
+    """The value a Geometry Nodes modifier gives one of its group's inputs (the fields in the modifier panel)."""
+    item = next((i for i in group.interface.items_tree if getattr(i, "item_type", "") == "SOCKET"
+                 and i.in_out == "INPUT" and i.name == name), None)
+    if item is None or item.socket_type == "NodeSocketGeometry":
+        raise BridgeCommandError("invalid_param", f"{param}: the node group has no input {name!r}", param=param)
+    if item.socket_type == "NodeSocketMaterial":
+        value = _datablock("MATERIAL", value, param)
+    elif item.socket_type == "NodeSocketObject":
+        value = _datablock("OBJECT", value, param)
+    elif item.socket_type == "NodeSocketColor":
+        value = _color(value, param)
+    elif isinstance(value, bool) or item.socket_type == "NodeSocketBool":
+        value = bool(value)
+    elif isinstance(value, (list, tuple)):
+        value = [_number(v, param) for v in value]
+    else:
+        value = _number(value, param, integer=item.socket_type == "NodeSocketInt")
+    modifier[item.identifier] = value
+    modifier.id_data.update_tag()
+
+
+def _interface(group, specs, modifier=None):
     for spec in specs or []:
         if not isinstance(spec, dict) or not spec.get("name"):
             raise BridgeCommandError("invalid_param", "interface items are {name, in_out, type}", param="interface")
@@ -220,6 +242,8 @@ def _interface(group, specs):
                 if socket_type == "NodeSocketColor" and key == "default":
                     value = _color(value, "interface")
                 setattr(item, attr, value)
+        if modifier is not None and in_out == "INPUT" and spec.get("default") is not None:
+            _modifier_input(modifier, group, name, spec["default"], "interface")   # the modifier panel's value
 
 
 def _assign(obj, material, mode):
@@ -291,7 +315,9 @@ def _tree(p):
             gout = next(n for n in group.nodes if n.bl_idname == "NodeGroupOutput")
             group.links.new(gin.outputs[0], gout.inputs[0])
         modifier.node_group = group
-    _interface(modifier.node_group, p["interface"])
+    _interface(modifier.node_group, p["interface"], modifier)
+    for key, value in (p["modifier_inputs"] or {}).items():
+        _modifier_input(modifier, modifier.node_group, key, value)
     return modifier.node_group, modifier.node_group.name
 
 
@@ -872,7 +898,7 @@ ACTIONS = {
         "group_type": (("ShaderNodeTree", "GeometryNodeTree"), "ShaderNodeTree"), "modifier": ("name", None),
         "copy_from": ("name", None), "assign": (("replace", "append", "none"), "replace"),
         "interface": ("list", None), "clear": ("bool", False), "remove": ("names", None), "nodes": ("list", None),
-        "links": ("list", None), "unlink": ("list", None)}),
+        "links": ("list", None), "unlink": ("list", None), "modifier_inputs": ("dict", None)}),
     "mark_asset": (mark_asset, {"kind": (tuple(ASSET_KINDS), "MATERIAL"), "name": ("name", REQUIRED),
                                 "description": ("path_expr", None), "tags": ("list", None), "clear": ("bool", False)}),
     "set_property": (set_property, {
