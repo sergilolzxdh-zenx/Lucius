@@ -1,0 +1,1315 @@
+{
+ "title": "Let's make a rig",
+ "summary": "A character to rig: a mannequin built from capsule limbs with loop cuts (so they can bend), joint spheres and a torso, joined into one mesh. The skeleton: the middle row from the crotch up (hips as the root, spine, chest, neck, head), one side's arm and leg chains named with .L, mirrored to .R with Symmetrize.",
+ "objects": [
+  {
+   "name": "Body",
+   "description": "the mannequin mesh"
+  },
+  {
+   "name": "HumanRig",
+   "description": "its armature"
+  }
+ ],
+ "expected_result": "A grey mannequin in an A-pose with its skeleton: a spine to the head, and mirrored arm and leg chains.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Eye",
+     "Eye.001",
+     "RobotRig",
+     "UpperArm.L",
+     "Forearm.L",
+     "Thigh.L",
+     "Shin.L",
+     "Foot.L",
+     "UpperArm.R",
+     "Forearm.R",
+     "Thigh.R",
+     "Shin.R",
+     "Foot.R",
+     "Hips",
+     "Torso",
+     "Head"
+    ]
+   },
+   "note": "a new file: a character that bends",
+   "video_time": "4:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "UpperArm.L",
+    "radius": 0.055,
+    "depth": 0.3053,
+    "vertices": 16,
+    "location": [
+     0.27,
+     0.01,
+     1.35
+    ],
+    "rotation_deg": [
+     0,
+     156.516,
+     9.462
+    ]
+   },
+   "note": "UpperArm.L: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "UpperArm.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "UpperArm.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Forearm.L",
+    "radius": 0.045,
+    "depth": 0.2793,
+    "vertices": 16,
+    "location": [
+     0.38,
+     0.01,
+     1.08
+    ],
+    "rotation_deg": [
+     0,
+     158.583,
+     -11.31
+    ]
+   },
+   "note": "Forearm.L: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Forearm.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Forearm.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Thigh.L",
+    "radius": 0.085,
+    "depth": 0.4206,
+    "vertices": 16,
+    "location": [
+     0.12,
+     -0.005,
+     0.72
+    ],
+    "rotation_deg": [
+     0,
+     176.952,
+     -26.565
+    ]
+   },
+   "note": "Thigh.L: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Thigh.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Thigh.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Shin.L",
+    "radius": 0.06,
+    "depth": 0.4202,
+    "vertices": 16,
+    "location": [
+     0.135,
+     -0.005,
+     0.3
+    ],
+    "rotation_deg": [
+     0,
+     178.071,
+     45.0
+    ]
+   },
+   "note": "Shin.L: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shin.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shin.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jshoulder.L",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     0.21,
+     0,
+     1.49
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jelbow.L",
+    "radius": 0.055,
+    "vertices": 16,
+    "location": [
+     0.33,
+     0.02,
+     1.21
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jwrist.L",
+    "radius": 0.05,
+    "vertices": 16,
+    "location": [
+     0.43,
+     0,
+     0.95
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jknee.L",
+    "radius": 0.075,
+    "vertices": 16,
+    "location": [
+     0.13,
+     -0.01,
+     0.51
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jankle.L",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     0.14,
+     0,
+     0.09
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hand.L",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     0.46,
+     -0.01,
+     0.86
+    ]
+   },
+   "note": "a hand",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Hand.L",
+    "dimensions": [
+     0.07,
+     0.1,
+     0.17
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Foot.L",
+    "radius": 0.08,
+    "vertices": 16,
+    "location": [
+     0.14,
+     -0.07,
+     0.05
+    ]
+   },
+   "note": "a foot",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Foot.L",
+    "dimensions": [
+     0.11,
+     0.26,
+     0.09
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "UpperArm.R",
+    "radius": 0.055,
+    "depth": 0.3053,
+    "vertices": 16,
+    "location": [
+     -0.27,
+     0.01,
+     1.35
+    ],
+    "rotation_deg": [
+     0,
+     156.516,
+     170.538
+    ]
+   },
+   "note": "UpperArm.R: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "UpperArm.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "UpperArm.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Forearm.R",
+    "radius": 0.045,
+    "depth": 0.2793,
+    "vertices": 16,
+    "location": [
+     -0.38,
+     0.01,
+     1.08
+    ],
+    "rotation_deg": [
+     0,
+     158.583,
+     -168.69
+    ]
+   },
+   "note": "Forearm.R: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Forearm.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Forearm.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Thigh.R",
+    "radius": 0.085,
+    "depth": 0.4206,
+    "vertices": 16,
+    "location": [
+     -0.12,
+     -0.005,
+     0.72
+    ],
+    "rotation_deg": [
+     0,
+     176.952,
+     -153.435
+    ]
+   },
+   "note": "Thigh.R: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Thigh.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Thigh.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Shin.R",
+    "radius": 0.06,
+    "depth": 0.4202,
+    "vertices": 16,
+    "location": [
+     -0.135,
+     -0.005,
+     0.3
+    ],
+    "rotation_deg": [
+     0,
+     178.071,
+     135.0
+    ]
+   },
+   "note": "Shin.R: a limb with loop cuts to bend",
+   "video_time": "5:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shin.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shin.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jshoulder.R",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     -0.21,
+     0,
+     1.49
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jelbow.R",
+    "radius": 0.055,
+    "vertices": 16,
+    "location": [
+     -0.33,
+     0.02,
+     1.21
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jwrist.R",
+    "radius": 0.05,
+    "vertices": 16,
+    "location": [
+     -0.43,
+     0,
+     0.95
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jknee.R",
+    "radius": 0.075,
+    "vertices": 16,
+    "location": [
+     -0.13,
+     -0.01,
+     0.51
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jankle.R",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     -0.14,
+     0,
+     0.09
+    ]
+   },
+   "note": "a joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hand.R",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     -0.46,
+     -0.01,
+     0.86
+    ]
+   },
+   "note": "a hand",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Hand.R",
+    "dimensions": [
+     0.07,
+     0.1,
+     0.17
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Foot.R",
+    "radius": 0.08,
+    "vertices": 16,
+    "location": [
+     -0.14,
+     -0.07,
+     0.05
+    ]
+   },
+   "note": "a foot",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Foot.R",
+    "dimensions": [
+     0.11,
+     0.26,
+     0.09
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Pelvis",
+    "radius": 0.2,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     0.98
+    ]
+   },
+   "note": "Pelvis",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Pelvis",
+    "dimensions": [
+     0.34,
+     0.22,
+     0.24
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Chest",
+    "radius": 0.3,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.3
+    ]
+   },
+   "note": "Chest",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Chest",
+    "dimensions": [
+     0.4,
+     0.24,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Belly",
+    "radius": 0.2,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.1
+    ]
+   },
+   "note": "Belly",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Belly",
+    "dimensions": [
+     0.32,
+     0.2,
+     0.26
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Skull",
+    "radius": 0.12,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.73
+    ]
+   },
+   "note": "Skull",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Skull",
+    "dimensions": [
+     0.2,
+     0.23,
+     0.27
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "NeckMesh",
+    "radius": 0.05,
+    "depth": 0.13,
+    "vertices": 16,
+    "location": [
+     0.0,
+     0.0,
+     1.565
+    ],
+    "rotation_deg": [
+     0,
+     0.0,
+     0.0
+    ]
+   },
+   "note": "NeckMesh",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "NeckMesh",
+    "axis": "z",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "NeckMesh",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "UpperArm.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Forearm.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Thigh.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Shin.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jshoulder.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jelbow.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jwrist.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jknee.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jankle.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Hand.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Foot.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "UpperArm.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Forearm.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Thigh.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Shin.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jshoulder.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jelbow.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jwrist.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jknee.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jankle.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Hand.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Foot.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Pelvis",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Chest",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Belly",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Skull",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "NeckMesh",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "UpperArm.L",
+     "Forearm.L",
+     "Thigh.L",
+     "Shin.L",
+     "Jshoulder.L",
+     "Jelbow.L",
+     "Jwrist.L",
+     "Jknee.L",
+     "Jankle.L",
+     "Hand.L",
+     "Foot.L",
+     "UpperArm.R",
+     "Forearm.R",
+     "Thigh.R",
+     "Shin.R",
+     "Jshoulder.R",
+     "Jelbow.R",
+     "Jwrist.R",
+     "Jknee.R",
+     "Jankle.R",
+     "Hand.R",
+     "Foot.R",
+     "Pelvis",
+     "Chest",
+     "Belly",
+     "Skull",
+     "NeckMesh"
+    ],
+    "into": "Chest"
+   },
+   "note": "Ctrl+J: one mesh, the body",
+   "video_time": "5:10"
+  },
+  {
+   "action": "rename_object",
+   "args": {
+    "object": "Chest",
+    "new_name": "Body"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Body",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "Ctrl+A > All Transforms: the joined body's own coordinates are the world's",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Body",
+    "name": "Maniqui",
+    "base_color": "#B8B2AA",
+    "roughness": 0.6
+   },
+   "note": "a clay-grey skin",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "HumanRig",
+    "bones": [
+     {
+      "name": "hips",
+      "head": [
+       0,
+       0,
+       0.93
+      ],
+      "tail": [
+       0,
+       0,
+       1.1
+      ]
+     },
+     {
+      "name": "spine",
+      "tail": [
+       0,
+       0,
+       1.33
+      ],
+      "parent": "hips",
+      "connect": true
+     },
+     {
+      "name": "chest",
+      "tail": [
+       0,
+       0,
+       1.5
+      ],
+      "parent": "spine",
+      "connect": true
+     },
+     {
+      "name": "neck",
+      "tail": [
+       0,
+       0,
+       1.62
+      ],
+      "parent": "chest",
+      "connect": true
+     },
+     {
+      "name": "head",
+      "tail": [
+       0,
+       0,
+       1.9
+      ],
+      "parent": "neck",
+      "connect": true
+     }
+    ]
+   },
+   "note": "the middle row of bones from the crotch up (hips = root), renamed",
+   "video_time": "4:40"
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "HumanRig",
+    "bones": [
+     {
+      "name": "shoulder.L",
+      "head": [
+       0.03,
+       0,
+       1.47
+      ],
+      "tail": [
+       0.21,
+       0,
+       1.49
+      ],
+      "parent": "chest"
+     },
+     {
+      "name": "upper_arm.L",
+      "tail": [
+       0.33,
+       0.02,
+       1.21
+      ],
+      "parent": "shoulder.L",
+      "connect": true
+     },
+     {
+      "name": "forearm.L",
+      "tail": [
+       0.43,
+       0,
+       0.95
+      ],
+      "parent": "upper_arm.L",
+      "connect": true
+     },
+     {
+      "name": "hand.L",
+      "tail": [
+       0.47,
+       -0.01,
+       0.8
+      ],
+      "parent": "forearm.L",
+      "connect": true
+     },
+     {
+      "name": "thigh.L",
+      "head": [
+       0.11,
+       0,
+       0.93
+      ],
+      "tail": [
+       0.13,
+       -0.01,
+       0.51
+      ],
+      "parent": "hips"
+     },
+     {
+      "name": "shin.L",
+      "tail": [
+       0.14,
+       0,
+       0.09
+      ],
+      "parent": "thigh.L",
+      "connect": true
+     },
+     {
+      "name": "foot.L",
+      "tail": [
+       0.14,
+       -0.17,
+       0.03
+      ],
+      "parent": "shin.L",
+      "connect": true
+     }
+    ]
+   },
+   "note": "one side: shoulder, arm, forearm, hand, thigh, shin, foot; batch renamed with the .L suffix (Ctrl+F2)",
+   "video_time": "4:55"
+  },
+  {
+   "action": "symmetrize_bones",
+   "args": {
+    "armature": "HumanRig"
+   },
+   "note": "right click > Symmetrize: the .L bones mirrored as .R",
+   "video_time": "5:25"
+  }
+ ]
+}

@@ -119,10 +119,12 @@ def _pattern(material, bsdf, p):
     lines), checker or noise, over the object's own coordinates."""
     tree = material.node_tree
     kind = {"brick": "ShaderNodeTexBrick", "checker": "ShaderNodeTexChecker", "noise": "ShaderNodeTexNoise",
-            "dots": "ShaderNodeTexVoronoi"}[p["pattern"]]
+            "dots": "ShaderNodeTexVoronoi", "wave": "ShaderNodeTexWave"}[p["pattern"]]
     coords = _node(tree, "ShaderNodeTexCoord", "LuciusPatternCoords")
+    mapping = _node(tree, "ShaderNodeMapping", "LuciusMapping")   # its Location offsets the pattern (a driver can move it)
     texture = _node(tree, kind, "LuciusPattern")
-    tree.links.new(coords.outputs["Object"], texture.inputs["Vector"])
+    tree.links.new(coords.outputs["Object"], mapping.inputs["Vector"])
+    tree.links.new(mapping.outputs["Vector"], texture.inputs["Vector"])
     base = _unit_color(p["base_color"], "base_color") or tuple(bsdf.inputs["Base Color"].default_value)
     second = _unit_color(p["pattern_color"], "pattern_color") or base
     if p["pattern_scale"] is not None:
@@ -142,6 +144,18 @@ def _pattern(material, bsdf, p):
         texture.inputs["Color1"].default_value = base
         texture.inputs["Color2"].default_value = second
         output = texture.outputs["Color"]
+    elif p["pattern"] == "wave":
+        # Bands (a cable's twisted strands, wood rings): the wave's value blends the two colours.
+        texture.wave_type = "BANDS"
+        texture.bands_direction = "X"
+        if "Distortion" in texture.inputs:
+            texture.inputs["Distortion"].default_value = 2.0
+        ramp = _node(tree, "ShaderNodeMix", "LuciusPatternMix")
+        ramp.data_type = "RGBA"
+        tree.links.new(texture.outputs["Fac"], ramp.inputs["Factor"])
+        ramp.inputs["A"].default_value = base
+        ramp.inputs["B"].default_value = second
+        output = ramp.outputs["Result"]
     elif p["pattern"] == "dots":
         # Polka dots / spots: round spots where a point is close to its Voronoi cell's centre.
         texture.feature = "F1"
@@ -470,6 +484,52 @@ def _background(world):
     return next((n for n in world.node_tree.nodes if n.type == "BACKGROUND"), None)
 
 
+def _bone_shapes(scene):
+    """Temporary octahedral meshes, one per visible bone in its current pose, so a render shows the rig."""
+    import bmesh
+    from mathutils import Matrix
+
+    material = bpy.data.materials.get("LuciusBoneShape")
+    if material is None:
+        material = bpy.data.materials.new("LuciusBoneShape")
+        material.use_nodes = True
+        bsdf = next(n for n in material.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+        bsdf.inputs["Base Color"].default_value = (0.25, 0.55, 1.0, 1.0)
+        bsdf.inputs["Emission Color"].default_value = (0.1, 0.35, 1.0, 1.0)
+        bsdf.inputs["Emission Strength"].default_value = 0.6
+    made = []
+    for arm in [o for o in scene.objects if o.type == "ARMATURE" and not o.hide_get() and not o.hide_render]:
+        for pose_bone in arm.pose.bones:
+            if pose_bone.bone.hide:
+                continue
+            head = arm.matrix_world @ pose_bone.head
+            tail = arm.matrix_world @ pose_bone.tail
+            length = (tail - head).length
+            if length < 1e-6:
+                continue
+            # Octahedral bones as Blender draws them; stick bones thin (they sit inside thin parts like legs).
+            r = length * 0.1 if arm.data.display_type != "STICK" else min(length * 0.05, 0.025)
+            bm = bmesh.new()
+            base = bm.verts.new((0.0, 0.0, 0.0))
+            tip = bm.verts.new((0.0, length, 0.0))
+            ring = [bm.verts.new((x, length * 0.12, z)) for x, z in ((r, 0), (0, r), (-r, 0), (0, -r))]
+            for i in range(4):
+                a, b = ring[i], ring[(i + 1) % 4]
+                bm.faces.new((base, b, a))
+                bm.faces.new((a, b, tip))
+            mesh = bpy.data.meshes.new("LuciusBoneShape")
+            bm.to_mesh(mesh)
+            bm.free()
+            shape = bpy.data.objects.new("LuciusBoneShape", mesh)
+            scene.collection.objects.link(shape)
+            rotation = (tail - head).to_track_quat("Y", "Z").to_matrix().to_4x4()
+            shape.matrix_world = Matrix.Translation(head) @ rotation
+            mesh.materials.append(material)
+            made.append(shape)
+    bpy.context.view_layer.update()
+    return made
+
+
 def render_image(p):
     """Render the scene to a PNG/JPEG inside the allowed directories.
 
@@ -504,8 +564,11 @@ def render_image(p):
     temporary = []
     hidden = []
     world_created = False
+    bone_shapes = []
     try:
         studio = p["lights"] == "studio"
+        if p["bones"] == "show" or (p["bones"] == "auto" and p["camera"] == "auto"):
+            bone_shapes = _bone_shapes(scene)   # armatures do not render: stand-ins show the rig
         if p["camera"] == "auto" or scene.camera is None:
             camera, temporary = _studio(p["view"], set(p["frame"] or []), lights=studio)
         if p["camera"] == "auto" and studio:
@@ -540,6 +603,10 @@ def render_image(p):
                 background.inputs["Strength"].default_value = 1.0
         bpy.ops.render.render(write_still=True)
     finally:
+        for shape in bone_shapes:
+            mesh = shape.data
+            bpy.data.objects.remove(shape, do_unlink=True)
+            bpy.data.meshes.remove(mesh)
         if "clay" in saved:
             bpy.context.view_layer.material_override = saved["override"]
             bpy.data.materials.remove(saved["clay"])
@@ -668,7 +735,7 @@ ACTIONS = {
         "emission_strength": ("float", None), "transmission": ("float", None), "subsurface": ("float", None),
         "coat": ("float", None), "ior": ("float", None),
         "assign": (("replace", "append", "selected_faces"), "replace"),
-        "pattern": (("brick", "checker", "noise", "dots"), None), "pattern_color": COLOR, "line_color": COLOR,
+        "pattern": (("brick", "checker", "noise", "dots", "wave"), None), "pattern_color": COLOR, "line_color": COLOR,
         "dot_size": ("float", 0.3),
         "pattern_scale": ("float", None), "mortar_size": ("float", 0.02), "brick_width": ("float", 0.5),
         "row_height": ("float", 0.5), "bump": (("magic", "noise", "voronoi"), None), "bump_scale": ("float", 200.0),
@@ -695,7 +762,8 @@ ACTIONS = {
         "path": ("path", REQUIRED), "camera": (("scene", "auto"), "auto"), "view": (tuple(VIEW_DIRECTIONS), "three_quarter"),
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
         "samples": ("int", 24), "width": ("int", 800), "height": ("int", 600), "frame": ("names", None),
-        "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio"), "frame_number": ("int", None)}),
+        "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio"), "frame_number": ("int", None),
+        "bones": (("auto", "show", "hide"), "auto")}),
     "move_to_collection": (move_to_collection, {"names": ("names", REQUIRED), "collection": ("name", REQUIRED)}),
     "add_scatter": (add_scatter, {
         "object": OBJ, "instance": ("name", None), "collection": ("name", None), "name": ("name", None),

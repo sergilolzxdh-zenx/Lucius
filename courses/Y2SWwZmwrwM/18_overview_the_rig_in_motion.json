@@ -1,0 +1,372 @@
+{
+ "title": "Overview: the rig in motion",
+ "summary": "The finished rig at work: animated with its controls only -- the body bobbing and turning while the feet stay planted, one foot's IK handle stepping out, the head's IK handle looking around -- keyed over 73 frames and rendered from a camera.",
+ "objects": [],
+ "expected_result": "A short animation of the phage dancing on the spot, stepping one leg out and turning its head.",
+ "steps": [
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "reset": true
+   },
+   "note": "back to rest before animating",
+   "video_time": "36:52"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "reset": true
+   },
+   "note": "back to rest before animating",
+   "video_time": "36:52"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "reset": true
+   },
+   "note": "back to rest before animating",
+   "video_time": "36:52"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     0.0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     -0.28,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     8,
+     0
+    ],
+    "frame": 13
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     0.0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     -8,
+     0
+    ],
+    "frame": 25
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     -0.28,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     8,
+     0
+    ],
+    "frame": 37
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     0.0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     -8,
+     0
+    ],
+    "frame": 49
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     -0.28,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     8,
+     0
+    ],
+    "frame": 61
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "location": [
+     0,
+     0.0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 73
+   },
+   "note": "the body dances: down and up, turning a little",
+   "video_time": "37:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "one leg steps: its IK handle lifts and lands further out",
+   "video_time": "37:08"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "frame": 19
+   },
+   "note": "one leg steps: its IK handle lifts and lands further out",
+   "video_time": "37:08"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "location": [
+     0,
+     0.35,
+     0.55
+    ],
+    "frame": 31
+   },
+   "note": "one leg steps: its IK handle lifts and lands further out",
+   "video_time": "37:08"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "location": [
+     0,
+     0.1,
+     0
+    ],
+    "frame": 43
+   },
+   "note": "one leg steps: its IK handle lifts and lands further out",
+   "video_time": "37:08"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "location": [
+     0,
+     0.1,
+     0
+    ],
+    "frame": 73
+   },
+   "note": "one leg steps: its IK handle lifts and lands further out",
+   "video_time": "37:08"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "the head looks around (its IK handle)",
+   "video_time": "37:12"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "location": [
+     0.7,
+     -0.25,
+     0
+    ],
+    "frame": 25
+   },
+   "note": "the head looks around (its IK handle)",
+   "video_time": "37:12"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "location": [
+     -0.7,
+     -0.25,
+     0
+    ],
+    "frame": 49
+   },
+   "note": "the head looks around (its IK handle)",
+   "video_time": "37:12"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "frame": 73
+   },
+   "note": "the head looks around (its IK handle)",
+   "video_time": "37:12"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 73,
+    "fps": 24
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     4,
+     -4,
+     6
+    ],
+    "look_at": [
+     0,
+     0,
+     1.2
+    ],
+    "power": 900,
+    "size": 4
+   },
+   "note": "a key light",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#30343B",
+    "strength": 1.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     5.8,
+     -6.6,
+     3.4
+    ],
+    "look_at": [
+     0,
+     0,
+     1.25
+    ],
+    "lens": 35
+   },
+   "note": "a camera on the whole rig",
+   "video_time": null
+  }
+ ]
+}

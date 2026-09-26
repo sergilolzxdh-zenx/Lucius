@@ -1,0 +1,259 @@
+{
+ "video_id": "Y2SWwZmwrwM",
+ "url": "https://www.youtube.com/watch?v=Y2SWwZmwrwM",
+ "title": "How to Rig ANYTHING in Blender!",
+ "duration": 2263,
+ "language": "en-US",
+ "channel": "SharpWind",
+ "chapters": [
+  {
+   "title": "Intro",
+   "start_time": 0,
+   "end_time": 54
+  },
+  {
+   "title": "How Armatures Work",
+   "start_time": 54,
+   "end_time": 120
+  },
+  {
+   "title": "Skinning",
+   "start_time": 120,
+   "end_time": 163
+  },
+  {
+   "title": "Rigid Rigs",
+   "start_time": 163,
+   "end_time": 280
+  },
+  {
+   "title": "Let's make a rig",
+   "start_time": 280,
+   "end_time": 367
+  },
+  {
+   "title": "Skin Binding",
+   "start_time": 367,
+   "end_time": 429
+  },
+  {
+   "title": "Weight Painting",
+   "start_time": 429,
+   "end_time": 515
+  },
+  {
+   "title": "Extra Tips",
+   "start_time": 515,
+   "end_time": 556
+  },
+  {
+   "title": "Constraints",
+   "start_time": 556,
+   "end_time": 728
+  },
+  {
+   "title": "Esthetics",
+   "start_time": 728,
+   "end_time": 803
+  },
+  {
+   "title": "Drivers",
+   "start_time": 803,
+   "end_time": 1049
+  },
+  {
+   "title": "MAKING A FULL RIG",
+   "start_time": 1049,
+   "end_time": 1177
+  },
+  {
+   "title": "Binding",
+   "start_time": 1177,
+   "end_time": 1335
+  },
+  {
+   "title": "Cables",
+   "start_time": 1335,
+   "end_time": 1544
+  },
+  {
+   "title": "Controls",
+   "start_time": 1544,
+   "end_time": 1902
+  },
+  {
+   "title": "Cleanup",
+   "start_time": 1902,
+   "end_time": 2006
+  },
+  {
+   "title": "Driver Fun",
+   "start_time": 2006,
+   "end_time": 2212
+  },
+  {
+   "title": "Overview",
+   "start_time": 2212,
+   "end_time": 2242
+  },
+  {
+   "title": "Outro",
+   "start_time": 2242,
+   "end_time": 2263
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/Y2SWwZmwrwM` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 2,
+   "title": "How Armatures Work",
+   "recipe": "02_how_armatures_work.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/02.jpg",
+   "frame_at": "01:30",
+   "note": "An armature built the tutor's way: a connected chain extruded from one bone plus a disconnected branch; posed in pose mode so the children follow. Shown with bone stand-ins since armatures do not render."
+  },
+  {
+   "chapter": 4,
+   "title": "Rigid Rigs",
+   "recipe": "04_rigid_rig_a_robot.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/04.jpg",
+   "frame_at": "03:30",
+   "note": "Boxy robot of separate parts, a bone per part (left mirrored), parts parented to bones (Ctrl+P > Bone) and the head via empty groups + assign weight 1; posed."
+  },
+  {
+   "chapter": 5,
+   "title": "Let's make a rig",
+   "recipe": "05_let_s_make_a_rig.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/05.jpg",
+   "frame_at": "05:30",
+   "note": "A mannequin mesh (capsule limbs with loop cuts, joints, torso) joined and its transforms applied, and its skeleton the tutor's way: the middle row from the crotch up, one side's chains named .L, mirrored with Symmetrize."
+  },
+  {
+   "chapter": 6,
+   "title": "Skin Binding",
+   "recipe": "06_skin_binding.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/06.jpg",
+   "frame_at": "06:07",
+   "note": "Parented with automatic weights (Ctrl+P); posed: arm raised out to the side and bent, knee lifted, head tilted -- the mesh bends with the bones."
+  },
+  {
+   "chapter": 7,
+   "title": "Weight Painting",
+   "recipe": "07_weight_painting.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/07.jpg",
+   "frame_at": "08:30",
+   "note": "Weights fixed from the root up with masks: head, pelvis and chest vertices fully to their bones (auto normalize takes weight from the others)."
+  },
+  {
+   "chapter": 9,
+   "title": "Constraints",
+   "recipe": "09_constraints_ik_legs.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/09.jpg",
+   "frame_at": "11:30",
+   "note": "IK legs the tutor's way: disconnected non-deforming IK and pole bones, IK on the shin (chain 2, pole angles adjusted until each knee points at its pole: measured -64/-116), the foot freed and Child Of the IK bone; lifting one IK handle bends that knee straight forward."
+  },
+  {
+   "chapter": 10,
+   "title": "Esthetics",
+   "recipe": "10_esthetics.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/10.jpg",
+   "frame_at": "12:40",
+   "note": "IK controls coloured (blue), poles red, the IK-driven thigh and shin bones hidden, so only the controls show."
+  },
+  {
+   "chapter": 11,
+   "title": "Drivers",
+   "recipe": "11_drivers.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/11.jpg",
+   "frame_at": "16:40",
+   "note": "Valve bone X rotation (transform space, the wheel's axle) drives the screw's Z rotation and, divided by two, its height; a cube's Z = sphere one Z - sphere two Z with two variables."
+  },
+  {
+   "chapter": 12,
+   "title": "MAKING A FULL RIG",
+   "recipe": "12_the_bacteriophage_and_its_skeleton.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/12.jpg",
+   "frame_at": "19:30",
+   "note": "A mechanical bacteriophage modelled as the tutor's stand-in and its skeleton: root in the base, six curved neck bones, head, hip-knee-foot bones for six legs parented to the root, stick display in front."
+  },
+  {
+   "chapter": 13,
+   "title": "Binding",
+   "recipe": "13_binding.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/13.jpg",
+   "frame_at": "21:30",
+   "note": "Rigid parts parented to their bones, neck tube and rings with automatic weights, head parts to the head bone; tested by bending the neck and raising a leg (cables left behind, as the tutor notes)."
+  },
+  {
+   "chapter": 14,
+   "title": "Cables",
+   "recipe": "14_cables.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/14.jpg",
+   "frame_at": "24:30",
+   "note": "Cables merged, empty groups, root everywhere, each cable's outer part to its leg bone, a half/half band between; the raised leg carries its cable."
+  },
+  {
+   "chapter": 15,
+   "title": "Controls",
+   "recipe": "15_controls.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/15.jpg",
+   "frame_at": "30:30",
+   "note": "IK handles at the feet and poles above the knees (pole angles set so each leg keeps its rest shape, measured to 0.1 degree like the tutor's eyeballed 180/135), poles follow their handles, root/body split so the body dances with the feet planted, neck IK (chain 7) following the body. Tried: crouch and turn, a foot lifted, the head pulled aside and down."
+  },
+  {
+   "chapter": 16,
+   "title": "Cleanup",
+   "recipe": "16_cleanup.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/16.jpg",
+   "frame_at": "32:30",
+   "note": "Deform bones hidden, control shapes (hexagon, circles, pyramids) in a hidden Controls collection assigned as custom shapes, colours by role: root yellow, body green, IK blue, poles red."
+  },
+  {
+   "chapter": 17,
+   "title": "Driver Fun",
+   "recipe": "17_driver_fun.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/17.jpg",
+   "frame_at": "34:30",
+   "note": "Rope material from a wave texture through a mapping node; the mapping's X location driven by leg one's bones (local Z rotation): -leg + (-knee/10), as the tutor sets it up (he then removes it because all cables share one material)."
+  },
+  {
+   "chapter": 18,
+   "title": "Overview",
+   "recipe": "18_overview_the_rig_in_motion.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/18.jpg",
+   "frame_at": "37:05",
+   "note": "The rig animated only through its controls: body bobbing and turning with feet planted, a foot stepping via its IK handle, the head looking around via its IK handle; 73 frames rendered from a camera."
+  }
+ ]
+}

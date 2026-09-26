@@ -1,0 +1,90 @@
+{
+ "title": "Skin binding",
+ "summary": "Binding the mesh to the skeleton: select the model then the armature, Ctrl+P > With Automatic Weights (the weights are computed from the bones). In pose mode the body now bends with the bones: an arm raised and bent, a knee lifted, the head tilted.",
+ "objects": [],
+ "expected_result": "The mannequin posed by its rig: one arm up and bent, one knee lifted, head tilted; the limbs bend smoothly.",
+ "steps": [
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Body"
+    ],
+    "armature": "HumanRig",
+    "mode": "AUTOMATIC"
+   },
+   "note": "select the model, then the armature, Ctrl+P > With Automatic Weights",
+   "video_time": "5:33"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     0,
+     0,
+     -75
+    ]
+   },
+   "note": "pose mode: the model moves with the rig -- an arm up",
+   "video_time": "5:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     0,
+     0,
+     -40
+    ]
+   },
+   "note": "the forearm bent",
+   "video_time": "5:52"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -70,
+     0,
+     0
+    ]
+   },
+   "note": "a knee up",
+   "video_time": "5:55"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     85,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "5:56"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "head",
+    "rotation_deg": [
+     10,
+     0,
+     12
+    ]
+   },
+   "note": "the head tilted",
+   "video_time": "5:58"
+  }
+ ]
+}

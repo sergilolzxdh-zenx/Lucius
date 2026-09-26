@@ -1,0 +1,105 @@
+{
+ "title": "Weight painting",
+ "summary": "Fixing the automatic weights, painting from the root up with masks: the head's vertices fully to the head bone, the pelvis fully to the hips (root) so it no longer drags with the thigh, the chest to the chest bone; auto normalize takes the weight away from the other bones.",
+ "objects": [],
+ "expected_result": "The same pose, cleaner: the head and pelvis move rigidly with their bones, no stretching around the hips.",
+ "steps": [
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.6
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the head's vertices (a mask for painting)",
+   "video_time": "8:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "head",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "paint the head fully to the head bone (the gradient trick, auto normalize: nothing else pulls it)",
+   "video_time": "7:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     -0.18,
+     null,
+     0.86
+    ],
+    "max": [
+     0.18,
+     null,
+     1.05
+    ],
+    "space": "local"
+   },
+   "note": "the pelvis",
+   "video_time": "8:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "hips",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "the root bone takes the pelvis fully: it no longer drags when a thigh moves",
+   "video_time": "6:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     -0.19,
+     null,
+     1.2
+    ],
+    "max": [
+     0.19,
+     null,
+     1.52
+    ],
+    "space": "local"
+   },
+   "note": "the chest",
+   "video_time": "8:08"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "chest",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "",
+   "video_time": "7:48"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Body",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

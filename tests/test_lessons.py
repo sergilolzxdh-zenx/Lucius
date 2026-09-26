@@ -635,3 +635,72 @@ def test_collections_and_scattered_collections_survive_the_next_chapter(tmp_path
         loaded = ex("import_blend", path=str(out / "chapter.blend"))
         assert "Ground" in loaded["objects"] and "Blade" not in loaded["objects"]   # hidden originals stay hidden
         ex("add_scatter", object="Ground", collection="Grass", name="Lawn", count=80)   # the collection is back
+
+
+def test_rigging_bones_binding_constraints_and_drivers(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    out = tmp_path / "out"
+    out.mkdir()
+    with HeadlessBlender(allowed_save_dirs=[str(out)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def obj(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)
+
+        ex("reset_scene", keep_camera_light=False)
+        # a leg: a subdivided cylinder, two bones, automatic weights
+        ex("add_primitive", kind="cylinder", name="Leg", radius=0.15, depth=2, vertices=12, location=[0.4, 0, 1])
+        ex("loop_cut_axis", object="Leg", axis="z", positions=[0.2, 0.4, 0.5, 0.6, 0.8])
+        ex("set_mode", object="Leg", mode="OBJECT")
+        made = ex("add_armature", name="Rig", bones=[
+            {"name": "thigh.L", "head": [0.4, 0, 2], "tail": [0.4, 0, 1]},
+            {"name": "shin.L", "tail": [0.4, 0, 0], "parent": "thigh.L", "connect": True}])
+        assert made["bones"] == ["thigh.L", "shin.L"]
+        assert ex("symmetrize_bones", armature="Rig")["mirrored"] == ["thigh.R", "shin.R"]
+        bound = ex("bind_to_armature", objects=["Leg"], armature="Rig", mode="AUTOMATIC")
+        assert bound["vertex_groups"]["Leg"] >= 2
+        before = obj("Leg")["dimensions"]
+        ex("pose_bone", armature="Rig", bone="shin.L", rotation=[math.radians(80), 0, 0])
+        bent = obj("Leg")["dimensions"]
+        assert bent[1] > before[1] + 0.5          # the shin swung forward: the mesh bent with it
+        # a rigid part on a bone keeps its place and then follows the bone
+        ex("add_primitive", kind="cube", name="Knee", size=0.3, location=[0.4, 0, 1])
+        ex("bind_to_armature", objects=["Knee"], armature="Rig", mode="BONE", bone="thigh.L")
+        assert obj("Knee")["location"] == pytest.approx([0.4, 0, 1], abs=1e-4)
+        assert obj("Knee")["parent_bone"] == "thigh.L"
+        # empty groups + assigned weights
+        ex("add_primitive", kind="cube", name="Box", size=0.5, location=[2, 0, 1])
+        ex("bind_to_armature", objects=["Box"], armature="Rig", mode="EMPTY")
+        ex("select_all", object="Box")
+        assert ex("assign_weights", object="Box", group="thigh.L", weight=1.0, exclusive=True)["vertices"] == 8
+        # an IK control bone and its constraint
+        ex("add_armature", name="Rig", bones=[{"name": "ik.L", "head": [0.4, 0.5, 0], "tail": [0.4, 0.5, -0.3],
+                                               "deform": False}])
+        ex("pose_bone", armature="Rig", bone="shin.L", reset=True)
+        con = ex("add_constraint", object="Rig", bone="shin.L", type="IK", target="Rig", subtarget="ik.L",
+                 chain_count=2)
+        assert con["type"] == "IK"
+        ex("add_constraint", object="Rig", bone="ik.L", type="CHILD_OF", target="Rig", subtarget="thigh.L")
+        # drivers: a cube's Z follows two spheres (one - two), and a bone's rotation drives a Z rotation
+        ex("add_primitive", kind="uv_sphere", name="One", radius=0.2, location=[4, 0, 3])
+        ex("add_primitive", kind="uv_sphere", name="Two", radius=0.2, location=[5, 0, 1])
+        ex("add_primitive", kind="cube", name="Follower", size=0.3, location=[6, 0, 0])
+        drv = ex("add_driver", object="Follower", path="location", index=2, expression="one - two", variables=[
+            {"name": "one", "object": "One", "transform": "LOC_Z"}, {"name": "two", "object": "Two",
+                                                                     "transform": "LOC_Z"}])
+        assert drv["valid"]
+        assert obj("Follower")["location"][2] == pytest.approx(2.0, abs=1e-3)
+        ex("add_driver", object="Follower", path="rotation_euler", index=2, expression="var / 2", variables=[
+            {"name": "var", "object": "Rig", "bone": "thigh.L", "transform": "ROT_X", "space": "TRANSFORM_SPACE"}])
+        with pytest.raises(Exception, match="unknown name|may only use"):
+            ex("add_driver", object="Follower", path="location", index=0, expression="__import__('os')",
+               variables=[{"name": "var", "object": "One"}])
+        with pytest.raises(Exception, match="property path"):
+            ex("add_driver", object="Follower", path="location; import os", index=0, variables=[{"object": "One"}])
+        shot = ex("render_image", path=str(out / "rig.png"), view="front", samples=1, width=64, height=48)
+        assert Path(shot["path"]).exists()
+        names = {o["name"] for o in bridge.request("scene_summary")["objects"]}
+        assert not any(n.startswith("LuciusBoneShape") for n in names)   # stand-ins removed after the render

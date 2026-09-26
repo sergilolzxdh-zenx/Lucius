@@ -1,0 +1,957 @@
+{
+ "title": "Rigid rig: a robot",
+ "summary": "Rigid skinning for a character made of parts that never deform: a boxy robot (hips, torso, head with glowing eyes, arms and legs as separate objects), a skeleton with a bone per moving part (left side mirrored with Symmetrize), each part parented to its bone (Ctrl+P > Bone), and the head the other way: parent with empty groups, select it in edit mode and assign weight 1 to the 'head' group. Posed: arm up, a step, head turned.",
+ "objects": [
+  {
+   "name": "RobotRig",
+   "description": "the robot's skeleton"
+  }
+ ],
+ "expected_result": "A metal robot waving one arm, stepping with one leg and turning its head; its parts move rigidly.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Armature"
+    ]
+   },
+   "note": "a new file: the robot",
+   "video_time": "2:43"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Hips",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     1.25
+    ]
+   },
+   "note": "Hips: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Hips",
+    "dimensions": [
+     0.7,
+     0.45,
+     0.3
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Hips",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Torso",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     1.9
+    ]
+   },
+   "note": "Torso: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Torso",
+    "dimensions": [
+     0.8,
+     0.5,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Torso",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Head",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     2.72
+    ]
+   },
+   "note": "Head: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Head",
+    "dimensions": [
+     0.5,
+     0.5,
+     0.42
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Head",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "UpperArm.L",
+    "size": 1,
+    "location": [
+     0.56,
+     0,
+     2.08
+    ]
+   },
+   "note": "UpperArm.L: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "UpperArm.L",
+    "dimensions": [
+     0.22,
+     0.22,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "UpperArm.L",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Forearm.L",
+    "size": 1,
+    "location": [
+     0.56,
+     0,
+     1.52
+    ]
+   },
+   "note": "Forearm.L: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Forearm.L",
+    "dimensions": [
+     0.2,
+     0.2,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Forearm.L",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Thigh.L",
+    "size": 1,
+    "location": [
+     0.2,
+     0,
+     0.84
+    ]
+   },
+   "note": "Thigh.L: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Thigh.L",
+    "dimensions": [
+     0.26,
+     0.26,
+     0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Thigh.L",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Shin.L",
+    "size": 1,
+    "location": [
+     0.2,
+     0,
+     0.35
+    ]
+   },
+   "note": "Shin.L: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Shin.L",
+    "dimensions": [
+     0.24,
+     0.24,
+     0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Shin.L",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Foot.L",
+    "size": 1,
+    "location": [
+     0.2,
+     -0.07,
+     0.05
+    ]
+   },
+   "note": "Foot.L: the robot is separate parts that never deform",
+   "video_time": "2:43"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Foot.L",
+    "dimensions": [
+     0.28,
+     0.42,
+     0.1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Foot.L",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Eye",
+    "size": 0.08,
+    "location": [
+     -0.1,
+     -0.26,
+     2.78
+    ]
+   },
+   "note": "an eye",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Eye",
+    "new_name": "Eye.001",
+    "offset": [
+     0.2,
+     0,
+     0
+    ]
+   },
+   "note": "the other eye",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "UpperArm.L",
+    "new_name": "UpperArm.R",
+    "offset": [
+     -1.12,
+     0,
+     0
+    ]
+   },
+   "note": "the right side",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Forearm.L",
+    "new_name": "Forearm.R",
+    "offset": [
+     -1.12,
+     0,
+     0
+    ]
+   },
+   "note": "the right side",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Thigh.L",
+    "new_name": "Thigh.R",
+    "offset": [
+     -0.4,
+     0,
+     0
+    ]
+   },
+   "note": "the right side",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Shin.L",
+    "new_name": "Shin.R",
+    "offset": [
+     -0.4,
+     0,
+     0
+    ]
+   },
+   "note": "the right side",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Foot.L",
+    "new_name": "Foot.R",
+    "offset": [
+     -0.4,
+     0,
+     0
+    ]
+   },
+   "note": "the right side",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Torso",
+    "name": "Robot",
+    "base_color": "#C8CDD4",
+    "metallic": 0.8,
+    "roughness": 0.35
+   },
+   "note": "painted metal",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hips",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Head",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "UpperArm.L",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "UpperArm.R",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Forearm.L",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Forearm.R",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Thigh.L",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Thigh.R",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Shin.L",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Shin.R",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot.L",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot.R",
+    "name": "Robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Eye",
+    "name": "Ojos robot",
+    "base_color": "#1ED6FF",
+    "emission_color": "#1ED6FF",
+    "emission_strength": 4
+   },
+   "note": "glowing eyes",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Eye.001",
+    "name": "Ojos robot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "RobotRig",
+    "display": "OCTAHEDRAL",
+    "bones": [
+     {
+      "name": "hips",
+      "head": [
+       0,
+       0,
+       1.1
+      ],
+      "tail": [
+       0,
+       0,
+       1.4
+      ]
+     },
+     {
+      "name": "spine",
+      "tail": [
+       0,
+       0,
+       2.4
+      ],
+      "parent": "hips",
+      "connect": true
+     },
+     {
+      "name": "head",
+      "head": [
+       0,
+       0,
+       2.5
+      ],
+      "tail": [
+       0,
+       0,
+       3.0
+      ],
+      "parent": "spine"
+     },
+     {
+      "name": "upper_arm.L",
+      "head": [
+       0.56,
+       0,
+       2.35
+      ],
+      "tail": [
+       0.56,
+       0,
+       1.8
+      ],
+      "parent": "spine"
+     },
+     {
+      "name": "forearm.L",
+      "tail": [
+       0.56,
+       0,
+       1.25
+      ],
+      "parent": "upper_arm.L",
+      "connect": true
+     },
+     {
+      "name": "thigh.L",
+      "head": [
+       0.2,
+       0,
+       1.08
+      ],
+      "tail": [
+       0.2,
+       0,
+       0.6
+      ],
+      "parent": "hips"
+     },
+     {
+      "name": "shin.L",
+      "tail": [
+       0.2,
+       0,
+       0.1
+      ],
+      "parent": "thigh.L",
+      "connect": true
+     }
+    ]
+   },
+   "note": "the skeleton: a bone for every moving part",
+   "video_time": "2:50"
+  },
+  {
+   "action": "symmetrize_bones",
+   "args": {
+    "armature": "RobotRig"
+   },
+   "note": "the right side mirrored",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hips"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "hips"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Torso"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "spine"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "UpperArm.L"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "upper_arm.L"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "UpperArm.R"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "upper_arm.R"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Forearm.L"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "forearm.L"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Forearm.R"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "forearm.R"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Thigh.L"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "thigh.L"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Thigh.R"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "thigh.R"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Shin.L"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "shin.L"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Shin.R"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "shin.R"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Foot.L"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "shin.L"
+   },
+   "note": "pose mode: select the bone, object mode: the part, then the rig; Ctrl+P > Bone",
+   "video_time": "2:55"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Foot.R"
+    ],
+    "armature": "RobotRig",
+    "mode": "BONE",
+    "bone": "shin.R"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Head",
+     "Eye",
+     "Eye.001"
+    ],
+    "armature": "RobotRig",
+    "mode": "EMPTY"
+   },
+   "note": "the other way: Ctrl+P > With Empty Groups (vertex groups named like the bones)",
+   "video_time": "3:12"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Head"
+   },
+   "note": "edit mode, L selects the part",
+   "video_time": "3:39"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Head",
+    "group": "head",
+    "weight": 1.0
+   },
+   "note": "the 'head' vertex group, weight 1, Assign: it follows the head bone fully",
+   "video_time": "3:45"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Eye"
+   },
+   "note": "edit mode, L selects the part",
+   "video_time": "3:39"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Eye",
+    "group": "head",
+    "weight": 1.0
+   },
+   "note": "the 'head' vertex group, weight 1, Assign: it follows the head bone fully",
+   "video_time": "3:45"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Eye.001"
+   },
+   "note": "edit mode, L selects the part",
+   "video_time": "3:39"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Eye.001",
+    "group": "head",
+    "weight": 1.0
+   },
+   "note": "the 'head' vertex group, weight 1, Assign: it follows the head bone fully",
+   "video_time": "3:45"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "RobotRig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -80,
+     0,
+     0
+    ]
+   },
+   "note": "pose it: an arm up",
+   "video_time": "4:00"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "RobotRig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -45,
+     0,
+     0
+    ]
+   },
+   "note": "the forearm bent",
+   "video_time": "4:02"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "RobotRig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -35,
+     0,
+     0
+    ]
+   },
+   "note": "a step",
+   "video_time": "4:04"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "RobotRig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     40,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "4:05"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "RobotRig",
+    "bone": "head",
+    "rotation_deg": [
+     0,
+     30,
+     0
+    ]
+   },
+   "note": "the head turned",
+   "video_time": "4:06"
+  }
+ ]
+}

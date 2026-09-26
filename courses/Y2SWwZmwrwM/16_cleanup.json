@@ -1,0 +1,466 @@
+{
+ "title": "Cleanup",
+ "summary": "Making the rig pleasant to use: every deforming bone hidden (neck, head, legs: the IK and the body move them), control shapes made in a Controls collection (a hexagon, circles, a pyramid) and hidden, assigned as custom shapes, and colours by role: root yellow, body green, IK handles blue, pole vectors red.",
+ "objects": [],
+ "expected_result": "The same posed phage; only its controls remain in the rig: root, body, six foot handles, their poles, the head handle.",
+ "steps": [
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck1",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck2",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck3",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck4",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck5",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck6",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "head",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg0",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee0",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg1",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee1",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg2",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee2",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg3",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee3",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg4",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee4",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg5",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "knee5",
+    "hide": true
+   },
+   "note": "Viewport Display > Hide: the bones nobody animates (IK moves them)",
+   "video_time": "30:58"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "CTRL_root",
+    "vertices": 6,
+    "radius": 1.3,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "a Controls collection with shapes for the controls: a hexagon",
+   "video_time": "31:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "CTRL_body",
+    "vertices": 32,
+    "radius": 0.8,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "a circle",
+   "video_time": "31:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "CTRL_ik",
+    "vertices": 16,
+    "radius": 0.2,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "a small circle for the IK handles",
+   "video_time": "31:55"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "CTRL_pole",
+    "vertices": 4,
+    "radius": 0.12,
+    "depth": 0.2,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "a pyramid for the pole vectors (a cube merged to a point)",
+   "video_time": "31:59"
+  },
+  {
+   "action": "move_to_collection",
+   "args": {
+    "names": [
+     "CTRL_root",
+     "CTRL_body",
+     "CTRL_ik",
+     "CTRL_pole"
+    ],
+    "collection": "Controls"
+   },
+   "note": "",
+   "video_time": "31:40"
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "CTRL_root",
+     "CTRL_body",
+     "CTRL_ik",
+     "CTRL_pole"
+    ]
+   },
+   "note": "the shapes themselves stay out of sight",
+   "video_time": "31:45"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "root",
+    "shape": "CTRL_root",
+    "color": "THEME09"
+   },
+   "note": "the root: the hexagon, yellow",
+   "video_time": "32:10"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "body",
+    "shape": "CTRL_body",
+    "color": "THEME03"
+   },
+   "note": "the body: the circle, green",
+   "video_time": "32:30"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik0",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole0",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik1",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole1",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik2",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole2",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik3",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole3",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik4",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole4",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik5",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the IK handles: blue circles",
+   "video_time": "32:50"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole5",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "the poles: red pyramids",
+   "video_time": "33:05"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "ik_head",
+    "shape": "CTRL_ik",
+    "color": "THEME04"
+   },
+   "note": "the head's handle blue too",
+   "video_time": "32:58"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "pole_head",
+    "shape": "CTRL_pole",
+    "color": "THEME01"
+   },
+   "note": "",
+   "video_time": "33:05"
+  }
+ ]
+}

@@ -1,0 +1,1904 @@
+{
+ "title": "The bacteriophage and its skeleton",
+ "summary": "A full rig on a mechanical bacteriophage (modelled here as the tutor's stand-in: hexagonal base, a segmented rubber neck with metal rings, an icosahedral head with a light, six jointed legs with pointed feet, cables from the base to the knees). The skeleton: a root bone in the base, six connected neck bones (slightly curved so IK can bend them later), the head, and for each leg a bone from the hip to the knee and one from the knee to the foot, parented to the root; shown as sticks, in front.",
+ "objects": [
+  {
+   "name": "PhageRig",
+   "description": "the rig"
+  },
+  {
+   "name": "Head",
+   "description": "icosahedral head"
+  },
+  {
+   "name": "Neck",
+   "description": "rubber neck"
+  }
+ ],
+ "expected_result": "The bacteriophage standing on six legs with its stick skeleton inside.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Body",
+     "HumanRig",
+     "Valve",
+     "Screw",
+     "ValveRig",
+     "One",
+     "Two",
+     "Cubo"
+    ]
+   },
+   "note": "a new file: the bacteriophage",
+   "video_time": "17:29"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Base",
+    "radius": 0.5,
+    "depth": 0.2,
+    "vertices": 6,
+    "location": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "the model (the tutor's is ready-made; built here): a hexagonal base",
+   "video_time": "17:35"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Base",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.02,
+     "segments": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Plate",
+    "radius": 0.38,
+    "depth": 0.1,
+    "vertices": 6,
+    "location": [
+     0,
+     0,
+     0.86
+    ]
+   },
+   "note": "the plate under it",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Neck",
+    "radius": 0.1,
+    "depth": 1.16,
+    "vertices": 16,
+    "location": [
+     0,
+     0,
+     1.68
+    ]
+   },
+   "note": "the neck: a rubber tube with many loops so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Neck",
+    "axis": "z",
+    "positions": [
+     0.05,
+     0.1,
+     0.15,
+     0.2,
+     0.25,
+     0.3,
+     0.35,
+     0.4,
+     0.45,
+     0.5,
+     0.55,
+     0.6,
+     0.65,
+     0.7,
+     0.75,
+     0.8,
+     0.85,
+     0.9,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Neck",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "NeckRings",
+    "major_radius": 0.14,
+    "minor_radius": 0.03,
+    "major_segments": 24,
+    "minor_segments": 8,
+    "location": [
+     0,
+     0,
+     1.15
+    ]
+   },
+   "note": "the neck's metal rings",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "NeckRings",
+    "type": "ARRAY",
+    "name": "Array",
+    "props": {
+     "count": 12,
+     "relative_offset_displace": [
+      0,
+      0,
+      1.6
+     ]
+    }
+   },
+   "note": "Array up the neck",
+   "video_time": null
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "NeckRings",
+    "modifier": "Array"
+   },
+   "note": "applied: rings are real geometry to weight",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Collar",
+    "radius": 0.26,
+    "depth": 0.12,
+    "vertices": 6,
+    "location": [
+     0,
+     0,
+     2.32
+    ]
+   },
+   "note": "the collar under the head",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "ico_sphere",
+    "name": "Head",
+    "radius": 0.55,
+    "location": [
+     0,
+     0,
+     2.95
+    ]
+   },
+   "note": "the head: an icosphere, stretched",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Head",
+    "dimensions": [
+     1.05,
+     1.05,
+     1.3
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "HeadLight",
+    "radius": 0.09,
+    "vertices": 16,
+    "location": [
+     0,
+     -0.5,
+     2.85
+    ]
+   },
+   "note": "the head light",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip0",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     0.433,
+     0.25,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg0",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     0.7794,
+     0.45,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     30.001
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint0",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     1.1258,
+     0.65,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee0",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     1.4289,
+     0.825,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.126,
+     29.997
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot0",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     1.7321,
+     1.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable0",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     0.7231,
+     0.4175,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.992,
+     30.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable0",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable0",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable0",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip1",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     0.0,
+     0.5,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg1",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     0.0,
+     0.9,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     90.0
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint1",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     0.0,
+     1.3,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee1",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     0.0,
+     1.65,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.129,
+     90.0
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot1",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     0.0,
+     2.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable1",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     0.0,
+     0.835,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.993,
+     90.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable1",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable1",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable1",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip2",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     -0.433,
+     0.25,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg2",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     -0.7794,
+     0.45,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     149.999
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint2",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     -1.1258,
+     0.65,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee2",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     -1.4289,
+     0.825,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.126,
+     150.003
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot2",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     -1.7321,
+     1.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable2",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     -0.7231,
+     0.4175,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.992,
+     150.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable2",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable2",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable2",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip3",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     -0.433,
+     -0.25,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg3",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     -0.7794,
+     -0.45,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     -149.999
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint3",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     -1.1258,
+     -0.65,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee3",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     -1.4289,
+     -0.825,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.126,
+     -150.003
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot3",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     -1.7321,
+     -1.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable3",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     -0.7231,
+     -0.4175,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.992,
+     -150.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable3",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable3",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable3",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip4",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     -0.0,
+     -0.5,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg4",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     -0.0,
+     -0.9,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     -90.0
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint4",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     -0.0,
+     -1.3,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee4",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     -0.0,
+     -1.65,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.129,
+     -90.0
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot4",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     -0.0,
+     -2.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable4",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     -0.0,
+     -0.835,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.993,
+     -90.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable4",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable4",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable4",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hip5",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     0.433,
+     -0.25,
+     1.0
+    ]
+   },
+   "note": "a hip joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Leg5",
+    "radius": 0.05,
+    "depth": 0.9708,
+    "vertices": 12,
+    "location": [
+     0.7794,
+     -0.45,
+     1.275
+    ],
+    "rotation_deg": [
+     0,
+     55.491,
+     -30.001
+    ]
+   },
+   "note": "an upper leg",
+   "video_time": "17:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint5",
+    "radius": 0.085,
+    "vertices": 16,
+    "location": [
+     1.1258,
+     -0.65,
+     1.55
+    ]
+   },
+   "note": "the knee joint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Knee5",
+    "radius": 0.04,
+    "depth": 1.6644,
+    "vertices": 12,
+    "location": [
+     1.4289,
+     -0.825,
+     0.795
+    ],
+    "rotation_deg": [
+     0,
+     155.126,
+     -29.997
+    ]
+   },
+   "note": "a lower leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Foot5",
+    "radius": 0.08,
+    "depth": 0.12,
+    "vertices": 12,
+    "location": [
+     1.7321,
+     -1.0,
+     0.04
+    ],
+    "rotation_deg": [
+     180,
+     0,
+     0
+    ]
+   },
+   "note": "a pointed foot",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cable5",
+    "radius": 0.018,
+    "depth": 1.0012,
+    "vertices": 8,
+    "location": [
+     0.7231,
+     -0.4175,
+     1.18
+    ],
+    "rotation_deg": [
+     0,
+     55.992,
+     -30.0
+    ]
+   },
+   "note": "a cable to the knee",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Cable5",
+    "axis": "z",
+    "positions": [
+     0.1,
+     0.2,
+     0.3,
+     0.4,
+     0.5,
+     0.6,
+     0.7,
+     0.8,
+     0.9
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cable5",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Cable5",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 14,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Base",
+    "name": "Metal",
+    "base_color": "#A3ACB6",
+    "metallic": 0.9,
+    "roughness": 0.3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Plate",
+    "name": "Metal"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Collar",
+    "name": "Metal"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Head",
+    "name": "Metal"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg0",
+    "name": "Oscuro",
+    "base_color": "#3A3F47",
+    "metallic": 0.7,
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee0",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot0",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg1",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee1",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot1",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg2",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee2",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot2",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg3",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee3",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot3",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg4",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee4",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot4",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Leg5",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Knee5",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Foot5",
+    "name": "Oscuro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip0",
+    "name": "Juntas",
+    "base_color": "#C0A060",
+    "metallic": 0.9,
+    "roughness": 0.25
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint0",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip1",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint1",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip2",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint2",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip3",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint3",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip4",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint4",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hip5",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint5",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "NeckRings",
+    "name": "Juntas"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Neck",
+    "name": "Goma",
+    "base_color": "#15171A",
+    "metallic": 0.0,
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable0",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable1",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable2",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable3",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable4",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cable5",
+    "name": "Goma"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "HeadLight",
+    "name": "Luz",
+    "base_color": "#9FF3FF",
+    "emission_color": "#7FE8FF",
+    "emission_strength": 6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#50555C",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "PhageRig",
+    "display": "STICK",
+    "bones": [
+     {
+      "name": "root",
+      "head": [
+       0,
+       0,
+       1.0
+      ],
+      "tail": [
+       0,
+       0,
+       1.1
+      ]
+     },
+     {
+      "name": "neck1",
+      "head": [
+       0,
+       0,
+       1.1
+      ],
+      "tail": [
+       0.012,
+       0,
+       1.2933
+      ],
+      "parent": "root",
+      "connect": true
+     },
+     {
+      "name": "neck2",
+      "head": [
+       0.012,
+       0,
+       1.2933
+      ],
+      "tail": [
+       0.024,
+       0,
+       1.4867
+      ],
+      "parent": "neck1",
+      "connect": true
+     },
+     {
+      "name": "neck3",
+      "head": [
+       0.024,
+       0,
+       1.4867
+      ],
+      "tail": [
+       0.03,
+       0,
+       1.68
+      ],
+      "parent": "neck2",
+      "connect": true
+     },
+     {
+      "name": "neck4",
+      "head": [
+       0.03,
+       0,
+       1.68
+      ],
+      "tail": [
+       0.024,
+       0,
+       1.8733
+      ],
+      "parent": "neck3",
+      "connect": true
+     },
+     {
+      "name": "neck5",
+      "head": [
+       0.024,
+       0,
+       1.8733
+      ],
+      "tail": [
+       0.012,
+       0,
+       2.0667
+      ],
+      "parent": "neck4",
+      "connect": true
+     },
+     {
+      "name": "neck6",
+      "head": [
+       0.012,
+       0,
+       2.0667
+      ],
+      "tail": [
+       0,
+       0,
+       2.26
+      ],
+      "parent": "neck5",
+      "connect": true
+     },
+     {
+      "name": "head",
+      "tail": [
+       0,
+       0,
+       3.35
+      ],
+      "parent": "neck6",
+      "connect": true
+     },
+     {
+      "name": "leg0",
+      "head": [
+       0.433,
+       0.25,
+       1.0
+      ],
+      "tail": [
+       1.1258,
+       0.65,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee0",
+      "tail": [
+       1.7321,
+       1.0,
+       0.04
+      ],
+      "parent": "leg0",
+      "connect": true
+     },
+     {
+      "name": "leg1",
+      "head": [
+       0.0,
+       0.5,
+       1.0
+      ],
+      "tail": [
+       0.0,
+       1.3,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee1",
+      "tail": [
+       0.0,
+       2.0,
+       0.04
+      ],
+      "parent": "leg1",
+      "connect": true
+     },
+     {
+      "name": "leg2",
+      "head": [
+       -0.433,
+       0.25,
+       1.0
+      ],
+      "tail": [
+       -1.1258,
+       0.65,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee2",
+      "tail": [
+       -1.7321,
+       1.0,
+       0.04
+      ],
+      "parent": "leg2",
+      "connect": true
+     },
+     {
+      "name": "leg3",
+      "head": [
+       -0.433,
+       -0.25,
+       1.0
+      ],
+      "tail": [
+       -1.1258,
+       -0.65,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee3",
+      "tail": [
+       -1.7321,
+       -1.0,
+       0.04
+      ],
+      "parent": "leg3",
+      "connect": true
+     },
+     {
+      "name": "leg4",
+      "head": [
+       -0.0,
+       -0.5,
+       1.0
+      ],
+      "tail": [
+       -0.0,
+       -1.3,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee4",
+      "tail": [
+       -0.0,
+       -2.0,
+       0.04
+      ],
+      "parent": "leg4",
+      "connect": true
+     },
+     {
+      "name": "leg5",
+      "head": [
+       0.433,
+       -0.25,
+       1.0
+      ],
+      "tail": [
+       1.1258,
+       -0.65,
+       1.55
+      ],
+      "parent": "root"
+     },
+     {
+      "name": "knee5",
+      "tail": [
+       1.7321,
+       -1.0,
+       0.04
+      ],
+      "parent": "leg5",
+      "connect": true
+     }
+    ]
+   },
+   "note": "Shift+A > Armature, In Front; root in the base's centre, a bone per neck segment, the head; each leg a bone from the hip joint to the knee and one to the foot (duplicated round by 60 degrees), displayed as sticks",
+   "video_time": "17:54"
+  }
+ ]
+}

@@ -1,0 +1,266 @@
+{
+ "title": "Binding",
+ "summary": "Binding the parts: rigid parts parented to their bones (base to the root, hip/upper leg/knee joint to each leg bone, lower leg and foot to each knee bone, collar, head and light to the head bone); the neck tube and rings with automatic weights, so they bend smoothly over the six neck bones. Tested by bending the neck and raising a leg; the cables are not bound yet.",
+ "objects": [],
+ "expected_result": "The phage with its neck bent to one side and one leg raised, the cables left behind (fixed next).",
+ "steps": [
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Base",
+     "Plate"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "root"
+   },
+   "note": "pose mode: the root bone; object mode: the base, then the rig, Ctrl+P > Bone",
+   "video_time": "19:41"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip0",
+     "Leg0",
+     "Joint0"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg0"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee0",
+     "Foot0"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee0"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip1",
+     "Leg1",
+     "Joint1"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg1"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee1",
+     "Foot1"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee1"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip2",
+     "Leg2",
+     "Joint2"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg2"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee2",
+     "Foot2"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee2"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip3",
+     "Leg3",
+     "Joint3"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg3"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee3",
+     "Foot3"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee3"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip4",
+     "Leg4",
+     "Joint4"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg4"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee4",
+     "Foot4"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee4"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Hip5",
+     "Leg5",
+     "Joint5"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "leg5"
+   },
+   "note": "each leg part to its bone (Ctrl+P > Bone): it rotates from the hip joint",
+   "video_time": "19:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Knee5",
+     "Foot5"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "knee5"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Neck",
+     "NeckRings"
+    ],
+    "armature": "PhageRig",
+    "mode": "AUTOMATIC"
+   },
+   "note": "the neck parts: Ctrl+P > With Automatic Weights (they deform a little, spread over the bones)",
+   "video_time": "21:04"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Collar",
+     "Head",
+     "HeadLight"
+    ],
+    "armature": "PhageRig",
+    "mode": "BONE",
+    "bone": "head"
+   },
+   "note": "the head, its light and the collar to the head bone",
+   "video_time": "21:57"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck3",
+    "rotation_deg": [
+     0,
+     0,
+     12
+    ]
+   },
+   "note": "test: bend the neck",
+   "video_time": "21:20"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "neck4",
+    "rotation_deg": [
+     0,
+     0,
+     12
+    ]
+   },
+   "note": "",
+   "video_time": "21:22"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "PhageRig",
+    "bone": "leg0",
+    "rotation_deg": [
+     -25,
+     0,
+     0
+    ]
+   },
+   "note": "test: a leg raised",
+   "video_time": "20:30"
+  }
+ ]
+}

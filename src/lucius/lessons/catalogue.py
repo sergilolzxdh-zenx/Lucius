@@ -24,6 +24,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                       "segments, default 32), major_radius, minor_radius, major_segments, minor_segments (torus), "
                       "fill (circle: true adds the face, like F), into (an existing mesh: Shift+A in edit mode, the shape joins that object, selected)"),
     "delete_objects": ("X in object mode", "names [..]"),
+    "hide_objects": ("H / Alt+H, and the camera icon", "names [..], hide (false shows them again), render (also "
+                     "hidden from renders; default true)"),
     "join_objects": ("Ctrl+J", "names [..] (the objects to merge), into (the one they merge into; keeps its name, "
                      "origin and modifiers -- apply the others' modifiers first)"),
     "duplicate_object": ("Shift+D", "object, new_name, offset [x,y,z] from the original, rotation_deg [x,y,z] added"),
@@ -84,7 +86,7 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "object, name, base_color \"#RRGGBB\", roughness 0..1, metallic 0..1, alpha, emission_color, "
                      "emission_strength, transmission 0..1 (glass), subsurface 0..1 (soft food, skin), coat 0..1, "
                      "ior, assign: replace (only material) | append | selected_faces (faces selected in edit mode get "
-                     "it). Patterns on the colour: pattern brick|checker|noise|dots, pattern_color (second colour), "
+                     "it). Patterns on the colour: pattern brick|checker|noise|dots|wave, pattern_color (second colour), "
                      "line_color (brick mortar), pattern_scale, mortar_size (0..0.125), brick_width, row_height "
                      "(0.5 and 0.5: square tiles, a check tablecloth), dot_size (dots: 0..0.5 of a cell; round "
                      "spots of pattern_color, e.g. a mushroom cap). Relief: bump magic|noise|voronoi, "
@@ -118,6 +120,34 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "clear_animation": ("Alt+I / Clear Keyframes", "object: removes all its keyframes (it stays where it is now)"),
     "add_shake": ("camera shake add-on (Camera Shakify)", "object, strength (metres), rotation_strength (radians), "
                   "scale (frames per wobble, higher = slower), influence 0..1: handheld noise on top of the animation"),
+    "add_armature": ("Shift+A > Armature, then edit mode (E to extrude bones)", "name, location, bones [{name, "
+                     "head [x,y,z], tail [x,y,z], parent, connect (head on the parent's tail), deform (false for "
+                     "control bones), roll_deg}] in the armature's coordinates (a head may be left out when "
+                     "connected: it starts at the parent's tail), display OCTAHEDRAL|STICK|BBONE, in_front. The "
+                     "same name again adds or changes bones"),
+    "symmetrize_bones": ("right click > Symmetrize", "armature: every .L bone gets a mirrored .R twin across X"),
+    "set_bone": ("Bone properties (F2 renames)", "armature, bone, new_name, head, tail, parent (\"\" clears), connect, "
+                 "deform, hide, color THEME01..THEME20, shape (an object shown as the bone's control)"),
+    "bind_to_armature": ("Ctrl+P > Bone / With Automatic Weights / With Empty Groups", "objects [..], armature, "
+                         "mode BONE (rigid: each object follows one bone; give bone) | AUTOMATIC (the mesh deforms, "
+                         "weights computed) | EMPTY (vertex groups named after the bones, fill with assign_weights) "
+                         "| ENVELOPE"),
+    "assign_weights": ("Vertex group > Assign (or weight painting)", "object, group (the bone's name), weight 0..1, "
+                       "mode REPLACE|ADD|SUBTRACT, exclusive (take the vertices out of other groups): for the "
+                       "vertices selected in edit mode"),
+    "pose_bone": ("Pose mode: G, R, S on a bone (I to key)", "armature, bone, location, rotation_deg [x,y,z], "
+                  "scale, frame (key it there), reset (back to the rest pose first)"),
+    "add_constraint": ("Bone (or object) constraints", "object (the armature, or an object), bone, type IK|CHILD_OF|"
+                       "COPY_ROTATION|COPY_LOCATION|DAMPED_TRACK|TRACK_TO|STRETCH_TO|LIMIT_ROTATION|MAINTAIN_VOLUME|"
+                       "..., target (object), subtarget (bone), IK: pole_target, pole_subtarget, pole_angle_deg, "
+                       "chain_count; influence 0..1; props {use_tail, use_stretch, owner_space, min_x.. (degrees "
+                       "for rotation limits), free_axis, ...}"),
+    "add_driver": ("right click > Add Driver", "object, or material (a node value such as "
+                   "nodes[\"LuciusMapping\"].inputs[\"Location\"].default_value: moves a pattern), bone (optional), "
+                   "path (location, rotation_euler, "
+                   "constraints[\"IK\"].influence, ...), index (0/1/2 for a vector), expression (arithmetic on the "
+                   "variables, e.g. var/2 or one - two), variables [{name, type TRANSFORMS|SINGLE_PROP, object, bone, "
+                   "transform LOC_X..ROT_Z..SCALE_Z, space WORLD_SPACE|TRANSFORM_SPACE|LOCAL_SPACE, path}]"),
     "set_world": ("World properties", "color \"#RRGGBB\", strength; or sky true (a physical sky with a sun, "
                   "like an outdoor HDRI: it lights everything), sun_elevation_deg, sun_rotation_deg, strength ~0.3"),
     "add_scatter": ("Particle system (hair, render as object or collection)", "object (surface), instance (object "

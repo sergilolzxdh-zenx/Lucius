@@ -1,0 +1,88 @@
+{
+ "title": "Esthetics",
+ "summary": "Organising the rig: control bones coloured (IK handles blue, pole vectors red) and the leg bones driven by IK hidden, so only what the animator touches is shown.",
+ "objects": [],
+ "expected_result": "The same rig, clearer: the leg bones hidden, the IK and pole controls visible.",
+ "steps": [
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "ik_foot.L",
+    "color": "THEME04"
+   },
+   "note": "control bones in blue",
+   "video_time": "12:08"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "pole.L",
+    "color": "THEME01"
+   },
+   "note": "pole vectors in red",
+   "video_time": "12:10"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "thigh.L",
+    "hide": true
+   },
+   "note": "hide the bones you will never touch (the IK moves them)",
+   "video_time": "12:25"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "shin.L",
+    "hide": true
+   },
+   "note": "hide the bones you will never touch (the IK moves them)",
+   "video_time": "12:25"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "ik_foot.R",
+    "color": "THEME04"
+   },
+   "note": "control bones in blue",
+   "video_time": "12:08"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "pole.R",
+    "color": "THEME01"
+   },
+   "note": "pole vectors in red",
+   "video_time": "12:10"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "thigh.R",
+    "hide": true
+   },
+   "note": "hide the bones you will never touch (the IK moves them)",
+   "video_time": "12:25"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "shin.R",
+    "hide": true
+   },
+   "note": "hide the bones you will never touch (the IK moves them)",
+   "video_time": "12:25"
+  }
+ ]
+}

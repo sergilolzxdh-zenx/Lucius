@@ -157,6 +157,12 @@ def object_summary(obj):
                                 [round(max(c[i] for c in corners), 5) for i in range(3)]]
     if obj.type == "LIGHT" and obj.data is not None:
         data["light"] = {"type": obj.data.type, "energy": round(float(obj.data.energy), 3)}
+    if obj.type == "ARMATURE" and obj.data is not None:
+        data["armature"] = {"bones": [b.name for b in obj.data.bones][:60], "count": len(obj.data.bones)}
+    if obj.parent is not None and obj.parent_type == "BONE":
+        data["parent_bone"] = obj.parent_bone
+    if obj.type == "MESH" and obj.vertex_groups:
+        data["vertex_groups"] = len(obj.vertex_groups)
     if obj.type == "CAMERA" and obj.data is not None:
         dof = obj.data.dof
         data["camera"] = {"lens": round(float(obj.data.lens), 2),

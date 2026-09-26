@@ -1,0 +1,218 @@
+{
+ "title": "Constraints: IK legs",
+ "summary": "An IK leg: a disconnected, non-deforming IK bone at the ankle and a pole bone in front of the knee; the shin gets an Inverse Kinematics constraint (target the IK bone, pole the pole bone, chain 2, the pole angle adjusted until the knee points at the pole: -64 left, -116 right); the foot is freed and follows the IK bone with a Child Of constraint. Moving the IK handle lifts the leg and bends the knee towards the pole.",
+ "objects": [],
+ "expected_result": "The mannequin with IK legs: moving one foot's IK handle lifts that leg with the knee bending forward.",
+ "steps": [
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "thigh.L",
+    "reset": true
+   },
+   "note": "rest pose for rigging",
+   "video_time": "9:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "shin.L",
+    "reset": true
+   },
+   "note": "",
+   "video_time": "9:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "thigh.R",
+    "reset": true
+   },
+   "note": "rest pose for rigging",
+   "video_time": "9:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "shin.R",
+    "reset": true
+   },
+   "note": "",
+   "video_time": "9:30"
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "HumanRig",
+    "bones": [
+     {
+      "name": "ik_foot.L",
+      "head": [
+       0.14,
+       0,
+       0.09
+      ],
+      "tail": [
+       0.14,
+       0.2,
+       0.09
+      ],
+      "deform": false
+     },
+     {
+      "name": "pole.L",
+      "head": [
+       0.13,
+       -0.6,
+       0.51
+      ],
+      "tail": [
+       0.13,
+       -0.7,
+       0.51
+      ],
+      "deform": false
+     },
+     {
+      "name": "ik_foot.R",
+      "head": [
+       -0.14,
+       0,
+       0.09
+      ],
+      "tail": [
+       -0.14,
+       0.2,
+       0.09
+      ],
+      "deform": false
+     },
+     {
+      "name": "pole.R",
+      "head": [
+       -0.13,
+       -0.6,
+       0.51
+      ],
+      "tail": [
+       -0.13,
+       -0.7,
+       0.51
+      ],
+      "deform": false
+     }
+    ]
+   },
+   "note": "IK handle: a bone out of the ankle, disconnected, no parent, not deforming; a pole vector in front of the knee, the same",
+   "video_time": "9:42"
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "HumanRig",
+    "bone": "shin.L",
+    "type": "IK",
+    "target": "HumanRig",
+    "subtarget": "ik_foot.L",
+    "pole_target": "HumanRig",
+    "pole_subtarget": "pole.L",
+    "pole_angle_deg": -64,
+    "chain_count": 2
+   },
+   "note": "pose mode: the shin gets an Inverse Kinematics constraint: target the IK bone, pole target the pole bone, chain length 2 (shin and thigh)",
+   "video_time": "10:10"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "foot.L",
+    "parent": ""
+   },
+   "note": "edit mode: the foot disconnected, no parent",
+   "video_time": "11:15"
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "HumanRig",
+    "bone": "foot.L",
+    "type": "CHILD_OF",
+    "target": "HumanRig",
+    "subtarget": "ik_foot.L"
+   },
+   "note": "pose mode: a Child Of constraint to the IK bone: the IK handle turns the foot",
+   "video_time": "11:20"
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "HumanRig",
+    "bone": "shin.R",
+    "type": "IK",
+    "target": "HumanRig",
+    "subtarget": "ik_foot.R",
+    "pole_target": "HumanRig",
+    "pole_subtarget": "pole.R",
+    "pole_angle_deg": -116,
+    "chain_count": 2
+   },
+   "note": "pose mode: the shin gets an Inverse Kinematics constraint: target the IK bone, pole target the pole bone, chain length 2 (shin and thigh)",
+   "video_time": "10:10"
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "foot.R",
+    "parent": ""
+   },
+   "note": "edit mode: the foot disconnected, no parent",
+   "video_time": "11:15"
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "HumanRig",
+    "bone": "foot.R",
+    "type": "CHILD_OF",
+    "target": "HumanRig",
+    "subtarget": "ik_foot.R"
+   },
+   "note": "pose mode: a Child Of constraint to the IK bone: the IK handle turns the foot",
+   "video_time": "11:20"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     -0.18,
+     0.38
+    ]
+   },
+   "note": "move the IK handle: the leg follows, bending towards the pole",
+   "video_time": "11:01"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "HumanRig",
+    "bone": "ik_foot.R",
+    "rotation_deg": [
+     -20,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "11:05"
+  }
+ ]
+}

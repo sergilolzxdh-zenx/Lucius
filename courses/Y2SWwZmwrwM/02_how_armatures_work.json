@@ -1,0 +1,109 @@
+{
+ "title": "How armatures work",
+ "summary": "An armature is a hierarchy of bones, each with a head (its pivot) and a tail. Add one (Shift+A), extrude a chain in edit mode (connected bones), branch a disconnected child off the middle, then pose it in pose mode: rotating a bone carries everything below it in the hierarchy.",
+ "objects": [
+  {
+   "name": "Armature",
+   "description": "the bone chain"
+  }
+ ],
+ "expected_result": "A bent chain of four bones: three connected in a row and one branching off the middle, posed.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube"
+    ]
+   },
+   "note": "a clean scene",
+   "video_time": "1:10"
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "Armature",
+    "bones": [
+     {
+      "name": "Bone",
+      "head": [
+       0,
+       0,
+       0
+      ],
+      "tail": [
+       0,
+       0,
+       1
+      ]
+     },
+     {
+      "name": "Bone.001",
+      "tail": [
+       0,
+       0.35,
+       1.9
+      ],
+      "parent": "Bone",
+      "connect": true
+     },
+     {
+      "name": "Bone.002",
+      "tail": [
+       0,
+       0.2,
+       2.7
+      ],
+      "parent": "Bone.001",
+      "connect": true
+     },
+     {
+      "name": "Bone.003",
+      "head": [
+       0.1,
+       0.3,
+       1.9
+      ],
+      "tail": [
+       0.9,
+       0.5,
+       2.2
+      ],
+      "parent": "Bone.001",
+      "connect": false
+     }
+    ]
+   },
+   "note": "Shift+A > Armature: one bone; edit mode, E extrudes the tail into a chain",
+   "video_time": "1:22"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Armature",
+    "bone": "Bone.001",
+    "rotation_deg": [
+     30,
+     0,
+     0
+    ]
+   },
+   "note": "Ctrl+Tab: pose mode; rotating a bone moves its children with it",
+   "video_time": "1:40"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Armature",
+    "bone": "Bone.002",
+    "rotation_deg": [
+     -40,
+     0,
+     20
+    ]
+   },
+   "note": "",
+   "video_time": "1:44"
+  }
+ ]
+}

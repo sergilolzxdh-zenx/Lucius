@@ -1,0 +1,280 @@
+{
+ "title": "Drivers",
+ "summary": "Drivers: one value computed from another. A valve bone's X rotation (in its own transform space) drives a screw's Z rotation, and a copy of the driver, edited to var / 2, its height; turning the valve turns and raises the screw. Two spheres drive a cube's height with two variables: one - two.",
+ "objects": [],
+ "expected_result": "Beside the mannequin: a red valve turned a quarter, the screw turned with it and risen; a yellow cube at the height difference of the blue and green spheres.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "Valve",
+    "major_radius": 0.3,
+    "minor_radius": 0.04,
+    "major_segments": 32,
+    "minor_segments": 10,
+    "location": [
+     2.5,
+     0,
+     1.2
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a valve wheel to the side",
+   "video_time": "14:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Screw",
+    "radius": 0.08,
+    "depth": 0.8,
+    "vertices": 6,
+    "location": [
+     3.4,
+     0,
+     0.6
+    ]
+   },
+   "note": "the screw it will turn",
+   "video_time": "14:45"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Screw",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.01,
+     "segments": 2
+    }
+   },
+   "note": "a hexagon head, bevelled",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "ValveRig",
+    "bones": [
+     {
+      "name": "valve",
+      "head": [
+       2.5,
+       0,
+       1.2
+      ],
+      "tail": [
+       2.5,
+       0,
+       1.5
+      ]
+     }
+    ]
+   },
+   "note": "a bone for the valve",
+   "video_time": "14:50"
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Valve"
+    ],
+    "armature": "ValveRig",
+    "mode": "BONE",
+    "bone": "valve"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "Screw",
+    "path": "rotation_euler",
+    "index": 2,
+    "expression": "var",
+    "variables": [
+     {
+      "name": "var",
+      "object": "ValveRig",
+      "bone": "valve",
+      "transform": "ROT_X",
+      "space": "TRANSFORM_SPACE"
+     }
+    ]
+   },
+   "note": "right click the screw's Z rotation > Add Driver: var = the valve bone's X rotation in its own (transform) space, not world space",
+   "video_time": "15:08"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "Screw",
+    "path": "location",
+    "index": 2,
+    "expression": "var / 2 + 0.6",
+    "variables": [
+     {
+      "name": "var",
+      "object": "ValveRig",
+      "bone": "valve",
+      "transform": "ROT_X",
+      "space": "TRANSFORM_SPACE"
+     }
+    ]
+   },
+   "note": "copy driver to the Z location, edited to var / 2 so it rises twice slower",
+   "video_time": "15:38"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "ValveRig",
+    "bone": "valve",
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "turn the valve (on its X axis, the wheel's axle): the screw turns and rises",
+   "video_time": "15:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "One",
+    "radius": 0.2,
+    "location": [
+     5,
+     0,
+     2.5
+    ]
+   },
+   "note": "two spheres and a cube",
+   "video_time": "16:04"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Two",
+    "radius": 0.2,
+    "location": [
+     5.6,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": "16:06"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Cubo",
+    "size": 0.4,
+    "location": [
+     6.2,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "16:08"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "Cubo",
+    "path": "location",
+    "index": 2,
+    "expression": "one - two",
+    "variables": [
+     {
+      "name": "one",
+      "object": "One",
+      "transform": "LOC_Z"
+     },
+     {
+      "name": "two",
+      "object": "Two",
+      "transform": "LOC_Z"
+     }
+    ]
+   },
+   "note": "the cube's Z location = sphere one's Z minus sphere two's Z (two variables)",
+   "video_time": "16:20"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Valve",
+    "name": "Mat Valve",
+    "base_color": "#C0392B",
+    "metallic": 0.0,
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Screw",
+    "name": "Mat Screw",
+    "base_color": "#B0B4BA",
+    "metallic": 0.3,
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "One",
+    "name": "Mat One",
+    "base_color": "#2E86DE",
+    "metallic": 0.0,
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Two",
+    "name": "Mat Two",
+    "base_color": "#27AE60",
+    "metallic": 0.0,
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cubo",
+    "name": "Mat Cubo",
+    "base_color": "#F1C40F",
+    "metallic": 0.0,
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

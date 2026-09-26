@@ -128,6 +128,18 @@ def _check(value, kind, name):
         if not isinstance(value, dict):
             raise BridgeCommandError("invalid_param", f"{name} must be an object", param=name)
         return value
+    if kind == "list":
+        if not isinstance(value, list) or len(value) > 500:
+            raise BridgeCommandError("invalid_param", f"{name} must be a list (up to 500 items)", param=name)
+        return value
+    if kind == "bone_or_empty":
+        if value == "":
+            return value
+        return _check(value, "name", name)
+    if kind in ("path_expr", "expression"):
+        if not isinstance(value, str) or not 0 < len(value) <= 300:
+            raise BridgeCommandError("invalid_param", f"{name} must be a short text", param=name)
+        return value
     if kind == "path":
         if not isinstance(value, str) or not 0 < len(value) < 1024 or "\x00" in value:
             raise BridgeCommandError("invalid_param", f"{name} must be a path string", param=name)
@@ -287,6 +299,19 @@ def select_objects(p):
     elif objs:
         bpy.context.view_layer.objects.active = objs[0]
     return {"selected": [o.name for o in bpy.context.view_layer.objects if o.select_get()]}
+
+
+def hide_objects(p):
+    """H (hide in the viewport) and the camera icon (hide from renders): control shapes, helpers, references."""
+    _leave_edit_mode()
+    done = []
+    for name in p["names"]:
+        obj = _obj(name)
+        obj.hide_set(p["hide"])
+        if p["render"]:
+            obj.hide_render = p["hide"]
+        done.append(obj.name)
+    return {"objects": done, "hidden": p["hide"]}
 
 
 def parent_object(p):
@@ -1239,6 +1264,7 @@ ACTIONS = {
     "delete_objects": (delete_objects, {"names": ("names", REQUIRED)}),
     "join_objects": (join_objects, {"names": ("names", REQUIRED), "into": ("name", REQUIRED)}),
     "parent_object": (parent_object, {"object": OBJ, "parent": ("name", None)}),
+    "hide_objects": (hide_objects, {"names": ("names", REQUIRED), "hide": ("bool", True), "render": ("bool", True)}),
     "set_mode": (set_mode, {"object": OBJ, "mode": (("OBJECT", "EDIT", "SCULPT"), REQUIRED)}),
     "transform_object": (transform_object, {
         "object": OBJ, "location": ("vec3", None), "rotation": ("vec3", None), "scale": ("vec3", None),
@@ -1311,9 +1337,9 @@ GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
 def registry():
     """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
-    from . import anim, scene
+    from . import anim, rig, scene
 
-    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS}
+    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS}
 
 
 def execute_action(name, args):

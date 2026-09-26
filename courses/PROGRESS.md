@@ -74,3 +74,18 @@ wind-up key's holes instead of the knife tool.
 
 [`JQT9sT1YuAI`](JQT9sT1YuAI). The backflip chapters need a rigged character: they come after the rigging
 tutorial.
+
+## 6. Rigging tutorial (How to Rig ANYTHING): all 15 build chapters 9/10
+
+[`Y2SWwZmwrwM/overview.jpg`](Y2SWwZmwrwM/overview.jpg) and the animation
+[`Y2SWwZmwrwM/final.mp4`](Y2SWwZmwrwM/final.mp4). Lucius learns: armatures (extruded chains, branches,
+Symmetrize), a rigid robot (parts parented to bones), a mannequin skinned with automatic weights and its
+weights fixed, IK legs with pole targets (pole angles measured, not guessed), bone colours and hidden
+bones, drivers (a valve turning a screw, a cube following two spheres), then the tutor's full project: a
+mechanical bacteriophage modelled, its skeleton, parts bound, cables weighted, IK controls with poles,
+root/body split, custom control shapes, a material driven by a leg, and a short animation made only by
+moving the controls. `lucius teach course courses\Y2SWwZmwrwM` learns it on your PC (about 20 minutes).
+
+Talk-only chapters (intro, skinning theory, extra tips, outro) have nothing to build and are skipped.
+Stand-ins: bones are drawn as thin shapes in the pictures (armatures don't render); the valve's driver
+reads the bone's local X rotation like the tutor's.

@@ -1,0 +1,499 @@
+{
+ "title": "Cables",
+ "summary": "The cables weighted by hand: merged into one mesh, parented with empty groups, everything painted to the root bone first, then each cable's outer part painted fully to its leg bone (a mask of the selected vertices, auto normalize) and the band between blurred half and half, so the rope bends softly when a leg moves.",
+ "objects": [],
+ "expected_result": "The raised leg now carries its cable with it, the rope bending softly near the base.",
+ "steps": [
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Cable0",
+     "Cable1",
+     "Cable2",
+     "Cable3",
+     "Cable4",
+     "Cable5"
+    ],
+    "into": "Cable0"
+   },
+   "note": "the cables (converted to meshes) merged with Ctrl+J",
+   "video_time": "22:25"
+  },
+  {
+   "action": "rename_object",
+   "args": {
+    "object": "Cable0",
+    "new_name": "Cables"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Cables"
+    ],
+    "armature": "PhageRig",
+    "mode": "EMPTY"
+   },
+   "note": "Ctrl+P > With Empty Groups: the weights are painted from scratch",
+   "video_time": "22:35"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Cables"
+   },
+   "note": "weight paint, root bone, weight 1: everything first",
+   "video_time": "22:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "the root bone influences all of it",
+   "video_time": "23:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     0.6593,
+     0.275,
+     1.1
+    ],
+    "max": [
+     1.1593,
+     0.775,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg0",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     0.5495,
+     0.275,
+     1.0
+    ],
+    "max": [
+     0.7494999999999999,
+     0.475,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg0",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.25,
+     0.8,
+     1.1
+    ],
+    "max": [
+     0.25,
+     1.3,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg1",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.1,
+     0.65,
+     1.0
+    ],
+    "max": [
+     0.1,
+     0.85,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg1",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -1.1593,
+     0.275,
+     1.1
+    ],
+    "max": [
+     -0.6593,
+     0.775,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg2",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.7494999999999999,
+     0.275,
+     1.0
+    ],
+    "max": [
+     -0.5495,
+     0.475,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg2",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -1.1593,
+     -0.775,
+     1.1
+    ],
+    "max": [
+     -0.6593,
+     -0.275,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg3",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.7494999999999999,
+     -0.475,
+     1.0
+    ],
+    "max": [
+     -0.5495,
+     -0.275,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg3",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.25,
+     -1.3,
+     1.1
+    ],
+    "max": [
+     0.25,
+     -0.8,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg4",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     -0.1,
+     -0.85,
+     1.0
+    ],
+    "max": [
+     0.1,
+     -0.65,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg4",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     0.6593,
+     -0.775,
+     1.1
+    ],
+    "max": [
+     1.1593,
+     -0.275,
+     1.55
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the cable's outer part (a mask)",
+   "video_time": "23:55"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg5",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "gradient to the leg bone: this part follows the leg (auto normalize takes it from the root)",
+   "video_time": "24:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cables",
+    "element": "VERT",
+    "min": [
+     0.5495,
+     -0.475,
+     1.0
+    ],
+    "max": [
+     0.7494999999999999,
+     -0.275,
+     1.25
+    ],
+    "space": "local"
+   },
+   "note": "the band between",
+   "video_time": "25:00"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "leg5",
+    "weight": 0.5
+   },
+   "note": "blurred: half the leg",
+   "video_time": "25:05"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Cables",
+    "group": "root",
+    "weight": 0.5
+   },
+   "note": "and half the root: the rope bends softly",
+   "video_time": "25:07"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cables",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

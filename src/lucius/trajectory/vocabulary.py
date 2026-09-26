@@ -61,7 +61,8 @@ for _name, _family, _mut, _lvl in [
     ("geometry_edit", "edit", True, 1), ("unknown_action", "unknown", False, -1),
     ("separate", "edit", True, 1), ("set_material", "shading", True, 2), ("scatter", "shading", True, 2),
     ("add_light", "lighting", True, -1), ("set_world", "lighting", True, -1), ("add_camera", "camera", True, -1),
-    ("render", "render", False, -1), ("keyframe", "animation", True, -1), ("timeline", "animation", True, -1), ("parent", "object", True, -1),
+    ("render", "render", False, -1), ("keyframe", "animation", True, -1), ("timeline", "animation", True, -1), ("parent", "object", True, -1), ("rig", "rigging", True, -1), ("pose", "rigging", True, -1),
+    ("weights", "rigging", True, -1), ("constraint", "rigging", True, -1), ("driver", "rigging", True, -1),
 ]:
     register_action_type(_name, _family, _mut, _lvl)
 
@@ -77,6 +78,8 @@ BRIDGE_ACTION_TYPES = {
     "duplicate_selection": "duplicate", "select_linked": "select_elements", "join_objects": "geometry_edit",
     "move_to_collection": "rename", "insert_keyframe": "keyframe", "add_shake": "keyframe",
     "set_frames": "timeline", "render_animation": "render", "parent_object": "parent", "clear_animation": "keyframe",
+    "hide_objects": "rename", "add_armature": "rig", "symmetrize_bones": "rig", "set_bone": "rig", "bind_to_armature": "parent",
+    "assign_weights": "weights", "pose_bone": "pose", "add_constraint": "constraint", "add_driver": "driver",
 }
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).

@@ -1,0 +1,52 @@
+{
+ "title": "Driver fun",
+ "summary": "A driver on a shader value: the cables get a rope material (a wave texture through a mapping node), and the mapping's X location is driven by leg one's two bones (their local Z rotation): -leg + (-knee / 10), so the rope's texture slides as if pulled when the leg moves. (The tutor then removes it, since all cables share the material; it is kept here as the example.)",
+ "objects": [],
+ "expected_result": "The phage's cables now look like twisted rope.",
+ "steps": [
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cables",
+    "name": "Cuerda",
+    "base_color": "#CDAE78",
+    "pattern": "wave",
+    "pattern_color": "#5C4326",
+    "pattern_scale": 6,
+    "roughness": 0.7,
+    "bump": "noise",
+    "bump_scale": 80,
+    "bump_strength": 0.15
+   },
+   "note": "the cable material: a wave texture (placed with a mapping node) as colour -- a twisted rope",
+   "video_time": "34:17"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Cuerda",
+    "path": "nodes[\"LuciusMapping\"].inputs[\"Location\"].default_value",
+    "index": 0,
+    "expression": "-leg + (-knee / 10)",
+    "variables": [
+     {
+      "name": "leg",
+      "object": "PhageRig",
+      "bone": "leg0",
+      "transform": "ROT_Z",
+      "space": "LOCAL_SPACE"
+     },
+     {
+      "name": "knee",
+      "object": "PhageRig",
+      "bone": "knee0",
+      "transform": "ROT_Z",
+      "space": "LOCAL_SPACE"
+     }
+    ]
+   },
+   "note": "a driver on the mapping's X location: both leg-one bones' local Z rotation; when the leg lifts the rope is pulled in: -leg plus a tenth of -knee",
+   "video_time": "34:42"
+  }
+ ]
+}
