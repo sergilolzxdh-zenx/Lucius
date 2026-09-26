@@ -18,7 +18,7 @@ from typing import Any
 PROPORTIONAL = (", proportional (O: radius in metres; nearby vertices follow, fading out), falloff "
                 "SMOOTH|SPHERE|ROOT|SHARP|LINEAR|CONSTANT")
 ACTION_DOCS: dict[str, tuple[str, str]] = {
-    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey|empty|metaball, "
+    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey|empty|metaball|lattice, "
                       "name, location [x,y,z], rotation_deg [x,y,z], size (cube/plane edge, default 2), radius, "
                       "depth (cylinder/cone height), radius2 (cone top), vertices (cylinder/cone/circle/sphere "
                       "segments, default 32), rings (UV sphere rings, default half the segments), major_radius, minor_radius, major_segments, minor_segments (torus), "
@@ -76,19 +76,25 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "separate_selection": ("Shift+D then P > Selection", "object, new_name, duplicate (true: copy the selected "
                            "faces into a new object, e.g. donut icing; false: move them)"),
     "add_modifier": ("Properties > Modifiers (Ctrl+1..3 adds Subdivision)",
-                     "object, type, name, props {...}. Types and props: SUBSURF {levels, render_levels}, "
-                     "MIRROR {use_axis [bool,bool,bool], use_bisect_axis, use_clip, use_mirror_merge}, "
-                     "SOLIDIFY {thickness, offset (-1..1), use_even_offset}, BEVEL {width, segments, limit_method: "
-                     "NONE|ANGLE}, ARRAY {count, relative_offset_displace [x,y,z]}, SIMPLE_DEFORM {deform_method: "
-                     "TWIST|BEND|TAPER|STRETCH, factor, deform_axis}, BOOLEAN {object, operation: "
-                     "DIFFERENCE|UNION|INTERSECT}, DISPLACE {strength (negative pushes in), texture: CLOUDS|VORONOI|MUSGRAVE|"
-                     "NOISE|MARBLE|WOOD|..., texture_scale, texture_coords LOCAL|GLOBAL|OBJECT|UV, "
-                     "texture_coords_object (an empty that moves the texture), direction} (the new texture is named "
-                     "<object>_<kind>, e.g. Fire_voronoi: its settings via set_property target texture), "
-                     "SMOOTH {factor, iterations}, "
-                     "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}, SKIN "
-                     "{use_smooth_shade}, WAVE {height, width, speed}, COLLISION {} (particles bounce off it; its "
-                     "settings via set_property path collision.damping_factor, collision.friction_factor)"),
+                     "object, type, name, props {...}: any mesh modifier -- generate ARRAY BEVEL BOOLEAN BUILD "
+                     "DECIMATE EDGE_SPLIT MASK MIRROR MULTIRES REMESH SCREW SKIN SOLIDIFY SUBSURF TRIANGULATE WELD "
+                     "WIREFRAME, deform CAST CURVE DISPLACE HOOK LAPLACIANDEFORM LATTICE MESH_DEFORM SHRINKWRAP "
+                     "SIMPLE_DEFORM SMOOTH CORRECTIVE_SMOOTH LAPLACIANSMOOTH SURFACE_DEFORM WARP WAVE, and "
+                     "WEIGHTED_NORMAL, UV_PROJECT, CLOTH, SOFT_BODY, COLLISION, EXPLODE, OCEAN, ... props use the "
+                     "modifier's Python setting names (the tooltip): numbers, switches, menu choices, objects and "
+                     "collections by name (object, offset_object, target, origin, mirror_object, collection), vertex "
+                     "group names; a name ending in _deg takes degrees (angle_deg, screw angle_deg). Common: SUBSURF "
+                     "{levels, render_levels}, MIRROR {use_axis [x,y,z], use_bisect_axis, use_clip}, SOLIDIFY "
+                     "{thickness, offset}, BEVEL {width, segments, affect VERTICES|EDGES, limit_method}, ARRAY "
+                     "{count, relative_offset_displace [x,y,z], use_relative_offset, use_object_offset, "
+                     "offset_object}, BOOLEAN {object, operation DIFFERENCE|UNION|INTERSECT}, SIMPLE_DEFORM "
+                     "{deform_method TWIST|BEND|TAPER|STRETCH, angle_deg, factor, deform_axis}, DISPLACE {strength, "
+                     "texture CLOUDS|VORONOI|MUSGRAVE|..., texture_scale, texture_coords, texture_coords_object} "
+                     "(the texture is named <object>_<kind>), SCREW {angle_deg, screw_offset, steps, axis}, REMESH "
+                     "{mode BLOCKS|SMOOTH|SHARP|VOXEL, voxel_size, octree_depth}, WIREFRAME {thickness}, DECIMATE "
+                     "{ratio}, BUILD {frame_start, frame_duration}, CAST {factor, cast_type}, WAVE {height, width, "
+                     "speed}, SHRINKWRAP {target, wrap_method}, LATTICE / CURVE {object}; physics settings via "
+                     "set_property (modifiers[\"Cloth\"].settings.quality)"),
     "apply_modifier": ("Ctrl+A over the modifier", "object, modifier (its name)"),
     "remove_modifier": ("X on the modifier", "object, modifier (its name)"),
     "shade": ("right click > Shade Smooth / Flat (Auto Smooth)", "object, smooth (true|false), auto_smooth_deg "
@@ -176,12 +182,28 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                   "otherwise only the selected faces), space local|world: the new edges are selected"),
     "bisect": ("the Bisect tool", "object, point, normal (the cutting plane), clear_inner / clear_outer (delete the "
                "side behind / in front of the normal), fill (a face over the cut), space"),
-    "spin": ("the Spin tool", "object, axis x|y|z, center (the pivot, where the 3D cursor would be), angle (degrees), "
+    "spin": ("the Spin tool", "object, axis x|y|z, center (the pivot, where the 3D cursor would be), angle_deg, "
              "steps: the selection swept round (a pipe bend, a lathe profile)"),
     "slide_selection": ("G G (edge / vertex slide)", "object, toward [x,y,z] (which way), factor 0..1 of the "
                         "neighbouring edges: moves the selection along the surface instead of off it"),
     "shrink_fatten": ("Alt+S (shrink / fatten)", "object, distance: the selection pushed along its normals (negative "
                       "shrinks)"),
+    "move_lattice_points": ("lattice edit mode: select points, G / S", "object (a lattice: add_primitive kind "
+                            "lattice, resolution via set_property target data points_u/points_v/points_w), min/max "
+                            "(a box in the lattice's -0.5..0.5 coordinates), offset [x,y,z], factor [x,y,z]"),
+    "add_hook": ("Ctrl+H > Hook to New Object", "object (vertices selected in edit mode), hook (the empty's name; "
+                 "made at their centre if new), size: then moving the empty drags those vertices"),
+    "bind_modifier": ("the modifier's Bind button", "object, modifier (a MESH_DEFORM / SURFACE_DEFORM / "
+                      "LAPLACIANDEFORM / CORRECTIVE_SMOOTH): bind before editing the cage / target / anchors"),
+    "uv_unwrap": ("U in edit mode", "object, method UNWRAP (by seams) | SMART_PROJECT | CUBE_PROJECT | "
+                  "CYLINDER_PROJECT | SPHERE_PROJECT | RESET, margin, angle_limit_deg, size (cube projection): lays "
+                  "the selected faces (all if none) flat in the UV map; texture coordinate UV then follows it"),
+    "uv_transform": ("UV editor: A, then R / S / G", "object, rotate_deg, scale [u, v], offset [u, v]: the selected "
+                     "faces' UVs (all if none) about their centre -- the texture turns / shrinks / slides"),
+    "bake_texture": ("Render properties > Bake (Cycles)", "object (with a UV map and a node material), type "
+                     "DIFFUSE (colour only) | ROUGHNESS | NORMAL (tangent) | AO | EMIT (whatever is routed into an "
+                     "emission, e.g. a height map) | COMBINED | GLOSSY, path textures/<name>.png, width, height, "
+                     "samples, non_color: bakes the material into an image file an Image Texture node can load"),
     "skin_radius": ("Ctrl+A in edit mode (Skin modifier)", "object, radius: the skin's thickness at the selected "
                     "vertices"),
     "select_nth": ("Select > Checker Deselect", "object, skip, nth, offset: of the selection keep every nth element "
@@ -194,8 +216,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "ShaderNodeMix, ShaderNodeMapping, ShaderNodeTexCoord, ShaderNodeEmission, ShaderNodeMixShader, "
                    "ShaderNodeBsdfTransparent, ShaderNodeShaderToRGB, GeometryNode..., ...), inputs {socket name: "
                    "value; Rotation_deg for degrees}, props {operation, blend_type, data_type, ...}, ramp [[pos, "
-                   "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file), object (texture "
-                   "coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "
+                   "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file, or textures/<name>.png made by bake_texture), non_color (data maps), projection FLAT|BOX, generated_image {name, type UV_GRID|COLOR_GRID|BLANK, width, height, color} (Image > New), "
+                   "object (texture coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "
                    "(socket names or numbers), unlink [{to, input}]. Keep the material output's Surface linked"),
     "set_property": ("hover any field (its Python tooltip path); I to key it", "target object|data|material|nodes|"
                      "world|world_nodes|shape_keys|texture|scene|particles|group, name (the object / material / "

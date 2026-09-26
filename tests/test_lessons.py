@@ -920,4 +920,158 @@ def test_quick_liquid_is_baked_into_the_allowed_folder(tmp_path):
         assert baked["cache_files"] > 0 and (tmp_path / "caches").is_dir()
         ex("set_frames", start=1, end=8, current=8)
         liquid = next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Tank")
-        assert liquid["counts"]["verts"] > 0   # the domain now shows the liquid's mesh
+        assert liquid["mesh"]["verts"] > 8   # the domain now shows the liquid's mesh
+
+
+def test_knife_bisect_spin_slide_and_shrink_fatten(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def obj(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cube", name="Box", size=2)
+        ex("select_box", object="Box", element="FACE", facing=[0, -1, 0], min_dot=0.99)
+        cut = ex("knife_cut", object="Box", start=[-1, -1, 0.4], end=[1, -1, 0.4], view=[0, -1, 0])
+        assert cut["new_edges"] == 1
+        ex("select_box", object="Box", element="FACE", facing=[0, -1, 0], min_dot=0.99, min=[None, None, 0.4],
+           space="local")
+        ex("extrude", object="Box", distance=0.5)   # the new piece extrudes on its own
+        ex("set_mode", object="Box", mode="OBJECT")
+        assert obj("Box")["dimensions"][1] == pytest.approx(2.5, abs=1e-3)
+        assert obj("Box")["mesh"]["faces"] == 6 + 1 + 4   # only the front face was split, then 4 walls
+        through = ex("knife_cut", object="Box", start=[-1, 0, 1], end=[1, 0, -1], view=[0, -1, 0], through=True)
+        assert through["new_edges"] >= 4   # cut through: the back faces too
+        ex("set_mode", object="Box", mode="OBJECT")
+        # bisect: half a sphere, filled
+        ex("add_primitive", kind="uv_sphere", name="Ball", radius=1, location=[4, 0, 0])
+        half = ex("bisect", object="Ball", point=[0, 0, 0], normal=[0, 0, 1], clear_outer=True, fill=True)
+        assert half["filled_faces"] == 1
+        ex("set_mode", object="Ball", mode="OBJECT")
+        assert obj("Ball")["dimensions"][2] == pytest.approx(1.0, abs=1e-3)
+        # spin: a cylinder's end swept round a pivot into an elbow
+        ex("add_primitive", kind="cylinder", name="Pipe", radius=0.2, depth=1, vertices=16, location=[8, 0, 0])
+        ex("select_box", object="Pipe", element="FACE", facing=[0, 0, 1], min_dot=0.99)
+        ex("spin", object="Pipe", axis="x", center=[0, -0.6, 0.5], angle=math.pi / 2, steps=8)
+        ex("set_mode", object="Pipe", mode="OBJECT")
+        pipe = obj("Pipe")
+        assert pipe["mesh"]["verts"] == 32 + 8 * 16   # eight new rings swept round the pivot
+        assert pipe["dimensions"][1] == pytest.approx(0.8, abs=0.01)   # bend radius 0.6 plus the pipe's 0.2
+        # slide: a loop slid up keeps the cube's shape
+        ex("add_primitive", kind="cube", name="Slid", size=2, location=[12, 0, 0])
+        ex("loop_cut_axis", object="Slid", axis="z", positions=[0.5])
+        ex("select_box", object="Slid", element="VERT", min=[None, None, -0.01], max=[None, None, 0.01],
+           space="local")
+        assert ex("slide_selection", object="Slid", toward=[0, 0, 1], factor=0.5)["slid"] == 4
+        ex("set_mode", object="Slid", mode="OBJECT")
+        assert obj("Slid")["dimensions"] == pytest.approx([2, 2, 2], abs=1e-3)
+        # shrink / fatten
+        ex("add_primitive", kind="cube", name="Fat", size=2, location=[16, 0, 0])
+        ex("select_all", object="Fat")
+        ex("shrink_fatten", object="Fat", distance=0.5)
+        ex("set_mode", object="Fat", mode="OBJECT")
+        assert obj("Fat")["dimensions"][0] > 2.5
+
+
+def test_lattice_hooks_and_bound_deformers(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def obj(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)
+
+        ex("reset_scene", keep_camera_light=False)
+        # a lattice squashing a sphere
+        ex("add_primitive", kind="uv_sphere", name="Ball", radius=1)
+        ex("add_primitive", kind="lattice", name="Cage", size=2.4)
+        ex("set_property", target="data", name="Cage", path="points_u", value=3)
+        ex("add_modifier", object="Ball", type="LATTICE", props={"object": "Cage"})
+        assert ex("move_lattice_points", object="Cage", min=[None, None, 0.4], offset=[0, 0, 0.8])["points"] == 6
+        assert obj("Ball")["dimensions"][2] > 2.4
+        # a hook drags one corner
+        ex("add_primitive", kind="cube", name="Box", size=2, location=[5, 0, 0])
+        ex("select_box", object="Box", element="VERT", min=[0.9, 0.9, 0.9], space="local")
+        hook = ex("add_hook", object="Box", hook="Handle")
+        assert hook["vertices"] == 1
+        assert obj("Box")["dimensions"] == pytest.approx([2, 2, 2], abs=1e-4)   # nothing jumps on hooking
+        ex("transform_object", object="Handle", location=[7, 1, 2])
+        assert obj("Box")["dimensions"][2] > 2.9
+        # a cage bound with Mesh Deform
+        ex("add_primitive", kind="monkey", name="Head", location=[10, 0, 0])
+        ex("add_primitive", kind="cube", name="Shell", size=3, location=[10, 0, 0])
+        ex("select_all", object="Shell")
+        ex("subdivide", object="Shell", cuts=2)
+        ex("set_mode", object="Shell", mode="OBJECT")
+        ex("add_modifier", object="Head", type="MESH_DEFORM", props={"object": "Shell", "precision": 4})
+        assert ex("bind_modifier", object="Head", modifier="Mesh_Deform")["bound"]
+        before = obj("Head")["dimensions"][2]
+        ex("select_box", object="Shell", element="VERT", min=[None, None, 1.4], space="local")
+        ex("translate_selection", object="Shell", offset=[0, 0, 1.0])
+        ex("set_mode", object="Shell", mode="OBJECT")
+        assert obj("Head")["dimensions"][2] > before + 0.3
+        with pytest.raises(Exception, match="no bindable"):
+            ex("bind_modifier", object="Ball", modifier="Lattice")
+
+
+def test_uv_unwrap_and_transform(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cylinder", name="Can", radius=0.5, depth=2)
+        for method in ("SMART_PROJECT", "UNWRAP", "CUBE_PROJECT", "CYLINDER_PROJECT", "SPHERE_PROJECT", "RESET"):
+            assert ex("uv_unwrap", object="Can", method=method)["faces"] > 30
+        assert ex("uv_transform", object="Can", rotate_deg=45, scale=[2, 2], offset=[0.1, 0])["faces"] > 30
+        ex("set_mode", object="Can", mode="OBJECT")
+
+
+def test_bake_texture_writes_maps_a_node_can_load(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)], allowed_read_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="plane", name="Tile", size=2)
+        ex("uv_unwrap", object="Tile", method="RESET")
+        ex("edit_nodes", material="Bricks", object="Tile", clear=True, nodes=[
+            {"name": "Bricks", "type": "ShaderNodeTexBrick"}, {"name": "BSDF", "type": "ShaderNodeBsdfPrincipled"},
+            {"name": "Out", "type": "ShaderNodeOutputMaterial"}],
+            links=[{"from": "Bricks", "output": "Color", "to": "BSDF", "input": "Base Color"},
+                   {"from": "Bricks", "output": "Fac", "to": "BSDF", "input": "Roughness"},
+                   {"from": "BSDF", "to": "Out", "input": "Surface"}])
+        baked = ex("bake_texture", object="Tile", type="DIFFUSE", path="textures/bricks_color.png", width=64,
+                   height=64, samples=1)
+        assert baked["path"] == "textures/bricks_color.png"
+        assert (tmp_path / "textures" / "bricks_color.png").stat().st_size > 100
+        ex("bake_texture", object="Tile", type="ROUGHNESS", path="textures/bricks_rough.png", width=64, height=64,
+           samples=1)
+        ex("add_primitive", kind="cube", name="Box")
+        made = ex("edit_nodes", material="Baked", object="Box", clear=True, nodes=[
+            {"name": "Col", "type": "ShaderNodeTexImage", "image": "textures/bricks_color.png", "projection": "BOX"},
+            {"name": "Rough", "type": "ShaderNodeTexImage", "image": "textures/bricks_rough.png", "non_color": True},
+            {"name": "BSDF", "type": "ShaderNodeBsdfPrincipled"}, {"name": "Out", "type": "ShaderNodeOutputMaterial"}],
+            links=[{"from": "Col", "output": "Color", "to": "BSDF", "input": "Base Color"},
+                   {"from": "Rough", "output": "Color", "to": "BSDF", "input": "Roughness"},
+                   {"from": "BSDF", "to": "Out", "input": "Surface"}])
+        assert made["links"] == 3
+        with pytest.raises(Exception, match="textures/"):
+            ex("bake_texture", object="Tile", path="../escape.png")
+        with pytest.raises(Exception, match="has not been made"):
+            ex("edit_nodes", material="Baked", nodes=[{"name": "M", "type": "ShaderNodeTexImage",
+                                                        "image": "textures/nope.png"}])

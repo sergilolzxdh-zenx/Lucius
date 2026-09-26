@@ -418,10 +418,38 @@ def edit_nodes(p):
         if spec.get("image") is not None:
             if not hasattr(node, "image"):
                 raise BridgeCommandError("invalid_param", f"{param}: {node.bl_idname} takes no image", param="nodes")
-            path = _check_path(spec["image"], "LUCIUS_ALLOWED_READ_DIRS", IMAGE_EXTENSIONS)
+            if isinstance(spec["image"], str) and spec["image"].startswith("textures/"):
+                from .actions import _texture_path
+
+                path = _texture_path(spec["image"], write=False)   # a texture a bake_texture step made
+            else:
+                path = _check_path(spec["image"], "LUCIUS_ALLOWED_READ_DIRS", IMAGE_EXTENSIONS)
             node.image = bpy.data.images.load(path, check_existing=True)
             if spec.get("non_color"):
                 node.image.colorspace_settings.name = "Non-Color"
+            if spec.get("projection"):
+                if spec["projection"] not in ("FLAT", "BOX", "SPHERE", "TUBE"):
+                    raise BridgeCommandError("invalid_param", f"{param}: projection FLAT|BOX|SPHERE|TUBE",
+                                             param="nodes")
+                node.projection = spec["projection"]
+        if spec.get("generated_image") is not None:
+            # Image > New: a picture Blender makes itself (a UV grid / colour grid to check unwraps, or a colour)
+            gen = spec["generated_image"]
+            if not hasattr(node, "image") or not isinstance(gen, dict):
+                raise BridgeCommandError("invalid_param", f"{param}: generated_image {{name, type, width, height}} "
+                                         "on an image node", param="nodes")
+            kind = gen.get("type", "UV_GRID")
+            if kind not in ("UV_GRID", "COLOR_GRID", "BLANK"):
+                raise BridgeCommandError("invalid_param", f"{param}: type UV_GRID|COLOR_GRID|BLANK", param="nodes")
+            width, height = int(gen.get("width", 1024)), int(gen.get("height", 1024))
+            if not (16 <= width <= 4096 and 16 <= height <= 4096):
+                raise BridgeCommandError("invalid_param", f"{param}: 16..4096 pixels", param="nodes")
+            name = str(gen.get("name") or "Generated")[:63]
+            image = bpy.data.images.get(name) or bpy.data.images.new(name, width, height)
+            image.generated_type = kind
+            if gen.get("color") is not None:
+                image.generated_color = _color(gen["color"], param)
+            node.image = image
         if spec.get("object") is not None:
             if not hasattr(node, "object"):
                 raise BridgeCommandError("invalid_param", f"{param}: {node.bl_idname} takes no object", param="nodes")

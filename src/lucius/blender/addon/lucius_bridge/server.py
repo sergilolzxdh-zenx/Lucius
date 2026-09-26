@@ -202,7 +202,8 @@ class BridgeServer:
                 if main_thread:
                     # A render or a heavy modifier may keep Blender's main thread busy for minutes.
                     action = args.get("action") if cmd == "execute" else None
-                    slow = action in ("render_image", "apply_modifier", "add_scatter", "bind_to_armature")
+                    slow = action in ("render_image", "apply_modifier", "add_scatter", "bind_to_armature", "bake_texture",
+                                      "bind_modifier")
                     timeout = 7200.0 if action in ("render_animation", "bake_fluid") else 600.0 if slow else 60.0
                     result = self.dispatcher.call(handler, args, timeout=timeout)
                 else:

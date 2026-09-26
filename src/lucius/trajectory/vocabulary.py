@@ -81,13 +81,13 @@ BRIDGE_ACTION_TYPES = {
     "hide_objects": "rename", "add_armature": "rig", "symmetrize_bones": "rig", "set_bone": "rig", "bind_to_armature": "parent",
     "assign_weights": "weights", "pose_bone": "pose", "add_constraint": "constraint", "add_driver": "driver",
     "key_constraint": "keyframe", "set_interpolation": "keyframe", "retime_keys": "keyframe",
-    "skin_radius": "scale", "knife_cut": "loop_cut", "bisect": "delete", "spin": "extrude",
+    "skin_radius": "scale", "bake_texture": "render", "uv_unwrap": "geometry_edit", "uv_transform": "geometry_edit", "move_lattice_points": "translate", "add_hook": "parent", "bind_modifier": "add_modifier", "knife_cut": "loop_cut", "bisect": "delete", "spin": "extrude",
     "slide_selection": "translate", "shrink_fatten": "translate", "quick_liquid": "add_primitive", "bake_fluid": "render", "select_nth": "select_elements", "add_particles": "scatter", "edit_nodes": "set_material", "set_property": "keyframe", "shape_key": "geometry_edit", "add_curve": "add_primitive",
 }
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).
 PRIMITIVE_KINDS = ("cube", "plane", "cylinder", "cone", "uv_sphere", "ico_sphere", "torus", "circle", "monkey", "empty",
-                   "metaball")
+                   "metaball", "lattice")
 
 # Modifier types whose addition is setup (symmetry) rather than detail.
 MODIFIER_DETAIL = {"MIRROR": 0, "SOLIDIFY": 1, "ARRAY": 1, "SIMPLE_DEFORM": 0, "BEVEL": 2, "SUBSURF": 2,

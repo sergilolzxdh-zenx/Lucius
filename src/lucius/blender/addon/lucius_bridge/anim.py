@@ -366,6 +366,8 @@ def animation_summary():
     scene = bpy.context.scene
     animated = []
     for obj in scene.objects:
+        if obj.hide_render:
+            continue   # a finished, hidden piece of an earlier chapter doesn't make this one an animation
         blocks = [obj, obj.data, getattr(obj.data, "shape_keys", None)]
         for slot in obj.material_slots:
             if slot.material is not None:
