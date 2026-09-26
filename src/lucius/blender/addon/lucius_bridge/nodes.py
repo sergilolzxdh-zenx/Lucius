@@ -66,6 +66,8 @@ def _number(value, param, integer=False):
 
 
 TEXT_PROPS = ("attribute_name", "layer_name", "uv_map")
+ITEM_COLLECTIONS = ("capture_items", "repeat_items", "state_items", "bake_items")
+ITEM_TYPES = ("FLOAT", "INT", "VECTOR", "RGBA", "BOOLEAN", "ROTATION", "MATRIX", "GEOMETRY")
 STUDIO_LIGHTS = ("city", "courtyard", "forest", "interior", "night", "studio", "sunrise", "sunset")
 
 
@@ -499,6 +501,18 @@ def edit_nodes(p):
             degrees = isinstance(key, str) and key.endswith("_deg")   # sun_elevation_deg: 30
             attr = key[:-4] if degrees else key
             setattr(node, attr, _rna_value(node, attr, value, f"{param}.props.{key}", degrees=degrees))
+        if spec.get("items") is not None:
+            # a node's own list of sockets: Capture Attribute's captured values, a repeat / simulation zone's state
+            coll = next((getattr(node, c) for c in ITEM_COLLECTIONS if hasattr(node, c)), None)
+            if coll is None or not isinstance(spec["items"], list):
+                raise BridgeCommandError("invalid_param", f"{param}: {node.bl_idname} takes no items", param="nodes")
+            for item in spec["items"]:
+                kind, item_name = (item.get("type"), item.get("name")) if isinstance(item, dict) else (None, None)
+                if kind not in ITEM_TYPES or not isinstance(item_name, str) or not 0 < len(item_name) <= 63:
+                    raise BridgeCommandError("invalid_param", f"{param}: items are {{type {ITEM_TYPES}, name}}",
+                                             param="nodes")
+                if item_name not in [i.name for i in coll]:
+                    coll.new(kind, item_name)
         if "ramp" in spec or "ramp_interpolation" in spec:
             _ramp(node, spec.get("ramp"), spec.get("ramp_interpolation"), f"{param}.ramp")
         if spec.get("image") is not None:

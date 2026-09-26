@@ -1318,3 +1318,35 @@ def test_geometry_node_group_inputs_reach_the_modifier(tmp_path):
         assert dims("Short")[2] == pytest.approx(0.5, abs=1e-3) and dims("Tall")[2] == pytest.approx(3.0, abs=1e-3)
         with pytest.raises(Exception, match="no input"):
             ex("edit_nodes", tree="geometry", object="Short", group="Box", modifier_inputs={"Width": 1})
+
+
+def test_capture_attribute_items_carry_face_normals_to_points(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(cmd, **args):
+            return bridge.execute(cmd, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cube", name="Box")
+        made = ex("edit_nodes", tree="geometry", object="Box", clear=True, nodes=[
+            {"name": "Group Input", "type": "NodeGroupInput"}, {"name": "Group Output", "type": "NodeGroupOutput"},
+            {"name": "Cap", "type": "GeometryNodeCaptureAttribute", "props": {"domain": "FACE"},
+             "items": [{"type": "VECTOR", "name": "Normal"}]},
+            {"name": "N", "type": "GeometryNodeInputNormal"},
+            {"name": "Pts", "type": "GeometryNodeMeshToPoints", "props": {"mode": "FACES"}},
+            {"name": "Face", "type": "FunctionNodeAlignEulerToVector", "props": {"axis": "Y"}},
+            {"name": "Tile", "type": "GeometryNodeMeshCube", "inputs": {"Size": [0.2, 0.2, 0.2]}},
+            {"name": "On", "type": "GeometryNodeInstanceOnPoints"}],
+            links=[{"from": "Group Input", "to": "Cap", "input": "Geometry"},
+                   {"from": "N", "to": "Cap", "input": "Normal"},
+                   {"from": "Cap", "output": "Geometry", "to": "Pts", "input": "Mesh"},
+                   {"from": "Cap", "output": "Normal", "to": "Face", "input": "Vector"},
+                   {"from": "Pts", "to": "On", "input": "Points"}, {"from": "Tile", "to": "On", "input": "Instance"},
+                   {"from": "Face", "to": "On", "input": "Rotation"},
+                   {"from": "On", "to": "Group Output", "input": "Geometry"}])
+        assert made["unconnected_outputs"] == []
+        with pytest.raises(Exception, match="items"):
+            ex("edit_nodes", tree="geometry", object="Box", nodes=[{"name": "Pts", "items": [
+                {"type": "VECTOR", "name": "X"}]}])
