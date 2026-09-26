@@ -1263,3 +1263,28 @@ def test_actions_push_down_and_nla_blending(tmp_path):
         assert moved["track"] == "UpDown" and moved["frames"][0] == 101
         with pytest.raises(Exception, match="exists already"):
             ex("new_action", object="Monkey", name="UpDown")
+
+
+def test_text_objects_on_curves_keyed_and_converted(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(cmd, **args):
+            return bridge.execute(cmd, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        made = ex("add_text", name="Title", body="HELLO 3D\nSUBSCRIBE", extrude=0.15, bevel_depth=0.02,
+                  bevel_resolution=6, align_x="CENTER", space_character=1.1, rotation=[1.5708, 0, 0])
+        assert made["lines"] == 2 and made["dimensions"][1] > 0.25     # extruded depth shows along Y
+        ex("set_property", target="data", name="Title", path="extrude", value=0.0, frame=1)
+        ex("set_property", target="data", name="Title", path="extrude", value=0.15, frame=50)
+        ex("add_curve", name="Path", splines=[{"points": [[-3, 0, 0], [0, 2, 0], [3, 0, 0]]}])
+        ex("add_text", name="Arc", body="ON A CURVE", follow_curve="Path")
+        ex("add_text", name="Arc", follow_curve="")
+        with pytest.raises(Exception, match="not a curve"):
+            ex("add_text", name="Arc", follow_curve="Title")
+        mesh = ex("convert_to_mesh", object="Title")
+        assert mesh["type"] == "MESH" and mesh["faces"] > 100
+        ex("select_box", object="Title", element="FACE", max=[None, None, 0.45])
+        ex("set_material", object="Title", name="Red", base_color=[0.8, 0.02, 0.02], assign="selected_faces")

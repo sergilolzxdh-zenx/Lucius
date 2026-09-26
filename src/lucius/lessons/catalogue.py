@@ -168,6 +168,15 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                           "interpolation SINE|QUAD|CUBIC|QUART|QUINT|EXPO|CIRC|BACK|BOUNCE|ELASTIC with easing "
                           "AUTO|EASE_IN|EASE_OUT|EASE_IN_OUT (T > Easing); left / right [frames, value] drag a key's "
                           "handles by hand (flat = slow there, steep = fast)"),
+    "add_text": ("Shift+A > Text, typed in edit mode, Object Data properties", "name, body (the text; \\n for "
+                 "a new line), location, rotation_deg, extrude and bevel_depth / bevel_resolution (3D letters), size, "
+                 "shear (-1..1 slant), align_x LEFT|CENTER|RIGHT|JUSTIFY|FLUSH, align_y TOP_BASELINE|TOP|CENTER|"
+                 "BOTTOM|BOTTOM_BASELINE, space_character / space_word / space_line, resolution, offset_x / offset_y (slide the text; along "
+                 "a curve), fill_mode, "
+                 "follow_curve (a curve object: Text on Curve; \"\" clears); an existing text changes only what "
+                 "is given; set_property target data path extrude with a frame keys it"),
+    "convert_to_mesh": ("Object > Convert > Mesh", "object: a text or curve becomes an editable mesh (faces to "
+                        "select and give their own material); its text settings and keys are gone"),
     "new_action": ("Dope Sheet > Action Editor > New", "object, name: a new named action becomes the active one "
                    "(the next keyframes go into it); the previous one is kept for the NLA"),
     "push_down": ("NLA editor > Push Down", "object, action (default the active one), track name, frame (where "

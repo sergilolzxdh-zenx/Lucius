@@ -795,6 +795,77 @@ def chosen_engine(scene):
     return "CYCLES"
 
 
+TEXT_ALIGN_X = ("LEFT", "CENTER", "RIGHT", "JUSTIFY", "FLUSH")
+TEXT_ALIGN_Y = ("TOP_BASELINE", "TOP", "CENTER", "BOTTOM", "BOTTOM_BASELINE")
+
+
+def add_text(p):
+    """Shift+A > Text, typed in edit mode (a new line with Enter: ``\n``), and its Object Data settings: geometry
+    extrude and bevel (depth, resolution) for 3D letters, size and shear (slant), paragraph alignment and
+    character / word / line spacing, preview resolution, fill mode, and Text on Curve. An existing text object of
+    that name changes only the values given."""
+    _leave_edit_mode()
+    name = p["name"] or "Text"
+    obj = bpy.data.objects.get(name)
+    if obj is not None and obj.type != "FONT":
+        raise BridgeCommandError("invalid_param", f"{name} exists and is not a text object", param="name")
+    if obj is None:
+        data = bpy.data.curves.new(name, "FONT")
+        obj = bpy.data.objects.new(name, data)
+        bpy.context.collection.objects.link(obj)
+        data.body = "Text"
+    data = obj.data
+    if p["body"] is not None:
+        if not isinstance(p["body"], str) or not 0 < len(p["body"]) <= 500:
+            raise BridgeCommandError("invalid_param", "body: 1..500 characters", param="body")
+        data.body = p["body"]
+    if p["location"] is not None:
+        obj.location = p["location"]
+    if p["rotation"] is not None:
+        obj.rotation_euler = p["rotation"]
+    settings = {"extrude": "extrude", "bevel_depth": "bevel_depth", "bevel_resolution": "bevel_resolution",
+                "size": "size", "shear": "shear", "space_character": "space_character",
+                "space_word": "space_word", "space_line": "space_line", "resolution": "resolution_u",
+                "offset_x": "offset_x", "offset_y": "offset_y"}
+    for key, attr in settings.items():
+        if p[key] is not None:
+            setattr(data, attr, _rna_value(data, attr, p[key], key))
+    if p["align_x"] is not None:
+        data.align_x = p["align_x"]
+    if p["align_y"] is not None:
+        data.align_y = p["align_y"]
+    if p["fill_mode"] is not None:
+        data.fill_mode = p["fill_mode"]
+    if p["follow_curve"] is not None:
+        curve = _obj(p["follow_curve"]) if p["follow_curve"] else None
+        if curve is not None and curve.type != "CURVE":
+            raise BridgeCommandError("invalid_param", f"{curve.name} is not a curve", param="follow_curve")
+        data.follow_curve = curve
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "body": data.body, "lines": data.body.count("\n") + 1,
+            "dimensions": [round(v, 3) for v in obj.dimensions]}
+
+
+def convert_to_mesh(p):
+    """Object > Convert > Mesh: a text or curve (or an object with modifiers, applied) becomes plain editable mesh
+    -- vertices, edges and faces to select and give materials; its text settings and their keyframes go."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    if obj.type not in ("FONT", "CURVE", "SURFACE", "META", "MESH"):
+        raise BridgeCommandError("invalid_param", f"{obj.name} ({obj.type}) can't become a mesh", param="object")
+    for other in bpy.context.view_layer.objects:
+        other.select_set(False)
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    from .actions import _context_override, _op_result
+
+    override = dict(_context_override(obj), selected_objects=[obj], selected_editable_objects=[obj])
+    with bpy.context.temp_override(**override):
+        _op_result(bpy.ops.object.convert(target="MESH"), "convert")
+    obj = bpy.context.view_layer.objects.active or obj
+    return {"object": obj.name, "type": obj.type, "verts": len(obj.data.vertices), "faces": len(obj.data.polygons)}
+
+
 ACTIONS = {
     "edit_nodes": (edit_nodes, {
         "tree": (TREES, "material"), "material": ("name", None), "object": ("name", None), "group": ("name", None),
@@ -812,6 +883,14 @@ ACTIONS = {
         "object": OBJ, "name": ("name", REQUIRED), "value": ("float", None), "slider_min": ("float", None),
         "slider_max": ("float", None), "active": ("bool", False), "frame": ("int", None),
         "interpolation": (INTERPOLATIONS, "BEZIER")}),
+    "add_text": (add_text, {
+        "name": ("name", None), "body": ("path_expr", None), "location": ("vec3", None), "rotation": ("vec3", None),
+        "extrude": ("float", None), "bevel_depth": ("float", None), "bevel_resolution": ("int", None),
+        "size": ("float", None), "shear": ("float", None), "space_character": ("float", None),
+        "space_word": ("float", None), "space_line": ("float", None), "resolution": ("int", None),
+        "offset_x": ("float", None), "offset_y": ("float", None), "align_x": (TEXT_ALIGN_X, None), "align_y": (TEXT_ALIGN_Y, None),
+        "fill_mode": (("NONE", "BACK", "FRONT", "BOTH"), None), "follow_curve": ("any", None)}),
+    "convert_to_mesh": (convert_to_mesh, {"object": OBJ}),
     "add_curve": (add_curve, {
         "name": ("name", None), "splines": ("list", REQUIRED), "location": ("vec3", [0.0, 0.0, 0.0]),
         "bevel_depth": ("float", 0.0), "bevel_resolution": ("int", 4), "extrude": ("float", 0.0),
