@@ -1,0 +1,411 @@
+{
+ "title": "Procedural shaders part 2: sand and a sky",
+ "summary": "A procedural sand shader on a Suzanne (Ctrl+3 subdivision): three noise textures on Object coordinates at scales 500, 250 and 150 multiplied together (Mix set to Multiply, factors 1 and 0.5), through a bump into the normal and into the roughness, coloured by mixing cadmium yellow FDDA0D with dioxazine purple 5C3A93; the pink lamp made white. Then a Sky Texture in the world (sun size 5, elevation 100, rotation 90, altitude 5500 m, ozone 10, strength 0.1) over a new ground plane. Beyond the tutorial: the ground rolled into sand dunes with a Displace modifier and given the same sand.",
+ "objects": [
+  {
+   "name": "SandMonkey",
+   "description": "the sand Suzanne"
+  },
+  {
+   "name": "Ground",
+   "description": "the dunes"
+  }
+ ],
+ "expected_result": "A sandy Suzanne on rolling sand dunes under a blue sky.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "ShaderPrincipled",
+     "ShaderDiffuse",
+     "ShaderSubsurface",
+     "ShaderGlossy",
+     "ShaderAnisotropic",
+     "ShaderRefraction",
+     "ShaderTranslucent",
+     "ShaderSheen",
+     "ShaderEmission",
+     "ShaderTransparent",
+     "ShaderGlass",
+     "ShaderToon",
+     "ShaderToonGlossy",
+     "ShaderVolumeRed",
+     "ShaderScatter",
+     "ShaderAbsorption",
+     "CarPaint",
+     "CarPaintBlue",
+     "BehindRed",
+     "BehindBlue",
+     "Studio"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "SandMonkey",
+    "size": 2,
+    "location": [
+     0,
+     0,
+     0.95
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     25
+    ]
+   },
+   "note": "Suzanne, smooth, Ctrl+3 (a subdivision surface at level 3), turned on Z",
+   "video_time": "330:28"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SandMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SandMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Sand",
+    "object": "SandMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Grains500",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 200.0
+      }
+     },
+     {
+      "name": "Grains250",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 100.0
+      }
+     },
+     {
+      "name": "Grains150",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 60.0
+      }
+     },
+     {
+      "name": "Layer2",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 1.0
+      }
+     },
+     {
+      "name": "Layer3",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 0.5
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.8,
+       "Distance": 0.3
+      }
+     },
+     {
+      "name": "Matte",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 0.75,
+       "To Max": 1.0
+      }
+     },
+     {
+      "name": "SandColor",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      },
+      "inputs": {
+       "A": "#FDDA0D",
+       "B": "#5C3A93"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Grains500",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Grains250",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Grains150",
+      "input": "Vector"
+     },
+     {
+      "from": "Grains500",
+      "output": "Fac",
+      "to": "Layer2",
+      "input": "A"
+     },
+     {
+      "from": "Grains250",
+      "output": "Fac",
+      "to": "Layer2",
+      "input": "B"
+     },
+     {
+      "from": "Layer2",
+      "output": "Result",
+      "to": "Layer3",
+      "input": "A"
+     },
+     {
+      "from": "Grains150",
+      "output": "Fac",
+      "to": "Layer3",
+      "input": "B"
+     },
+     {
+      "from": "Layer3",
+      "output": "Result",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Layer3",
+      "output": "Result",
+      "to": "Matte",
+      "input": "Value"
+     },
+     {
+      "from": "Matte",
+      "output": 0,
+      "to": "Surface",
+      "input": "Roughness"
+     },
+     {
+      "from": "SandColor",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the Sand material: three layers of noise on Object coordinates (the tutor's scales 500, 250 and 150, here 200/100/60 so the grains still show from the camera), joined by two Mix nodes set to Multiply (factors 1 and 0.5) -- a grainy texture; through a Bump into the normal, and (mapped to 0.75..1) into the roughness; the colour a Mix of cadmium yellow (FDDA0D) and dioxazine purple (5C3A93), the two paints that make beach sand",
+   "video_time": "336:20"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "PinkLamp",
+    "color": "#FFFFFF"
+   },
+   "note": "the pink lamp made pure white (HSV value 1, saturation 0)",
+   "video_time": "337:24"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Ground",
+    "size": 60,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the backdrop deleted, a new plane scaled up as the ground",
+   "video_time": "337:43"
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Ground",
+    "cuts": 90
+   },
+   "note": "beyond the tutorial: the ground rolled into dunes (subdivided, a Displace modifier with a clouds texture) and given the same sand",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Ground",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Ground",
+    "type": "DISPLACE",
+    "props": {
+     "strength": 0.9,
+     "mid_level": 0.55,
+     "texture": "CLOUDS",
+     "texture_scale": 6.0
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Ground",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Sand",
+    "object": "Ground"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Sky",
+      "type": "ShaderNodeTexSky",
+      "props": {
+       "sky_type": "SINGLE_SCATTERING",
+       "sun_size_deg": 5.0,
+       "sun_intensity": 1.0,
+       "sun_elevation_deg": 100.0,
+       "sun_rotation_deg": 90.0,
+       "altitude": 5500.0,
+       "air_density": 1.0,
+       "aerosol_density": 1.0,
+       "ozone_density": 10.0
+      }
+     },
+     {
+      "name": "Background",
+      "type": "ShaderNodeBackground",
+      "inputs": {
+       "Strength": 0.1
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputWorld"
+     }
+    ],
+    "links": [
+     {
+      "from": "Sky",
+      "output": "Color",
+      "to": "Background",
+      "input": "Color"
+     },
+     {
+      "from": "Background",
+      "output": "Background",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the sky: World shader, a Sky Texture into the Background (the viewport HDRI off): sun size 5, intensity 1, elevation 100, rotation 90, altitude ~5500 m, air and dust 1, ozone 10, strength 0.1",
+   "video_time": "340:46"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.6,
+     -7.4,
+     2.1
+    ],
+    "look_at": [
+     0,
+     0,
+     1.05
+    ],
+    "lens": 38
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

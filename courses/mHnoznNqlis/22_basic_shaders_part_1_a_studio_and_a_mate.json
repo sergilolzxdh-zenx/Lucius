@@ -1,0 +1,901 @@
+{
+ "title": "Basic shaders part 1: a studio and a material library",
+ "summary": "The studio the tutor saves as the startup file for every material chapter: a floor plane scaled out, its back edge extruded up into a wall and the corner bevelled into a curve (smooth by angle), dark grey and rough; one of Blender's own HDRIs (interior) for light, a lamp and a pink one; a straight-on camera (X 0, rotation 90/0/0) locked, passepartout 1. Then the material library, each marked as an asset: chrome (metallic 1, roughness 0.05), brushed aluminium (anisotropic 1), dark grey metal, gold (hex D4AF37), glossy green (roughness 0, not metallic), glossy green painted (a copy at roughness 0.25). Beyond the tutorial: copper by the same hex trick. The node wrangler's Ctrl+T (texture coordinate + mapping + image) is what edit_nodes builds directly.",
+ "objects": [
+  {
+   "name": "Studio",
+   "description": "the studio backdrop"
+  },
+  {
+   "name": "SwatchChrome",
+   "description": "Chrome"
+  },
+  {
+   "name": "SwatchBrushedAluminium",
+   "description": "Brushed Aluminium"
+  },
+  {
+   "name": "SwatchDarkGrayMetal",
+   "description": "Dark Gray Metal"
+  },
+  {
+   "name": "SwatchGold",
+   "description": "Gold"
+  },
+  {
+   "name": "SwatchGlossyGreen",
+   "description": "Glossy Green"
+  },
+  {
+   "name": "SwatchGlossyGreenPainted",
+   "description": "Glossy Green Painted"
+  },
+  {
+   "name": "SwatchCopper",
+   "description": "Copper"
+  }
+ ],
+ "expected_result": "Seven spheres on a curved dark studio backdrop: chrome, brushed aluminium, dark metal, gold, glossy green, satin green and copper.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Ball1",
+     "Ball2",
+     "Ball3",
+     "Ball4",
+     "Ball5",
+     "Indexed1",
+     "Indexed2",
+     "Indexed3",
+     "Indexed4",
+     "Indexed5",
+     "Block1",
+     "Block2",
+     "Block3",
+     "Block4",
+     "Block5",
+     "Block6",
+     "Block7",
+     "Block8",
+     "Block9",
+     "Floor",
+     "KeyLight",
+     "FillLight",
+     "BackLight",
+     "Sun"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "scene",
+    "path": "view_settings.exposure",
+    "value": 0.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Studio",
+    "size": 2,
+    "location": [
+     0,
+     -2,
+     0
+    ]
+   },
+   "note": "the studio: a plane under the sphere, scaled out in Y and X (edit mode, top view)",
+   "video_time": "248:01"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Studio"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Studio",
+    "factor": [
+     13,
+     6,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Studio",
+    "element": "EDGE",
+    "min": [
+     null,
+     0.99,
+     null
+    ]
+   },
+   "note": "the back edge (edge mode) extruded up in Z into a wall",
+   "video_time": "248:30"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Studio",
+    "offset": [
+     0,
+     0,
+     10
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Studio",
+    "element": "EDGE",
+    "min": [
+     null,
+     0.99,
+     null
+    ],
+    "max": [
+     null,
+     null,
+     0.01
+    ]
+   },
+   "note": "the corner edge bevelled (Ctrl+B) with many segments into a curve",
+   "video_time": "248:44"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Studio",
+    "offset": 1.6,
+    "segments": 14
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Studio",
+    "smooth": true,
+    "auto_smooth_deg": 30
+   },
+   "note": "Shade Smooth by Angle: the lines on the curve go",
+   "video_time": "251:50"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Backdrop",
+    "object": "Studio",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#2E2E2E",
+       "Roughness": 0.9
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the background's material: dark grey, roughness 0.9",
+   "video_time": "254:16"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "HDRI",
+      "type": "ShaderNodeTexEnvironment",
+      "image": "studio:interior"
+     },
+     {
+      "name": "Background",
+      "type": "ShaderNodeBackground",
+      "inputs": {
+       "Strength": 0.8
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputWorld"
+     }
+    ],
+    "links": [
+     {
+      "from": "HDRI",
+      "output": "Color",
+      "to": "Background",
+      "input": "Color"
+     },
+     {
+      "from": "Background",
+      "output": "Background",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "lighting: one of Blender's own HDRIs, interior (the tutor picks it in the viewport shading)",
+   "video_time": "252:34"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "StudioLamp",
+    "location": [
+     -3.5,
+     -4.5,
+     4.0
+    ],
+    "power": 1500
+   },
+   "note": "the lamp moved in front of the sphere, and a duplicate turned pink",
+   "video_time": "253:14"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "PinkLamp",
+    "location": [
+     4.0,
+     -3.0,
+     2.5
+    ],
+    "power": 900,
+    "color": "#FF6EC7"
+   },
+   "note": "",
+   "video_time": "253:35"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchChrome",
+    "radius": 0.65,
+    "location": [
+     -4.8,
+     0,
+     0.65
+    ]
+   },
+   "note": "a UV sphere up in Z, smooth, subdivided for a clean surface",
+   "video_time": "247:50"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchChrome",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchChrome",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchBrushedAluminium",
+    "radius": 0.65,
+    "location": [
+     -3.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchBrushedAluminium",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchBrushedAluminium",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchDarkGrayMetal",
+    "radius": 0.65,
+    "location": [
+     -1.6,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchDarkGrayMetal",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchDarkGrayMetal",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchGold",
+    "radius": 0.65,
+    "location": [
+     0.0,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchGold",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchGold",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchGlossyGreen",
+    "radius": 0.65,
+    "location": [
+     1.6,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchGlossyGreen",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchGlossyGreen",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchGlossyGreenPainted",
+    "radius": 0.65,
+    "location": [
+     3.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchGlossyGreenPainted",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchGlossyGreenPainted",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "SwatchCopper",
+    "radius": 0.65,
+    "location": [
+     4.8,
+     0,
+     0.65
+    ]
+   },
+   "note": "Shift+D: a sphere per material (the tutor hides the last one each time)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SwatchCopper",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SwatchCopper",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Chrome",
+    "object": "SwatchChrome",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 1.0,
+       "Roughness": 0.05
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Chrome: metallic 1, roughness 0.05 (not 0: unreal)",
+   "video_time": "258:49"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Chrome",
+    "tags": [
+     "metal"
+    ]
+   },
+   "note": "renamed, then Mark as Asset: it joins the material library (Asset Browser)",
+   "video_time": "258:49"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Brushed Aluminium",
+    "object": "SwatchBrushedAluminium",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 1.0,
+       "Roughness": 0.25,
+       "Anisotropic": 1.0,
+       "Anisotropic Rotation": 0.25
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Brushed Aluminium: metallic 1, Specular > Anisotropic 1 stretches the highlights like brushing, its rotation turned, roughness 0.25",
+   "video_time": "263:23"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Brushed Aluminium",
+    "tags": [
+     "metal"
+    ]
+   },
+   "note": "renamed, then Mark as Asset: it joins the material library (Asset Browser)",
+   "video_time": "263:23"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Dark Gray Metal",
+    "object": "SwatchDarkGrayMetal",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 1.0,
+       "Roughness": 0.2,
+       "Base Color": "#5E5E5E"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Dark Gray Metal: metallic 1, the base colour's brightness halfway down, roughness lowered",
+   "video_time": "265:39"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Dark Gray Metal",
+    "tags": [
+     "metal"
+    ]
+   },
+   "note": "renamed, then Mark as Asset: it joins the material library (Asset Browser)",
+   "video_time": "265:39"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Gold",
+    "object": "SwatchGold",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 1.0,
+       "Roughness": 0.1,
+       "Base Color": "#D4AF37"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Gold: metallic 1, roughness 0.1, the colour typed as hex D4AF37 (search 'gold hex')",
+   "video_time": "267:36"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Gold",
+    "tags": [
+     "metal"
+    ]
+   },
+   "note": "renamed, then Mark as Asset: it joins the material library (Asset Browser)",
+   "video_time": "267:36"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Glossy Green",
+    "object": "SwatchGlossyGreen",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.0,
+       "Base Color": "#1FA83A"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Glossy Green: glossy, not metal: roughness 0, metallic 0 -- reflections without mirroring the whole scene",
+   "video_time": "270:32"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Glossy Green",
+    "tags": [
+     "glossy"
+    ]
+   },
+   "note": "renamed, then Mark as Asset: it joins the material library (Asset Browser)",
+   "video_time": "270:32"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Glossy Green Painted",
+    "copy_from": "Glossy Green",
+    "object": "SwatchGlossyGreenPainted",
+    "nodes": [
+     {
+      "name": "Surface",
+      "inputs": {
+       "Roughness": 0.25
+      }
+     }
+    ]
+   },
+   "note": "Glossy Green Painted: the material duplicated (the new-material icon copies it), roughness 0.25 -- a painted glossy surface",
+   "video_time": "271:48"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Glossy Green Painted",
+    "tags": [
+     "glossy"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Copper",
+    "object": "SwatchCopper",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 1.0,
+       "Roughness": 0.18,
+       "Base Color": "#B87333"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "beyond the tutorial: copper by the same hex trick (B87333)",
+   "video_time": null
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Copper",
+    "tags": [
+     "metal"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -11.5,
+     1.5
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ],
+    "lens": 32
+   },
+   "note": "the camera straight on: X 0, rotation 90 / 0 / 0, placed with Y and Z only, then locked",
+   "video_time": "250:28"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Camera",
+    "path": "lock_location",
+    "value": [
+     true,
+     true,
+     true
+    ]
+   },
+   "note": "",
+   "video_time": "251:00"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Camera",
+    "path": "lock_rotation",
+    "value": [
+     true,
+     true,
+     true
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Camera",
+    "path": "passepartout_alpha",
+    "value": 1.0
+   },
+   "note": "Passepartout 1: only the camera's frame shows in the viewport",
+   "video_time": "254:59"
+  }
+ ]
+}

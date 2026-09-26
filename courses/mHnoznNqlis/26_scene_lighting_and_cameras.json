@@ -1,0 +1,551 @@
+{
+ "title": "Scene lighting and cameras",
+ "summary": "The four light types on a Suzanne turned 90 degrees over a plane: a point light (every direction from one spot, moved to light the face, yellow, 1000 W), a sun (only its angle matters, strength 6), a spot (a cone, 1000 W, rotated to the face, light blue) and an area light (a rectangle; bigger is softer). Cameras: a second camera made orthographic, the active camera switched with Ctrl+Numpad0, the main camera at a 35-50 mm focal length. Beyond the tutorial: light linking gives each lamp only its own stage so all four stand side by side.",
+ "objects": [
+  {
+   "name": "PointMonkey",
+   "description": "lit by the point light"
+  },
+  {
+   "name": "SunMonkey",
+   "description": "lit by the sun light"
+  },
+  {
+   "name": "SpotMonkey",
+   "description": "lit by the spot light"
+  },
+  {
+   "name": "AreaMonkey",
+   "description": "lit by the area light"
+  }
+ ],
+ "expected_result": "Four Suzannes on grey plates: warm yellow point light with a hard shadow, crisp white sun, a blue spot pool, and a soft pink area light.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "SandMonkey",
+     "Ground",
+     "StudioLamp",
+     "PinkLamp"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#1A1C20",
+    "strength": 0.35
+   },
+   "note": "a plain dark world so only the lamps light the scene",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "PointMonkey",
+    "size": 1.6,
+    "location": [
+     -6.0,
+     0,
+     0.85
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     90
+    ]
+   },
+   "note": "Suzanne, turned 90 degrees on Z (R Z 90)",
+   "video_time": "343:30"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "PointMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "PointMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "PointFloor",
+    "size": 3.6,
+    "location": [
+     -6.0,
+     0,
+     0
+    ]
+   },
+   "note": "a plane under it, scaled up, to catch the shadows",
+   "video_time": "343:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "SunMonkey",
+    "size": 1.6,
+    "location": [
+     -2.0,
+     0,
+     0.85
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     90
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SunMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SunMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "SunFloor",
+    "size": 3.6,
+    "location": [
+     -2.0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "SpotMonkey",
+    "size": 1.6,
+    "location": [
+     2.0,
+     0,
+     0.85
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     90
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SpotMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "SpotMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "SpotFloor",
+    "size": 3.6,
+    "location": [
+     2.0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "AreaMonkey",
+    "size": 1.6,
+    "location": [
+     6.0,
+     0,
+     0.85
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     90
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "AreaMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "AreaMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "AreaFloor",
+    "size": 3.6,
+    "location": [
+     6.0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "PointMonkey",
+    "name": "Clay",
+    "base_color": "#D9D4CC",
+    "roughness": 0.45
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "PointFloor",
+    "name": "FloorGrey",
+    "base_color": "#8A8A8A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "SunMonkey",
+    "name": "Clay",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "SunFloor",
+    "name": "FloorGrey",
+    "base_color": "#8A8A8A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "SpotMonkey",
+    "name": "Clay",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "SpotFloor",
+    "name": "FloorGrey",
+    "base_color": "#8A8A8A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "AreaMonkey",
+    "name": "Clay",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "AreaFloor",
+    "name": "FloorGrey",
+    "base_color": "#8A8A8A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "PointLight",
+    "location": [
+     -4.7,
+     -0.6,
+     2.4
+    ],
+    "power": 1000,
+    "color": "#FFD34D"
+   },
+   "note": "Point: light in every direction from one spot -- moved over the head, then to the front so the face and a shadow show; yellow, 1000 W",
+   "video_time": "344:51"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "SunLight",
+    "location": [
+     -2.0,
+     0,
+     5.0
+    ],
+    "rotation_deg": [
+     38,
+     0,
+     70
+    ],
+    "power": 6
+   },
+   "note": "Sun: parallel rays from one direction (only its angle matters, rotate it); strength 0-10, here 6",
+   "video_time": "346:31"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SPOT",
+    "name": "SpotLight",
+    "location": [
+     4.0,
+     -1.8,
+     3.0
+    ],
+    "look_at": [
+     2.2,
+     0,
+     1.0
+    ],
+    "power": 1000,
+    "color": "#8FD3FF",
+    "spot_size": 40,
+    "spot_blend": 0.25
+   },
+   "note": "Spot: a cone of light, 1000 W, scaled down (size doesn't change it), rotated on X to the face, light blue",
+   "video_time": "347:49"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "AreaLight",
+    "location": [
+     7.6,
+     -0.8,
+     2.6
+    ],
+    "look_at": [
+     6.0,
+     0,
+     0.9
+    ],
+    "power": 600,
+    "size": 2.5,
+    "color": "#FFB3DE"
+   },
+   "note": "Area: a rectangle of light; scaled up it is softer (the same light spread over more area)",
+   "video_time": "348:50"
+  },
+  {
+   "action": "light_link",
+   "args": {
+    "light": "PointLight",
+    "receivers": [
+     "PointMonkey",
+     "PointFloor"
+    ]
+   },
+   "note": "beyond the tutorial: light linking -- each lamp lights only its own stage, so the four light types sit side by side (the sun would light them all)",
+   "video_time": null
+  },
+  {
+   "action": "light_link",
+   "args": {
+    "light": "SunLight",
+    "receivers": [
+     "SunMonkey",
+     "SunFloor"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "light_link",
+   "args": {
+    "light": "SpotLight",
+    "receivers": [
+     "SpotMonkey",
+     "SpotFloor"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "light_link",
+   "args": {
+    "light": "AreaLight",
+    "receivers": [
+     "AreaMonkey",
+     "AreaFloor"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "TopCamera",
+    "location": [
+     0,
+     0,
+     12
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "active": false
+   },
+   "note": "a second camera (Shift+A), orthographic -- Ctrl+Numpad0 makes the selected camera the active one",
+   "video_time": "351:08"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "TopCamera",
+    "path": "type",
+    "value": "ORTHO"
+   },
+   "note": "type Orthographic (perspective is what you want 99% of the time)",
+   "video_time": "352:25"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "TopCamera",
+    "path": "ortho_scale",
+    "value": 16.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     4.5,
+     -13.5,
+     6.0
+    ],
+    "look_at": [
+     0.3,
+     0,
+     0.5
+    ],
+    "lens": 34
+   },
+   "note": "the main camera placed with Lock Camera to View; focal length 35-50 mm looks like a real camera (here 40)",
+   "video_time": "353:43"
+  }
+ ]
+}

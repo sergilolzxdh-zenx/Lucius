@@ -1,0 +1,599 @@
+{
+ "title": "Node components: colours, patterns, structure",
+ "summary": "Adding colour: an emission shader lit by a magic texture through a colour ramp with three handles; patterns: brick tiles (offset 0, square, turned 45 degrees with a mapping node, thicker smoother mortar), a voronoi with randomness 0; structure: a noise texture's factor through a bump node into the normal. The practical: a brick wall -- the brick texture's factor mixing a red and a grey Principled BSDF, a distorted wave texture bumping the bricks and a detailed noise bumping the mortar.",
+ "objects": [
+  {
+   "name": "GlowCube",
+   "description": ""
+  },
+  {
+   "name": "TileCube",
+   "description": ""
+  },
+  {
+   "name": "CellCube",
+   "description": ""
+  },
+  {
+   "name": "BumpCube",
+   "description": ""
+  },
+  {
+   "name": "BrickWall",
+   "description": ""
+  }
+ ],
+ "expected_result": "Four cubes (glowing magic colours, blue diagonal tiles, a square-cell voronoi, bumpy noise) in front of a red brick wall with grey mortar and a rough surface.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "MagicCube",
+     "RedCube",
+     "Ball",
+     "Ball.001",
+     "BrickCube",
+     "ImageCube"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GlowCube",
+    "size": 1.3,
+    "location": [
+     -4.4,
+     -1.2,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "TileCube",
+    "size": 1.3,
+    "location": [
+     -2.2,
+     -1.2,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CellCube",
+    "size": 1.3,
+    "location": [
+     0.0,
+     -1.2,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BumpCube",
+    "size": 1.3,
+    "location": [
+     2.2,
+     -1.2,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Brillo",
+    "object": "GlowCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexMagic",
+      "inputs": {
+       "Scale": 4.0,
+       "Distortion": 1.0
+      }
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#1B4FD8"
+       ],
+       [
+        0.45,
+        "#22A64B"
+       ],
+       [
+        0.75,
+        "#8E1414"
+       ]
+      ]
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Strength": 1.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Pattern",
+      "output": "Fac",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "an Emission shader instead of the Principled: the cube lights itself; a magic texture's colour through a colour ramp (blue, green, a darker red; the red handle dragged for more red)",
+   "video_time": "164:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Azulejo",
+    "object": "TileCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Turn",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Rotation_deg": [
+        0,
+        0,
+        45
+       ]
+      }
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexBrick",
+      "props": {
+       "offset": 0.0
+      },
+      "inputs": {
+       "Scale": 14.0,
+       "Brick Width": 0.5,
+       "Row Height": 0.5,
+       "Mortar Size": 0.06,
+       "Mortar Smooth": 0.5,
+       "Color1": "#2E7CC4",
+       "Color2": "#3A8FD8",
+       "Mortar": "#EDEDED"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.25
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Turn",
+      "input": "Vector"
+     },
+     {
+      "from": "Turn",
+      "output": "Vector",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "tiles: a brick texture with offset 0 and square bricks, turned 45 degrees by a mapping node, the mortar thicker and softer",
+   "video_time": "169:00"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Celdas",
+    "object": "CellCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 20.0,
+       "Randomness": 0.0
+      }
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a voronoi texture: scale 20, randomness 0 (every cell a square)",
+   "video_time": "172:10"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Relieve",
+    "object": "BumpCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 6.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Distance": 0.1,
+       "Strength": 1.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Pattern",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "structure: a noise texture's colour as the base colour, its factor as the height of a bump node into the normal (distance 0.1, strength 1): fake bumps without new geometry",
+   "video_time": "173:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BrickWall",
+    "size": 1,
+    "location": [
+     1.0,
+     1.6,
+     1.0
+    ]
+   },
+   "note": "the practical: a brick wall on a new cube",
+   "video_time": "175:05"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "BrickWall",
+    "dimensions": [
+     4.0,
+     0.4,
+     2.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "BrickWall",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Muro",
+    "object": "BrickWall",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Upright",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Rotation_deg": [
+        90,
+        0,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Bricks",
+      "type": "ShaderNodeTexBrick",
+      "inputs": {
+       "Scale": 1.4,
+       "Mortar Size": 0.035,
+       "Brick Width": 0.5,
+       "Row Height": 0.22
+      }
+     },
+     {
+      "name": "Brick",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#8E2B1C",
+       "Roughness": 0.7
+      }
+     },
+     {
+      "name": "Mortar",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#8C8C88",
+       "Roughness": 0.9
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Upright",
+      "input": "Vector"
+     },
+     {
+      "from": "Upright",
+      "output": "Vector",
+      "to": "Bricks",
+      "input": "Vector"
+     },
+     {
+      "from": "Bricks",
+      "output": "Fac",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "Brick",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "Mortar",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a brick texture's factor into a Mix Shader between two Principled BSDFs: red bricks, grey mortar (a mapping turned 90 on X so the front of the wall gets the bricks, not just the top)",
+   "video_time": "177:00"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Muro",
+    "nodes": [
+     {
+      "name": "Grain",
+      "type": "ShaderNodeTexWave",
+      "inputs": {
+       "Scale": 9.0,
+       "Distortion": 6.0,
+       "Detail": 8.0
+      }
+     },
+     {
+      "name": "BrickBump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Distance": 0.05,
+       "Strength": 0.5
+      }
+     },
+     {
+      "name": "Grit",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 30.0,
+       "Detail": 15.0
+      }
+     },
+     {
+      "name": "MortarBump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Distance": 0.1,
+       "Strength": 1.0
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Upright",
+      "output": "Vector",
+      "to": "Grain",
+      "input": "Vector"
+     },
+     {
+      "from": "Grain",
+      "output": "Fac",
+      "to": "BrickBump",
+      "input": "Height"
+     },
+     {
+      "from": "BrickBump",
+      "output": "Normal",
+      "to": "Brick",
+      "input": "Normal"
+     },
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Grit",
+      "input": "Vector"
+     },
+     {
+      "from": "Grit",
+      "output": "Fac",
+      "to": "MortarBump",
+      "input": "Height"
+     },
+     {
+      "from": "MortarBump",
+      "output": "Normal",
+      "to": "Mortar",
+      "input": "Normal"
+     }
+    ]
+   },
+   "note": "bumps: a wave texture (scale up, distortion, detail 8) through a bump into the bricks' normal; a noise texture (detail 15) through another bump into the mortar's: rough, not plastic",
+   "video_time": "178:50"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     -0.6,
+     -9.2,
+     3.4
+    ],
+    "look_at": [
+     -0.5,
+     0.3,
+     0.9
+    ],
+    "lens": 29
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

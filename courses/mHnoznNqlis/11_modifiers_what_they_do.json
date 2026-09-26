@@ -1,0 +1,72 @@
+{
+ "title": "Modifiers: what they do",
+ "summary": "Modifiers are non-destructive tools on the modifier stack: a cube with an Array modifier, the count raised to five and the X factor up so the copies have gaps.",
+ "objects": [
+  {
+   "name": "ArrayCube",
+   "description": "the arrayed cube"
+  }
+ ],
+ "expected_result": "A row of five pale blue cubes with gaps between them.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Knifed",
+     "Bisected",
+     "Pipe",
+     "Slid",
+     "Shrunk"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "a clear stage",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "ArrayCube",
+    "size": 1,
+    "location": [
+     -2.6,
+     0,
+     0.5
+    ]
+   },
+   "note": "a cube",
+   "video_time": "97:40"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ArrayCube",
+    "type": "ARRAY",
+    "props": {
+     "count": 5,
+     "relative_offset_displace": [
+      1.3,
+      0,
+      0
+     ]
+    }
+   },
+   "note": "Add Modifier > Generate > Array: copies of it; count up, X factor up for gaps",
+   "video_time": "97:50"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "ArrayCube",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

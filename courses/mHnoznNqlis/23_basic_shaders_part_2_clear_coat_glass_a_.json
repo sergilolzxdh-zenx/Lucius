@@ -1,0 +1,968 @@
+{
+ "title": "Basic shaders part 2: clear coat, glass, a candle, cloth",
+ "summary": "More materials for the library, each marked as an asset: clear coat (dark purple, roughness 0, Coat weight 1, a noise through a weak bump for wet paint), glass (transmission 1, roughness 0.02) on a subdivided Suzanne; a candle modelled from a cylinder (the top inset and dipped, a wick inset, extruded and bent, random top faces pushed down as melted wax, bevel + subdivision) on a yellow base, a flame from a UV sphere pulled up with proportional editing (emission 40), wax with subsurface and a black rough wick in its own material slot; a cloth simulation (a plane subdivided 50 times with Cloth physics and self collision dropped on a collision icosphere, subdivided and solidified) in red fabric (magic + noise textures mixed into a bump).",
+ "objects": [
+  {
+   "name": "ClearCoatBall",
+   "description": "clear coat"
+  },
+  {
+   "name": "GlassMonkey",
+   "description": "glass"
+  },
+  {
+   "name": "Candle",
+   "description": "the candle"
+  },
+  {
+   "name": "Flame",
+   "description": "its flame"
+  },
+  {
+   "name": "ClothSheet",
+   "description": "the draped cloth"
+  }
+ ],
+ "expected_result": "A glossy dark purple ball, a glass Suzanne, a glowing candle on a yellow stand and a red cloth draped over a ball, on the dark studio backdrop.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "SwatchChrome",
+     "SwatchBrushedAluminium",
+     "SwatchDarkGrayMetal",
+     "SwatchGold",
+     "SwatchGlossyGreen",
+     "SwatchGlossyGreenPainted",
+     "SwatchCopper"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "ClearCoatBall",
+    "radius": 0.8,
+    "location": [
+     -4.3,
+     0,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ClearCoatBall",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ClearCoatBall",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Clear Coat",
+    "object": "ClearCoatBall",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#26083A",
+       "Roughness": 0.0,
+       "Coat Weight": 1.0
+      }
+     },
+     {
+      "name": "Noise",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 6.0,
+       "Detail": 4.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.08
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Noise",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     }
+    ]
+   },
+   "note": "clear coat: a dark purple (reflections show on dark colours), roughness 0, Coat weight 1 -- a hard glossy layer of paint; a noise texture through a weak bump for fresh, wet paint",
+   "video_time": "275:39"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Clear Coat",
+    "tags": [
+     "paint"
+    ]
+   },
+   "note": "renamed Clear Coat and marked as an asset",
+   "video_time": "276:23"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "GlassMonkey",
+    "size": 1.6,
+    "location": [
+     -1.5,
+     0,
+     0.82
+    ]
+   },
+   "note": "glass shown on a Suzanne (smooth, subdivided)",
+   "video_time": "279:49"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "GlassMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "GlassMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Glass",
+    "object": "GlassMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Transmission Weight": 1.0,
+       "Roughness": 0.02
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "glass: Transmission weight 1, roughness 0.02 (not quite 0, for realism) -- Cycles only",
+   "video_time": "278:43"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Glass",
+    "tags": [
+     "glass"
+    ]
+   },
+   "note": "",
+   "video_time": "279:27"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CandleBase",
+    "size": 1,
+    "location": [
+     1.4,
+     0,
+     0.175
+    ]
+   },
+   "note": "the candle's base: a cube brought down and forward, yellow",
+   "video_time": "280:50"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "CandleBase",
+    "dimensions": [
+     1.3,
+     1.3,
+     0.35
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "CandleBase",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Candle Stand",
+    "object": "CandleBase",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#E8B923",
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Candle",
+    "radius": 0.35,
+    "depth": 1.3,
+    "location": [
+     1.4,
+     0,
+     1.0
+    ],
+    "vertices": 32
+   },
+   "note": "the candle: a cylinder on the base (3D cursor there), scaled down and up in Z",
+   "video_time": "281:30"
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Candle",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "the top face: inset (I) and extruded down -- the dip",
+   "video_time": "282:09"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Candle",
+    "thickness": 0.05
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Candle",
+    "distance": -0.1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Candle",
+    "thickness": 0.27
+   },
+   "note": "inset again, tiny, and extruded up into the wick",
+   "video_time": "282:50"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Candle",
+    "distance": 0.1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Candle",
+    "axis": "x",
+    "angle_deg": 15
+   },
+   "note": "the wick bent: rotate a little, extrude, again",
+   "video_time": "283:35"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Candle",
+    "distance": 0.07
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Candle",
+    "axis": "x",
+    "angle_deg": 15
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Candle",
+    "distance": 0.06
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Candle",
+    "factor": [
+     0.6,
+     0.6,
+     0.6
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Candle",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "melted wax: some faces of the top selected at random and pushed down (G Z)",
+   "video_time": "284:36"
+  },
+  {
+   "action": "select_nth",
+   "args": {
+    "object": "Candle",
+    "skip": 2,
+    "nth": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Candle",
+    "offset": [
+     0,
+     0,
+     -0.045
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Candle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Candle",
+    "type": "BEVEL",
+    "props": {
+     "width": 0.012,
+     "segments": 3
+    }
+   },
+   "note": "a Bevel modifier (3 segments) and a Subdivision Surface (2)",
+   "video_time": "285:17"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Candle",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Candle",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Flame",
+    "radius": 0.075,
+    "location": [
+     1.4,
+     -0.05,
+     1.835
+    ]
+   },
+   "note": "the flame: a small UV sphere at the wick's tip ...",
+   "video_time": "285:37"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Flame",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.99
+    ]
+   },
+   "note": "... its top vertex pulled up with proportional editing into a drop",
+   "video_time": "286:20"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Flame",
+    "offset": [
+     0,
+     0,
+     0.16
+    ],
+    "proportional": 0.14
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Flame",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Flame",
+    "object": "Flame",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#FFC21A",
+       "Emission Color": "#FFC21A",
+       "Emission Strength": 40.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "flame: yellow, the same colour dragged into the emission colour, strength 40",
+   "video_time": "287:59"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Wax",
+    "object": "Candle",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#F3E6BF",
+       "Roughness": 0.45,
+       "Subsurface Weight": 1.0,
+       "Subsurface Scale": 0.12
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "wax: pale yellow with subsurface (weight up): light passes into the wax, reddish where thin",
+   "video_time": "291:04"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Candle",
+    "element": "FACE",
+    "space": "local",
+    "min": [
+     -0.07,
+     -0.12,
+     0.57
+    ],
+    "max": [
+     0.07,
+     0.07,
+     1.0
+    ]
+   },
+   "note": "the wick (edit mode, X-ray box) gets its own material slot: black, roughness 1",
+   "video_time": "290:02"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Candle",
+    "name": "Wick",
+    "base_color": "#050505",
+    "roughness": 1.0,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Flame",
+    "tags": [
+     "candle"
+    ]
+   },
+   "note": "",
+   "video_time": "292:27"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Wax",
+    "tags": [
+     "candle"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Wick",
+    "tags": [
+     "candle"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "nodes": [
+     {
+      "name": "Background",
+      "inputs": {
+       "Strength": 0.25
+      }
+     }
+    ]
+   },
+   "note": "the lights dimmed (the tutor turns them off and the HDRI to 0.05 so the flame lights the scene; here they stay low so the rest shows too)",
+   "video_time": "288:17"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "StudioLamp",
+    "path": "energy",
+    "value": 350
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "PinkLamp",
+    "path": "energy",
+    "value": 200
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "ico_sphere",
+    "name": "ClothBall",
+    "radius": 0.75,
+    "location": [
+     4.8,
+     0,
+     0.75
+    ]
+   },
+   "note": "the cloth set-up: an icosphere (not a UV sphere) as the collision object",
+   "video_time": "293:32"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ClothBall",
+    "type": "COLLISION"
+   },
+   "note": "Physics > Collision",
+   "video_time": "294:56"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Studio",
+    "type": "COLLISION"
+   },
+   "note": "the floor collides too, so the cloth rests on it",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "ClothSheet",
+    "size": 2.8,
+    "location": [
+     4.8,
+     0,
+     2.2
+    ]
+   },
+   "note": "a plane scaled up, above it, subdivided with 50 cuts",
+   "video_time": "294:15"
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "ClothSheet",
+    "cuts": 50
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "ClothSheet",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ClothSheet",
+    "type": "CLOTH"
+   },
+   "note": "Physics > Cloth, default settings",
+   "video_time": "295:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "ClothSheet",
+    "path": "modifiers[\"Cloth\"].collision_settings.use_self_collision",
+    "value": true
+   },
+   "note": "Collisions > Self Collisions on: more realistic folds",
+   "video_time": "296:17"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ClothSheet",
+    "smooth": true
+   },
+   "note": "shade smooth, a Subdivision Surface (2) and a Solidify for thickness",
+   "video_time": "297:17"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ClothSheet",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ClothSheet",
+    "type": "SOLIDIFY",
+    "props": {
+     "thickness": 0.02
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Red Fabric",
+    "object": "ClothSheet",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#B3121A",
+       "Roughness": 0.95
+      }
+     },
+     {
+      "name": "Weave",
+      "type": "ShaderNodeTexMagic",
+      "inputs": {
+       "Scale": 60.0
+      }
+     },
+     {
+      "name": "Fuzz",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 400.0,
+       "Detail": 16.0
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.35
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Weave",
+      "output": "Color",
+      "to": "Mix",
+      "input": "A"
+     },
+     {
+      "from": "Fuzz",
+      "output": "Fac",
+      "to": "Mix",
+      "input": "B"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     }
+    ]
+   },
+   "note": "red fabric: roughness 0.95; a magic texture (scale 60) for the weave and a noise texture (scale 400, detail 16) for fuzz, mixed (Mix Color) into a bump's height",
+   "video_time": "304:14"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Red Fabric",
+    "tags": [
+     "fabric"
+    ]
+   },
+   "note": "",
+   "video_time": "304:34"
+  },
+  {
+   "action": "bake_physics",
+   "args": {
+    "frame_start": 1,
+    "frame_end": 60
+   },
+   "note": "play (Space): the plane falls as cloth and drapes over the icosphere; baked so every frame plays back",
+   "video_time": "295:36"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.25,
+     -10.5,
+     1.9
+    ],
+    "rotation_deg": [
+     86,
+     0,
+     0
+    ],
+    "lens": 32
+   },
+   "note": "the camera unlocked and moved to see everything",
+   "video_time": "299:21"
+  }
+ ]
+}

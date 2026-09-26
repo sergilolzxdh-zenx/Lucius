@@ -1,0 +1,875 @@
+{
+ "title": "Vertex paint: colour attributes",
+ "summary": "Vertex paint on a Suzanne subdivided (level 3, applied) so it has vertices to paint: Dirty Vertex Colors with Normalize off darkens the crevices, stored in the colour attribute and shown through an Attribute node's Fac in the base colour. Then painting parts: an Eyes attribute (white) with red eyes and nose, a Head attribute with a green crown, each read by an Attribute node into colour B of a Mix Color, light blue for the rest, the factors 0.5. Beyond the tutorial: a toadstool in one mesh and one material -- the cap painted red through the face selection mask, white spots dabbed with the brush, grime from dirty vertex colours in a second attribute multiplied in.",
+ "objects": [
+  {
+   "name": "DirtMonkey",
+   "description": "dirty vertex colours"
+  },
+  {
+   "name": "PaintedMonkey",
+   "description": "painted eyes, nose and head"
+  },
+  {
+   "name": "Toadstool",
+   "description": "vertex-painted toadstool"
+  }
+ ],
+ "expected_result": "A grimy grey Suzanne, a pale blue Suzanne with pink eyes and nose and a green crown, and a red toadstool with white spots on a cream stem.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "BoxProjected",
+     "ColorOnly",
+     "NormalMapped",
+     "FullPBR",
+     "BlueShadows",
+     "BrickBackdrop"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Lamp",
+     "Lamp.001",
+     "Point",
+     "Point.001"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "the old point lamps off: white Suzannes would burn out and hide the paint",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "DirtMonkey",
+    "size": 1.6,
+    "location": [
+     -3.3,
+     0,
+     0.9
+    ]
+   },
+   "note": "Suzanne: too few vertices to paint on",
+   "video_time": "230:48"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "DirtMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "a Subdivision Surface, viewport levels 3, applied: now it has plenty of vertices",
+   "video_time": "231:04"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "DirtMonkey",
+    "modifier": "Subsurf"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "DirtMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "PaintedMonkey",
+    "size": 1.6,
+    "location": [
+     0.0,
+     0,
+     0.9
+    ]
+   },
+   "note": "",
+   "video_time": "230:48"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "PaintedMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "a Subdivision Surface, viewport levels 3, applied: now it has plenty of vertices",
+   "video_time": "231:04"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "PaintedMonkey",
+    "modifier": "Subsurf"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "PaintedMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "dirty_vertex_colors",
+   "args": {
+    "object": "DirtMonkey",
+    "normalize": false
+   },
+   "note": "Vertex Paint mode > Paint > Dirty Vertex Colors, Normalize off so the darkness spreads over the whole head; it lands in the colour attribute (Object Data > Color Attributes > Attribute)",
+   "video_time": "232:12"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Dirt",
+    "object": "DirtMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Paint",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "Attribute"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Paint",
+      "output": "Fac",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a new material; an Attribute node (Input) named Attribute, its Fac into the base colour: the dirt shows in Cycles",
+   "video_time": "233:38"
+  },
+  {
+   "action": "color_attribute",
+   "args": {
+    "object": "PaintedMonkey",
+    "name": "Eyes",
+    "color": "#FFFFFF"
+   },
+   "note": "painting parts: a new colour attribute named Eyes, filled white",
+   "video_time": "234:15"
+  },
+  {
+   "action": "vertex_paint",
+   "args": {
+    "object": "PaintedMonkey",
+    "attribute": "Eyes",
+    "color": "#FF0000",
+    "space": "local",
+    "falloff": "SPHERE",
+    "strokes": [
+     {
+      "points": [
+       [
+        0.36,
+        -0.6,
+        0.2
+       ]
+      ],
+      "radius": 0.27
+     },
+     {
+      "points": [
+       [
+        -0.36,
+        -0.6,
+        0.2
+       ]
+      ],
+      "radius": 0.27
+     }
+    ]
+   },
+   "note": "the brush colour red, dragged over both eyes ...",
+   "video_time": "234:33"
+  },
+  {
+   "action": "vertex_paint",
+   "args": {
+    "object": "PaintedMonkey",
+    "attribute": "Eyes",
+    "color": "#FF0000",
+    "space": "local",
+    "strokes": [
+     {
+      "points": [
+       [
+        0,
+        -0.68,
+        -0.05
+       ],
+       [
+        0,
+        -0.72,
+        -0.16
+       ]
+      ],
+      "radius": 0.14
+     }
+    ]
+   },
+   "note": "... and the nose",
+   "video_time": "234:46"
+  },
+  {
+   "action": "color_attribute",
+   "args": {
+    "object": "PaintedMonkey",
+    "name": "Head",
+    "color": "#FFFFFF"
+   },
+   "note": "another attribute, Head, white",
+   "video_time": "236:24"
+  },
+  {
+   "action": "vertex_paint",
+   "args": {
+    "object": "PaintedMonkey",
+    "attribute": "Head",
+    "color": "#00C000",
+    "space": "local",
+    "radius": 0.3,
+    "strokes": [
+     {
+      "points": [
+       [
+        -0.5,
+        -0.1,
+        0.62
+       ],
+       [
+        0.0,
+        -0.3,
+        0.75
+       ],
+       [
+        0.5,
+        -0.1,
+        0.62
+       ]
+      ]
+     },
+     {
+      "points": [
+       [
+        -0.45,
+        0.3,
+        0.6
+       ],
+       [
+        0.0,
+        0.2,
+        0.8
+       ],
+       [
+        0.45,
+        0.3,
+        0.6
+       ]
+      ]
+     }
+    ]
+   },
+   "note": "green over the top of the head",
+   "video_time": "236:42"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Painted",
+    "object": "PaintedMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Eyes",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "Eyes"
+      }
+     },
+     {
+      "name": "Head",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "Head"
+      }
+     },
+     {
+      "name": "EyesMix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      },
+      "inputs": {
+       "Factor": 0.5,
+       "A": "#8CCBF0"
+      }
+     },
+     {
+      "name": "HeadMix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      },
+      "inputs": {
+       "Factor": 0.5
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.45
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Eyes",
+      "output": "Color",
+      "to": "EyesMix",
+      "input": "B"
+     },
+     {
+      "from": "EyesMix",
+      "output": "Result",
+      "to": "HeadMix",
+      "input": "A"
+     },
+     {
+      "from": "Head",
+      "output": "Color",
+      "to": "HeadMix",
+      "input": "B"
+     },
+     {
+      "from": "HeadMix",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the material: an Attribute node per colour attribute (case sensitive names), each into colour B of a Mix Color; the first's colour A light blue (the unpainted rest), its result into the second's A; factors at the default 0.5",
+   "video_time": "237:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Toadstool",
+    "radius": 1.0,
+    "vertices": 48,
+    "rings": 24,
+    "location": [
+     3.4,
+     0.0,
+     1.3
+    ]
+   },
+   "note": "beyond the tutorial: a toadstool in one mesh -- a sphere's top half squashed into a cap",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Toadstool",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Toadstool",
+    "what": "VERTS"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Toadstool"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Toadstool",
+    "factor": [
+     1,
+     1,
+     0.62
+    ],
+    "pivot": "origin"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Toadstool",
+    "boundary": true,
+    "element": "EDGE"
+   },
+   "note": "the rim extruded in under the cap (the gills) and down into the stem",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Toadstool",
+    "offset": [
+     0,
+     0,
+     -0.08
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Toadstool",
+    "factor": [
+     0.36,
+     0.36,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Toadstool",
+    "offset": [
+     0,
+     0,
+     -1.2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Toadstool",
+    "factor": [
+     1.3,
+     1.3,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Toadstool"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Toadstool",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Toadstool",
+    "modifier": "Subsurf"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Toadstool",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "color_attribute",
+   "args": {
+    "object": "Toadstool",
+    "name": "Col",
+    "color": "#EFE3C8"
+   },
+   "note": "a colour attribute filled cream (the stem and gills)",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Toadstool",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.64
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "vertex_paint",
+   "args": {
+    "object": "Toadstool",
+    "attribute": "Col",
+    "color": "#C8141E",
+    "selected": true
+   },
+   "note": "the cap's faces selected and painted red in one go (the face selection mask)",
+   "video_time": null
+  },
+  {
+   "action": "vertex_paint",
+   "args": {
+    "object": "Toadstool",
+    "attribute": "Col",
+    "color": "#FFFFFF",
+    "strokes": [
+     {
+      "points": [
+       [
+        3.4,
+        0.0,
+        1.92
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        3.4,
+        -0.574,
+        1.808
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        3.872,
+        -0.396,
+        1.789
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        2.908,
+        -0.413,
+        1.775
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        3.773,
+        -0.8,
+        1.591
+       ]
+      ],
+      "radius": 0.13
+     },
+     {
+      "points": [
+       [
+        3.02,
+        -0.815,
+        1.572
+       ]
+      ],
+      "radius": 0.13
+     },
+     {
+      "points": [
+       [
+        4.23,
+        -0.176,
+        1.629
+       ]
+      ],
+      "radius": 0.13
+     },
+     {
+      "points": [
+       [
+        2.553,
+        -0.18,
+        1.61
+       ]
+      ],
+      "radius": 0.13
+     },
+     {
+      "points": [
+       [
+        3.65,
+        0.433,
+        1.837
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        3.046,
+        0.612,
+        1.738
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        4.098,
+        0.254,
+        1.715
+       ]
+      ],
+      "radius": 0.16
+     },
+     {
+      "points": [
+       [
+        3.4,
+        -0.94,
+        1.512
+       ]
+      ],
+      "radius": 0.13
+     }
+    ]
+   },
+   "note": "white spots dabbed with the brush",
+   "video_time": null
+  },
+  {
+   "action": "color_attribute",
+   "args": {
+    "object": "Toadstool",
+    "name": "Grime",
+    "color": "#FFFFFF"
+   },
+   "note": "a second attribute for grime",
+   "video_time": null
+  },
+  {
+   "action": "dirty_vertex_colors",
+   "args": {
+    "object": "Toadstool",
+    "attribute": "Grime",
+    "blur_iterations": 3
+   },
+   "note": "dirty vertex colours into it: darker where the cap meets the stem",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Toadstool",
+    "object": "Toadstool",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Col",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "Col"
+      }
+     },
+     {
+      "name": "Grime",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "Grime"
+      }
+     },
+     {
+      "name": "Multiply",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 1.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.4
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Col",
+      "output": "Color",
+      "to": "Multiply",
+      "input": "A"
+     },
+     {
+      "from": "Grime",
+      "output": "Color",
+      "to": "Multiply",
+      "input": "B"
+     },
+     {
+      "from": "Multiply",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the material multiplies the two attributes",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "scene",
+    "path": "view_settings.exposure",
+    "value": -1.3
+   },
+   "note": "exposure down a little (Render > Color Management): the pale painted colours stay readable",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -8.4,
+     3.0
+    ],
+    "look_at": [
+     0,
+     0,
+     0.95
+    ],
+    "lens": 33
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

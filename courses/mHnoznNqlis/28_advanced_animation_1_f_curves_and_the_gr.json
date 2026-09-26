@@ -1,0 +1,870 @@
+{
+ "title": "Advanced animation 1: F-curves and the graph editor",
+ "summary": "The graph editor on one move (keys at frames 1, 100 and 200: along Y and back) given to six cubes in lanes so the F-curves can be compared: Bezier as Blender makes it (slow-fast-slow), Linear (constant speed), Sinusoidal, Bezier handles dragged by hand (a long flat start, a steep fast arrival, the way back linear), a Noise modifier on the X location so one vibrates as it goes, and (beyond the tutorial) Bounce easing; every Y curve made cyclic so the move repeats.",
+ "objects": [
+  {
+   "name": "RacerBezier",
+   "description": "Bezier"
+  },
+  {
+   "name": "RacerLinear",
+   "description": "Linear"
+  },
+  {
+   "name": "RacerSine",
+   "description": "Sine"
+  },
+  {
+   "name": "RacerSlowFast",
+   "description": "SlowFast"
+  },
+  {
+   "name": "RacerShaky",
+   "description": "Shaky"
+  },
+  {
+   "name": "RacerBounce",
+   "description": "Bounce"
+  }
+ ],
+ "expected_result": "Six coloured cubes racing along lanes from a start line to a finish line, spread out by their different timing; the blue one shakes sideways, the purple one bounces at the finish.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "LoopBase",
+     "Rod",
+     "RodStand",
+     "LoopFloor",
+     "LoopKey",
+     "BallYellow",
+     "BallBlue",
+     "BallGreen",
+     "BallPink"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 32,
+    "width": 1280,
+    "height": 720
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 150,
+    "fps": 24,
+    "current": 1
+   },
+   "note": "the timeline shows frames 1-150 (out and most of the way back); the curves run to 200 and repeat",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#3A3F48",
+    "strength": 1.0
+   },
+   "note": "a plain grey world and a sun",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "RaceSun",
+    "location": [
+     0,
+     0,
+     10
+    ],
+    "rotation_deg": [
+     40,
+     0,
+     35
+    ],
+    "power": 3.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Track",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a track: six lanes from a start line to a finish line",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Track",
+    "dimensions": [
+     13,
+     18,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Track",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Track",
+    "name": "TrackMat",
+    "base_color": "#4A505A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "StartLine",
+    "size": 1,
+    "location": [
+     0,
+     -7.0,
+     0.01
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "StartLine",
+    "dimensions": [
+     12.4,
+     0.12,
+     0.02
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "StartLine",
+    "name": "LineWhite",
+    "base_color": "#F2F2F2",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "FinishLine",
+    "size": 1,
+    "location": [
+     0,
+     7.0,
+     0.01
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "FinishLine",
+    "dimensions": [
+     12.4,
+     0.12,
+     0.02
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "FinishLine",
+    "name": "LineWhite",
+    "base_color": "#F2F2F2",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerBezier",
+    "size": 1.0,
+    "location": [
+     -5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "the tutor's cube, one per lane",
+   "video_time": "388:36"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerBezier",
+    "name": "RacerBezierMat",
+    "base_color": "#E0141E",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBezier",
+    "frame": 1,
+    "location": [
+     -5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "a key at frame 1 ...",
+   "video_time": "388:54"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBezier",
+    "frame": 100,
+    "location": [
+     -5.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "... moved along Y and keyed at frame 100 ...",
+   "video_time": "389:14"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBezier",
+    "frame": 200,
+    "location": [
+     -5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "... and back at 200",
+   "video_time": "394:41"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerLinear",
+    "size": 1.0,
+    "location": [
+     -3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerLinear",
+    "name": "RacerLinearMat",
+    "base_color": "#FF8A1A",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerLinear",
+    "frame": 1,
+    "location": [
+     -3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerLinear",
+    "frame": 100,
+    "location": [
+     -3.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerLinear",
+    "frame": 200,
+    "location": [
+     -3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerSine",
+    "size": 1.0,
+    "location": [
+     -1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerSine",
+    "name": "RacerSineMat",
+    "base_color": "#FFD21A",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSine",
+    "frame": 1,
+    "location": [
+     -1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSine",
+    "frame": 100,
+    "location": [
+     -1.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSine",
+    "frame": 200,
+    "location": [
+     -1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerSlowFast",
+    "size": 1.0,
+    "location": [
+     1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerSlowFast",
+    "name": "RacerSlowFastMat",
+    "base_color": "#1FB43A",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSlowFast",
+    "frame": 1,
+    "location": [
+     1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSlowFast",
+    "frame": 100,
+    "location": [
+     1.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerSlowFast",
+    "frame": 200,
+    "location": [
+     1.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerShaky",
+    "size": 1.0,
+    "location": [
+     3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerShaky",
+    "name": "RacerShakyMat",
+    "base_color": "#1E5BFF",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerShaky",
+    "frame": 1,
+    "location": [
+     3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerShaky",
+    "frame": 100,
+    "location": [
+     3.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerShaky",
+    "frame": 200,
+    "location": [
+     3.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RacerBounce",
+    "size": 1.0,
+    "location": [
+     5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RacerBounce",
+    "name": "RacerBounceMat",
+    "base_color": "#A23BFF",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBounce",
+    "frame": 1,
+    "location": [
+     5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBounce",
+    "frame": 100,
+    "location": [
+     5.0,
+     7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "RacerBounce",
+    "frame": 200,
+    "location": [
+     5.0,
+     -7.0,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerLinear",
+    "interpolation": "LINEAR",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "the red cube keeps Blender's Bezier (slow, fast in the middle, slow again: the F-curve's S in the graph editor); Linear (T > Linear): a straight F-curve, constant speed",
+   "video_time": "392:45"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerSine",
+    "interpolation": "SINE",
+    "easing": "EASE_IN_OUT",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "Sinusoidal (T > Sinusoidal): a softer ease",
+   "video_time": "393:03"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerSlowFast",
+    "start": 1,
+    "end": 1,
+    "right": [
+     70,
+     0
+    ],
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "Bezier handles dragged by hand: frame 1's right handle long and flat (a slow start that lasts) ...",
+   "video_time": "397:43"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerSlowFast",
+    "start": 100,
+    "end": 100,
+    "left": [
+     12,
+     -9
+    ],
+    "right": [
+     4,
+     0
+    ],
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "... frame 100's left handle steep (fast into the finish) ...",
+   "video_time": "397:04"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerSlowFast",
+    "start": 101,
+    "end": 200,
+    "interpolation": "LINEAR",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "... and the way back linear",
+   "video_time": "399:42"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerShaky",
+    "interpolation": "LINEAR",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerShaky",
+    "type": "NOISE",
+    "channels": [
+     "location"
+    ],
+    "axes": "x",
+    "props": {
+     "strength": 0.8,
+     "scale": 3.0
+    }
+   },
+   "note": "a Noise modifier on the X Location curve: it vibrates side to side while it travels",
+   "video_time": "400:24"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "RacerBounce",
+    "end": 100,
+    "interpolation": "BOUNCE",
+    "easing": "EASE_OUT",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "beyond the tutorial: easing Bounce (ease out) -- it lands and bounces at the finish",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerBezier",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "Channel > Extrapolation > Make Cyclic (a Cycles modifier): the there-and-back repeats for as long as the timeline runs",
+   "video_time": "401:29"
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerLinear",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerSine",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerSlowFast",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerShaky",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "fcurve_modifier",
+   "args": {
+    "object": "RacerBounce",
+    "type": "CYCLES",
+    "channels": [
+     "location"
+    ],
+    "axes": "y"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     10.0,
+     -18.0,
+     16.0
+    ],
+    "look_at": [
+     0.0,
+     -1.2,
+     0
+    ],
+    "lens": 33
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "current": 50
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

@@ -117,7 +117,38 @@ One substitution: the blood squirt is a fluid simulation in the video; Blender's
 run inside the `bpy` Python module used here, so the same set-up is made with particles rendered as metaballs.
 `quick_liquid` and `bake_fluid` exist for a full Blender.
 
-## 8. Complete Blender Mastercourse part 1 (in progress)
+## 8. Complete Blender Mastercourse part 1 (in progress): 26 chapters 9/10 so far
 
-Chapters 3 (a Rubik's cube), 6 (a table scene), 7 (a computer), 8 (the editing tools, one object each) and 9
-(chair, treasure chest, grenade), 9/10 each so far. Interface/installation chapters have nothing to build.
+Pack: `courses/mHnoznNqlis` (a recipe per chapter, `frames/`, `videos/` for the animated chapters,
+`overview.jpg`). Interface/installation chapters (1, 2, 4, 5) have nothing to build. Each chapter builds
+on the previous one's scene, as the course does.
+
+| Ch. | Topic | What Lucius built (and beyond the tutorial) |
+|---|---|---|
+| 3 | interface | Rubik's cube: subdivided, bevelled, stickers per face |
+| 6 | objects | table scene: joined table, Suzanne, two point lights |
+| 7 | editing objects | computer on the table, screen material, hidden Suzanne |
+| 8 | editing tools | extrude / individual / inset / bevel / loop cuts, one object each |
+| 9 | basic modelling | slatted chair, treasure chest with lock, grenade |
+| 10 | advanced tools | knife, bisect, spin (pipe bend), edge slide, shrink/fatten |
+| 11-13 | modifiers | array; every Generate modifier; every Deform modifier (lattice, hooks, bound deformers, animated cast) |
+| 14-16 | node components | three-point lighting, texture coordinates, maps, bump, brick wall |
+| 17-18 | textures | brick, checker, gradient, magic, noise, Musgrave, voronoi, wave |
+| 19 | image textures | PBR chain; Lucius bakes its own colour/normal/roughness/height/AO set (new `bake_texture`) |
+| 20 | vertex paint | dirty vertex colours, painted eyes/head; + a vertex-painted toadstool (new paint actions) |
+| 21 | Object Info | random / index colours; + colour by location |
+| 22 | basic shaders 1 | studio backdrop, Blender's HDRIs, chrome, brushed aluminium, gold... as assets (`mark_asset`) |
+| 23 | basic shaders 2 | clear coat, glass, a modelled candle with flame and wax, a baked cloth simulation (`bake_physics`) |
+| 24 | procedural shaders 1 | every shader node on its own Suzanne, car paint; + a second colourway |
+| 25 | procedural shaders 2 | sand shader, sky texture; + sand dunes |
+| 26 | lights and cameras | the four light types side by side; + light linking (`light_link`) |
+| 27 | animation basics | keyframes, material keys, the hopping-balls loop (portrait video) |
+| 28 | graph editor | six cubes racing with Bezier / linear / sine / hand handles / noise / bounce, all cyclic |
+| 29 | NLA | named actions, push down, mute/solo, Combine; + the same actions reused on a second Suzanne |
+| 30 | 3D text | extruded, bevelled two-colour title converted to mesh; + an arched text on a curve |
+
+New bridge abilities written for these chapters (all tested): colour attributes and vertex painting, texture
+baking, studio HDRIs, asset marking, cloth/soft-body baking, light linking, legacy node names, easing curves and
+hand-placed handles, F-curve modifiers, actions and the NLA editor, text objects and convert to mesh.
+
+Next: chapters 31-41 (geometry nodes projects).

@@ -1,0 +1,783 @@
+{
+ "title": "The Object Info node",
+ "summary": "One material, different colours per object. Five UV spheres duplicated (Shift+D) share a red material; an Object Info node's Random output into a colour ramp with five constant stops (blue, green, red, yellow, pink at 0, 0.25, 0.5, 0.75, 1) gives each a random colour (repeats possible) while metallic and roughness stay shared. A second row uses the Object Index output: each sphere's Pass Index set 1..5 (Object Properties > Relations) and divided by 5 in a Math node so the ramp gets 0.2..1 -- one colour each. Beyond the tutorial: the Location output colours nine blocks by where they stand, with Random varying their brightness.",
+ "objects": [
+  {
+   "name": "Ball1",
+   "description": ""
+  },
+  {
+   "name": "Ball2",
+   "description": ""
+  },
+  {
+   "name": "Ball3",
+   "description": ""
+  },
+  {
+   "name": "Ball4",
+   "description": ""
+  },
+  {
+   "name": "Ball5",
+   "description": ""
+  },
+  {
+   "name": "Indexed1",
+   "description": ""
+  },
+  {
+   "name": "Indexed2",
+   "description": ""
+  },
+  {
+   "name": "Indexed3",
+   "description": ""
+  },
+  {
+   "name": "Indexed4",
+   "description": ""
+  },
+  {
+   "name": "Indexed5",
+   "description": ""
+  },
+  {
+   "name": "Block1",
+   "description": "location-coloured blocks"
+  }
+ ],
+ "expected_result": "A front row of shiny spheres in random colours, a back row blue-green-red-yellow-pink in order, and a line of blocks shading from orange through yellow to blue.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "DirtMonkey",
+     "PaintedMonkey",
+     "Toadstool"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "scene",
+    "path": "view_settings.exposure",
+    "value": -0.6
+   },
+   "note": "exposure back to normal",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Ball1",
+    "radius": 0.5,
+    "location": [
+     -2.6,
+     -1.2,
+     0.5
+    ]
+   },
+   "note": "a UV sphere with a new material, red",
+   "video_time": "238:58"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Ball1",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Shared",
+    "object": "Ball1",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#E0141E"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": "239:28"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ball1",
+    "new_name": "Ball2",
+    "offset": [
+     1.3,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+D along the row: five spheres, one material, all red",
+   "video_time": "239:35"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ball1",
+    "new_name": "Ball3",
+    "offset": [
+     2.6,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ball1",
+    "new_name": "Ball4",
+    "offset": [
+     3.9000000000000004,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ball1",
+    "new_name": "Ball5",
+    "offset": [
+     5.2,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Shared",
+    "nodes": [
+     {
+      "name": "Info",
+      "type": "ShaderNodeObjectInfo"
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#1E5BFF"
+       ],
+       [
+        0.25,
+        "#1FB43A"
+       ],
+       [
+        0.5,
+        "#E0141E"
+       ],
+       [
+        0.75,
+        "#FFD21A"
+       ],
+       [
+        1.0,
+        "#FF5FB8"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "inputs": {
+       "Metallic": 0.5,
+       "Roughness": 0.3
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Info",
+      "output": "Random",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "same material, different colours: Object Info's Random output into a colour ramp (five stops at 0, 0.25, 0.5, 0.75, 1 -- blue, green, red, yellow, pink -- interpolation Constant) into the base colour; metallic up so they all shine alike",
+   "video_time": "242:49"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Indexed1",
+    "radius": 0.5,
+    "location": [
+     -2.6,
+     0.6,
+     0.5
+    ]
+   },
+   "note": "the Object Index output: a second row",
+   "video_time": "243:19"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Indexed1",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Indexed",
+    "object": "Indexed1",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Info",
+      "type": "ShaderNodeObjectInfo"
+     },
+     {
+      "name": "Divide",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "DIVIDE"
+      },
+      "inputs": {
+       "1": 5.0
+      }
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#1E5BFF"
+       ],
+       [
+        0.25,
+        "#1FB43A"
+       ],
+       [
+        0.5,
+        "#E0141E"
+       ],
+       [
+        0.75,
+        "#FFD21A"
+       ],
+       [
+        1.0,
+        "#FF5FB8"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Metallic": 0.5,
+       "Roughness": 0.3
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Info",
+      "output": "Object Index",
+      "to": "Divide",
+      "input": 0
+     },
+     {
+      "from": "Divide",
+      "output": 0,
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Object Index through a Math node set to Divide by 5 (the number of spheres), so 1..5 become 0.2..1, into the same ramp",
+   "video_time": "245:09"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Indexed1",
+    "new_name": "Indexed2",
+    "offset": [
+     1.3,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Indexed1",
+    "new_name": "Indexed3",
+    "offset": [
+     2.6,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Indexed1",
+    "new_name": "Indexed4",
+    "offset": [
+     3.9000000000000004,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Indexed1",
+    "new_name": "Indexed5",
+    "offset": [
+     5.2,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Indexed1",
+    "path": "pass_index",
+    "value": 1
+   },
+   "note": "Object Properties > Relations > Pass Index, 1 to 5 (the object index)",
+   "video_time": "243:47"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Indexed2",
+    "path": "pass_index",
+    "value": 2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Indexed3",
+    "path": "pass_index",
+    "value": 3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Indexed4",
+    "path": "pass_index",
+    "value": 4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "name": "Indexed5",
+    "path": "pass_index",
+    "value": 5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Block1",
+    "size": 0.6,
+    "location": [
+     -3.2,
+     2.5,
+     0.3
+    ]
+   },
+   "note": "beyond the tutorial: Object Info's Location output -- nine blocks share one material and take their colour from where they stand (X through a Map Range into a warm-to-cool ramp), with Random nudging each one's brightness",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "ByPlace",
+    "object": "Block1",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Info",
+      "type": "ShaderNodeObjectInfo"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Across",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "From Min": -3.2,
+       "From Max": 3.2
+      }
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#FF4A1C"
+       ],
+       [
+        0.5,
+        "#F2E14C"
+       ],
+       [
+        1.0,
+        "#1C7CFF"
+       ]
+      ]
+     },
+     {
+      "name": "Vary",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 0.6,
+       "To Max": 1.0
+      }
+     },
+     {
+      "name": "Shade",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 1.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.45
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Info",
+      "output": "Location",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Split",
+      "output": "X",
+      "to": "Across",
+      "input": "Value"
+     },
+     {
+      "from": "Across",
+      "output": 0,
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Info",
+      "output": "Random",
+      "to": "Vary",
+      "input": "Value"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Shade",
+      "input": "A"
+     },
+     {
+      "from": "Vary",
+      "output": 0,
+      "to": "Shade",
+      "input": "B"
+     },
+     {
+      "from": "Shade",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block2",
+    "offset": [
+     0.8,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     11
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block3",
+    "offset": [
+     1.6,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     22
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block4",
+    "offset": [
+     2.4000000000000004,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     33
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block5",
+    "offset": [
+     3.2,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     44
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block6",
+    "offset": [
+     4.0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     55
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block7",
+    "offset": [
+     4.800000000000001,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     66
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block8",
+    "offset": [
+     5.6000000000000005,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     77
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Block1",
+    "new_name": "Block9",
+    "offset": [
+     6.4,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     88
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -7.4,
+     6.6
+    ],
+    "look_at": [
+     0,
+     0.7,
+     0.2
+    ],
+    "lens": 33
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

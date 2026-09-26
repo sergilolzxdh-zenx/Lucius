@@ -1,0 +1,228 @@
+{
+ "title": "Editing objects: a computer on the table",
+ "summary": "The editing-objects practical: a cube scaled into a screen and turned to face the front, bevelled (Ctrl+B) in edit mode, a cylinder stand and a flattened cube base placed with the 3D cursor from the front and right views, all joined (Ctrl+J) and named Computer, set on the table from the last chapter; a light blue material with the front face assigned a black one; Suzanne hidden in the viewport and, with the camera icon, in the render.",
+ "objects": [
+  {
+   "name": "Computer",
+   "description": "the joined computer"
+  }
+ ],
+ "expected_result": "A light blue computer with a black screen on the brown table, Suzanne gone.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Computer",
+    "size": 1,
+    "location": [
+     0,
+     0.1,
+     1.62
+    ]
+   },
+   "note": "a cube for the screen",
+   "video_time": "56:40"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Computer",
+    "dimensions": [
+     1.05,
+     0.06,
+     0.64
+    ]
+   },
+   "note": "scaled thin in one axis, wide in another, turned to face the front (R Z 90)",
+   "video_time": "56:45"
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Computer",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Computer"
+   },
+   "note": "edit mode, everything selected",
+   "video_time": "58:05"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Computer",
+    "offset": 0.025,
+    "segments": 3
+   },
+   "note": "Ctrl+B: the edges rounded",
+   "video_time": "58:10"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Computer",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Stand",
+    "radius": 0.035,
+    "depth": 0.3,
+    "vertices": 24,
+    "location": [
+     0,
+     0.13,
+     1.16
+    ]
+   },
+   "note": "the 3D cursor under it (front view, 1), a cylinder: the stand, scaled down, up in Z, moved in Y from the right view (3)",
+   "video_time": "57:27"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Base",
+    "size": 1,
+    "location": [
+     0,
+     0.1,
+     1.005
+    ]
+   },
+   "note": "a cube at its foot, flattened: the base",
+   "video_time": "57:58"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Base",
+    "dimensions": [
+     0.34,
+     0.22,
+     0.03
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Computer",
+     "Stand",
+     "Base"
+    ],
+    "into": "Computer"
+   },
+   "note": "all selected, Ctrl+J: one object named Computer",
+   "video_time": "58:45"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Computer",
+    "smooth": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Computer",
+    "name": "Carcasa",
+    "base_color": "#8EC5E8",
+    "roughness": 0.4
+   },
+   "note": "material preview: a new light blue material",
+   "video_time": "59:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Computer",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.999,
+    "min": [
+     null,
+     null,
+     1.35
+    ],
+    "space": "world"
+   },
+   "note": "edit mode, face select: the front face -- the screen",
+   "video_time": "59:55"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Computer",
+    "name": "Pantalla",
+    "base_color": "#050608",
+    "roughness": 0.15,
+    "assign": "selected_faces"
+   },
+   "note": "+ > New, darkened to black > Assign",
+   "video_time": "60:02"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Computer",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Suzanne"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "Suzanne hidden (H) -- and with the camera icon, or it would still render",
+   "video_time": "60:40"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     3.2,
+     -4.1,
+     2.3
+    ],
+    "look_at": [
+     0,
+     0,
+     1.25
+    ],
+    "lens": 45
+   },
+   "note": "the camera view (0) adjusted with Lock Camera to View",
+   "video_time": "59:10"
+  }
+ ]
+}

@@ -1,0 +1,274 @@
+{
+ "title": "Objects in the 3D view: a table scene",
+ "summary": "The practical session of the objects chapter: a tabletop and a leg from cubes (scaled on one axis, and on two at once with S Shift+Z), the leg duplicated with Shift+D into four, all joined with Ctrl+J and renamed; Suzanne added at the 3D cursor on the tabletop; a camera; brown and yellow materials; two point lights; rendered.",
+ "objects": [
+  {
+   "name": "Table",
+   "description": "the joined table"
+  },
+  {
+   "name": "Suzanne",
+   "description": "the monkey on it"
+  }
+ ],
+ "expected_result": "A brown four-legged table with a yellow Suzanne on it, lit by two point lights.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube",
+     "Light"
+    ]
+   },
+   "note": "a new scene for the practical session",
+   "video_time": "45:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Table",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.95
+    ]
+   },
+   "note": "a cube for the tabletop",
+   "video_time": "45:35"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Table",
+    "dimensions": [
+     2.4,
+     1.3,
+     0.08
+    ]
+   },
+   "note": "scaled down in Z, up in X and a little in Y",
+   "video_time": "45:38"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Leg",
+    "size": 1,
+    "location": [
+     1.08,
+     0.53,
+     0.46
+    ]
+   },
+   "note": "the 3D cursor under a corner (Shift + right click), a cube there",
+   "video_time": "45:50"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Leg",
+    "dimensions": [
+     0.09,
+     0.09,
+     0.9
+    ]
+   },
+   "note": "a leg: up in Z, S Shift+Z to thin it in X and Y together",
+   "video_time": "45:55"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Leg",
+    "new_name": "Leg.001",
+    "offset": [
+     0,
+     -1.06,
+     0
+    ]
+   },
+   "note": "Shift+D, moved along Y",
+   "video_time": "46:25"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Leg",
+    "new_name": "Leg.002",
+    "offset": [
+     -2.16,
+     0,
+     0
+    ]
+   },
+   "note": "both legs duplicated to the other side",
+   "video_time": "46:32"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Leg.001",
+    "new_name": "Leg.003",
+    "offset": [
+     -2.16,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Table",
+     "Leg",
+     "Leg.001",
+     "Leg.002",
+     "Leg.003"
+    ],
+    "into": "Table"
+   },
+   "note": "all selected, Ctrl+J: one object, renamed Table",
+   "video_time": "46:45"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Suzanne",
+    "size": 0.8,
+    "location": [
+     0.25,
+     0.05,
+     1.5
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     -18
+    ]
+   },
+   "note": "the 3D cursor on the tabletop, Shift+A > Monkey",
+   "video_time": "47:05"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Suzanne",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Suzanne",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 1,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Suzanne",
+    "onto": [
+     "Table"
+    ]
+   },
+   "note": "resized and placed on the tabletop",
+   "video_time": "47:12"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     4.3,
+     -4.9,
+     2.7
+    ],
+    "look_at": [
+     0,
+     0,
+     0.85
+    ],
+    "lens": 45
+   },
+   "note": "a camera, framed with Lock Camera to View",
+   "video_time": "47:20"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Table",
+    "name": "Madera",
+    "base_color": "#6A3E1E",
+    "roughness": 0.6
+   },
+   "note": "materials: the table brown, darker",
+   "video_time": "48:05"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suzanne",
+    "name": "Amarillo",
+    "base_color": "#F2C12E",
+    "roughness": 0.45
+   },
+   "note": "Suzanne yellow",
+   "video_time": "48:12"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Point",
+    "location": [
+     1.2,
+     -1.6,
+     2.6
+    ],
+    "power": 180
+   },
+   "note": "a point light, up in Z, then along Y and down, 50 W and up from there",
+   "video_time": "48:25"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Point.001",
+    "location": [
+     -1.4,
+     1.5,
+     2.6
+    ],
+    "power": 180
+   },
+   "note": "a second one, Shift+D, moved along Y",
+   "video_time": "49:07"
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#3A3F48",
+    "strength": 0.6
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

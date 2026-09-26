@@ -1,0 +1,1809 @@
+{
+ "title": "Modeling basic objects: chair, treasure chest, grenade",
+ "summary": "Three models from primitives with the editing tools. A chair: a cube flattened into a seat, six loop cuts each way, the corner faces underneath extruded into legs and spread, the back row of faces extruded up and leaned back, every other column bridged front to back (Bridge Edge Loops) into slats, bevelled, smooth shaded, brown. A treasure chest: a cube squashed into a box, the top extruded and narrowed into a lid, the four sides inset individually and pushed in along their normals (green panels), the lid's faces inset and pushed in (grey metal), its ends red, everything bevelled; a lock from two cubes, one extruded across and down into a shackle, joined and bevelled, blue. A grenade: a UV sphere (16 x 16) stretched, its poles deleted, the openings narrowed with proportional editing, every face extruded on its own into blocks, bevelled, the holes filled (F), the top extruded into a fuse, a lever extruded and rotated down the side; green, the lever grey metal (select linked), a yellow band.",
+ "objects": [
+  {
+   "name": "Chair",
+   "description": "the chair"
+  },
+  {
+   "name": "Chest",
+   "description": "the treasure chest"
+  },
+  {
+   "name": "Lock",
+   "description": "its lock"
+  },
+  {
+   "name": "Grenade",
+   "description": "the grenade"
+  }
+ ],
+ "expected_result": "A brown slatted chair, a treasure chest with a blue lock, and a green grenade.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Extruded",
+     "Individual",
+     "Stepped",
+     "Rounded",
+     "Loops"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "a new file for the models (the tool samples hidden)",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Chair",
+    "size": 2,
+    "location": [
+     -4.6,
+     0,
+     1.45
+    ]
+   },
+   "note": "the chair from a cube (a new file)",
+   "video_time": "68:55"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Chair"
+   },
+   "note": "edit mode",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Chair",
+    "factor": [
+     1,
+     1,
+     0.14
+    ]
+   },
+   "note": "scaled down in Z: the seat",
+   "video_time": "69:10"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Chair",
+    "axis": "x",
+    "positions": [
+     0.14285714285714285,
+     0.2857142857142857,
+     0.42857142857142855,
+     0.5714285714285714,
+     0.7142857142857143,
+     0.8571428571428571
+    ]
+   },
+   "note": "Ctrl+R, 6 cuts one way",
+   "video_time": "69:20"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Chair",
+    "axis": "y",
+    "positions": [
+     0.14285714285714285,
+     0.2857142857142857,
+     0.42857142857142855,
+     0.5714285714285714,
+     0.7142857142857143,
+     0.8571428571428571
+    ]
+   },
+   "note": "and 6 the other way: vertices to work with",
+   "video_time": "69:30"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99,
+    "space": "local",
+    "min": [
+     0.8,
+     0.8,
+     null
+    ],
+    "max": [
+     null,
+     null,
+     null
+    ],
+    "extend": false
+   },
+   "note": "face mode: the four corner faces underneath",
+   "video_time": "70:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99,
+    "space": "local",
+    "min": [
+     0.8,
+     null,
+     null
+    ],
+    "max": [
+     null,
+     -0.8,
+     null
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": "70:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99,
+    "space": "local",
+    "min": [
+     null,
+     0.8,
+     null
+    ],
+    "max": [
+     -0.8,
+     null,
+     null
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": "70:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99,
+    "space": "local",
+    "min": [
+     null,
+     null,
+     null
+    ],
+    "max": [
+     -0.8,
+     -0.8,
+     null
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": "70:05"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chair",
+    "distance": 1.3
+   },
+   "note": "E: the legs",
+   "video_time": "70:10"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Chair",
+    "factor": [
+     1.12,
+     1.12,
+     1
+    ]
+   },
+   "note": "S: set a little apart, the feet a bit bigger",
+   "video_time": "70:15"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99,
+    "min": [
+     0.72,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the back: the seven top faces along one edge (Ctrl+click picks the shortest path)",
+   "video_time": "70:25"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chair",
+    "distance": 1.55
+   },
+   "note": "extruded up",
+   "video_time": "70:50"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chair",
+    "distance": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Chair",
+    "offset": [
+     0.18,
+     0,
+     0
+    ],
+    "proportional": 1.9
+   },
+   "note": "and moved back a few centimetres in X: more comfortable",
+   "video_time": "70:55"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     -0.6714285714285714,
+     0.3
+    ],
+    "max": [
+     null,
+     -0.4714285714285714,
+     1.5
+    ],
+    "space": "local"
+   },
+   "note": "the front and back faces of every other column",
+   "video_time": "71:58"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     -0.6714285714285714,
+     0.3
+    ],
+    "max": [
+     null,
+     -0.4714285714285714,
+     1.5
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bridge_edge_loops",
+   "args": {
+    "object": "Chair"
+   },
+   "note": "Edge > Bridge Edge Loops: the faces go and the hole is walled (deleting them would leave the hollow inside open)",
+   "video_time": "71:20"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     -0.1,
+     0.3
+    ],
+    "max": [
+     null,
+     0.1,
+     1.5
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": "71:58"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     -0.1,
+     0.3
+    ],
+    "max": [
+     null,
+     0.1,
+     1.5
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bridge_edge_loops",
+   "args": {
+    "object": "Chair"
+   },
+   "note": "",
+   "video_time": "71:20"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     0.4714285714285714,
+     0.3
+    ],
+    "max": [
+     null,
+     0.6714285714285714,
+     1.5
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": "71:58"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chair",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     0.6,
+     0.4714285714285714,
+     0.3
+    ],
+    "max": [
+     null,
+     0.6714285714285714,
+     1.5
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bridge_edge_loops",
+   "args": {
+    "object": "Chair"
+   },
+   "note": "",
+   "video_time": "71:20"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Chair"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Chair",
+    "offset": 0.035,
+    "segments": 3
+   },
+   "note": "Ctrl+B on the edges, 3 segments: rounded, natural",
+   "video_time": "73:05"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Chair",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Chair",
+    "smooth": true,
+    "auto_smooth_deg": 40
+   },
+   "note": "shade smooth",
+   "video_time": "73:10"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chair",
+    "name": "Silla",
+    "base_color": "#6B4226",
+    "roughness": 0.55
+   },
+   "note": "a brown material",
+   "video_time": "73:15"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Chest",
+    "size": 2,
+    "location": [
+     0.0,
+     0,
+     1
+    ]
+   },
+   "note": "the treasure chest: a cube (a new file)",
+   "video_time": "74:30"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Chest"
+   },
+   "note": "edit mode: scaled down in Y and in Z",
+   "video_time": "74:40"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Chest",
+    "factor": [
+     1,
+     0.6,
+     0.55
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Chest",
+    "offset": [
+     0,
+     0,
+     -0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "the top face",
+   "video_time": "75:15"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chest",
+    "distance": 0.45
+   },
+   "note": "extruded and scaled down: the lid",
+   "video_time": "75:20"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Chest",
+    "factor": [
+     0.94,
+     0.6,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": false
+   },
+   "note": "the four sides of the box (shift)",
+   "video_time": "75:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": "75:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": "75:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": "75:35"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Chest",
+    "thickness": 0.12,
+    "individual": true
+   },
+   "note": "I, I: each face inset on its own",
+   "video_time": "75:40"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chest",
+    "distance": -0.06,
+    "individual": true
+   },
+   "note": "Alt+E > Extrude Faces Along Normals, inwards",
+   "video_time": "75:48"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chest",
+    "name": "CofreMadera",
+    "base_color": "#4A2A14",
+    "roughness": 0.6
+   },
+   "note": "the body dark brown first, then these sunken panels dark green",
+   "video_time": "76:55"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.99,
+    "max": [
+     null,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chest",
+    "name": "CofreVerde",
+    "base_color": "#1D4A2A",
+    "roughness": 0.5,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "77:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.6,
+    "min": [
+     null,
+     null,
+     0.15
+    ],
+    "space": "local"
+   },
+   "note": "the lid's front and back faces",
+   "video_time": "76:30"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.6,
+    "min": [
+     null,
+     null,
+     0.15
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Chest",
+    "thickness": 0.1
+   },
+   "note": "inset and pushed in too",
+   "video_time": "76:35"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Chest",
+    "distance": -0.04,
+    "individual": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chest",
+    "name": "CofreMetal",
+    "base_color": "#7C7C80",
+    "metallic": 0.4,
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "a grey, a little metallic",
+   "video_time": "77:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     null,
+     null,
+     0.15
+    ],
+    "space": "local"
+   },
+   "note": "the lid's ends",
+   "video_time": "77:55"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Chest",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "min": [
+     null,
+     null,
+     0.15
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chest",
+    "name": "CofreRojo",
+    "base_color": "#8E1C1C",
+    "roughness": 0.5,
+    "assign": "selected_faces"
+   },
+   "note": "red",
+   "video_time": "78:05"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Chest"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Chest",
+    "offset": 0.02,
+    "segments": 2
+   },
+   "note": "all the edges bevelled: more realistic",
+   "video_time": "78:30"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Chest",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Chest",
+    "smooth": true,
+    "auto_smooth_deg": 60
+   },
+   "note": "shade smooth by angle, 60 degrees",
+   "video_time": "76:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Lock",
+    "size": 1,
+    "location": [
+     0.0,
+     -0.66,
+     0.92
+    ]
+   },
+   "note": "the lock: a cube scaled down (front view, 1)",
+   "video_time": "79:05"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Lock",
+    "dimensions": [
+     0.32,
+     0.1,
+     0.3
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Lock",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Shackle",
+    "size": 1,
+    "location": [
+     -0.09,
+     -0.66,
+     1.17
+    ]
+   },
+   "note": "the 3D cursor above it: another cube, scaled down and up in Z, thin in Y (side view, 3)",
+   "video_time": "79:15"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Shackle",
+    "dimensions": [
+     0.05,
+     0.04,
+     0.2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Shackle",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shackle",
+    "axis": "z",
+    "positions": [
+     0.75
+    ]
+   },
+   "note": "a loop cut, taken up",
+   "video_time": "79:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Shackle",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.99,
+    "min": [
+     null,
+     null,
+     0.05
+    ],
+    "space": "local"
+   },
+   "note": "that face",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Shackle",
+    "offset": [
+     0.18,
+     0,
+     0
+    ]
+   },
+   "note": "extruded across",
+   "video_time": "79:45"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shackle",
+    "axis": "x",
+    "positions": [
+     0.78
+    ]
+   },
+   "note": "another loop cut",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Shackle",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99,
+    "min": [
+     0.16,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the end face underneath",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Shackle",
+    "offset": [
+     0,
+     0,
+     -0.15
+    ]
+   },
+   "note": "extruded down: the shackle",
+   "video_time": "79:55"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shackle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Lock",
+     "Shackle"
+    ],
+    "into": "Lock"
+   },
+   "note": "both selected, Ctrl+J, named Lock",
+   "video_time": "80:05"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Lock"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Lock",
+    "offset": 0.012,
+    "segments": 3
+   },
+   "note": "its edges bevelled",
+   "video_time": "80:30"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Lock",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Lock",
+    "smooth": true,
+    "auto_smooth_deg": 40
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Lock",
+    "name": "Candado",
+    "base_color": "#2B5FB8",
+    "metallic": 0.3,
+    "roughness": 0.35
+   },
+   "note": "blue",
+   "video_time": "80:20"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Grenade",
+    "radius": 1,
+    "vertices": 16,
+    "rings": 16,
+    "location": [
+     4.4,
+     0,
+     1.45
+    ]
+   },
+   "note": "the grenade: a UV sphere, 16 segments, 16 rings, radius 1 (a new file)",
+   "video_time": "81:50"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "edit mode, front view: scaled up in Z",
+   "video_time": "82:25"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Grenade",
+    "factor": [
+     1,
+     1,
+     1.25
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     -1.12
+    ],
+    "space": "local"
+   },
+   "note": "the faces at the bottom and top, in X-ray (Alt+Z)",
+   "video_time": "82:30"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.12
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Grenade",
+    "what": "VERTS"
+   },
+   "note": "X > Vertices",
+   "video_time": "82:55"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     -1.0
+    ],
+    "space": "local"
+   },
+   "note": "Alt+click the loop round the bottom opening, proportional editing on: scaled down",
+   "video_time": "83:00"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Grenade",
+    "factor": [
+     0.72,
+     0.72,
+     1
+    ],
+    "proportional": 0.7
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.0
+    ],
+    "space": "local"
+   },
+   "note": "and the top one",
+   "video_time": "83:05"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Grenade",
+    "factor": [
+     0.72,
+     0.72,
+     1
+    ],
+    "proportional": 0.7
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "face mode, everything",
+   "video_time": "83:10"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Grenade",
+    "distance": 0.1,
+    "individual": true
+   },
+   "note": "Alt+E > Extrude Individual Faces: the pineapple blocks",
+   "video_time": "83:15"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Grenade",
+    "offset": 0.03,
+    "segments": 2
+   },
+   "note": "Ctrl+B with segments",
+   "video_time": "83:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "EDGE",
+    "max": [
+     null,
+     null,
+     -0.95
+    ],
+    "boundary": true,
+    "space": "local"
+   },
+   "note": "edge mode: Alt+click the open bottom loop",
+   "video_time": "83:45"
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "F: filled",
+   "video_time": "83:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "EDGE",
+    "min": [
+     null,
+     null,
+     0.95
+    ],
+    "boundary": true,
+    "space": "local"
+   },
+   "note": "and the top",
+   "video_time": null
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Grenade",
+    "distance": 0.12
+   },
+   "note": "the top: extruded, scaled down, extruded again",
+   "video_time": "83:55"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Grenade",
+    "factor": [
+     0.65,
+     0.65,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Grenade",
+    "distance": 0.22
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Grenade",
+    "factor": [
+     0.85,
+     0.85,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Grenade",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Lever",
+    "size": 1,
+    "location": [
+     4.45,
+     0,
+     2.95
+    ]
+   },
+   "note": "the lever: a cube scaled down and moved up",
+   "video_time": "84:05"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Lever",
+    "dimensions": [
+     0.3,
+     0.16,
+     0.08
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Lever",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Lever",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.99
+   },
+   "note": "its side face: extruded, rotated in Y, three times, down the side",
+   "video_time": "84:30"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Lever",
+    "offset": [
+     0.33,
+     0,
+     -0.04
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Lever",
+    "axis": "y",
+    "angle": -30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Lever",
+    "offset": [
+     0.34,
+     0,
+     -0.34
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Lever",
+    "axis": "y",
+    "angle": -30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Lever",
+    "offset": [
+     0.14,
+     0,
+     -0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Lever",
+    "axis": "y",
+    "angle": -20
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Lever",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Grenade",
+     "Lever"
+    ],
+    "into": "Grenade"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Grenade",
+    "name": "Granada",
+    "base_color": "#2F4A22",
+    "roughness": 0.55
+   },
+   "note": "a dark green material",
+   "video_time": "85:20"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.35
+    ],
+    "space": "local"
+   },
+   "note": "the lever alone: L (select linked) over it",
+   "video_time": "84:55"
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "VERT",
+    "min": [
+     0.02,
+     null,
+     1.4
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Grenade"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Grenade",
+    "name": "GranadaMetal",
+    "base_color": "#8A8A8E",
+    "metallic": 0.5,
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "grey, half metallic",
+   "video_time": "85:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Grenade",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     -0.2
+    ],
+    "max": [
+     null,
+     null,
+     0.2
+    ],
+    "space": "local"
+   },
+   "note": "Alt+click a face loop round the middle: yellow",
+   "video_time": "86:05"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Grenade",
+    "name": "GranadaBanda",
+    "base_color": "#C8A21E",
+    "roughness": 0.5,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Grenade",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Grenade",
+    "smooth": true,
+    "auto_smooth_deg": 20
+   },
+   "note": "shade smooth by angle, 20 degrees",
+   "video_time": "86:20"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -13,
+     5
+    ],
+    "look_at": [
+     0,
+     0,
+     1.4
+    ],
+    "lens": 35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Lamp",
+    "location": [
+     -3,
+     -4,
+     5
+    ],
+    "power": 900
+   },
+   "note": "more light: the lamp duplicated around",
+   "video_time": "80:55"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Lamp.001",
+    "location": [
+     4,
+     -3,
+     4
+    ],
+    "power": 700
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

@@ -1,0 +1,526 @@
+{
+ "title": "Editing tools: extrude, inset, bevel, loop cuts",
+ "summary": "The editing tools, each on its own object: extrude region (E) with the cap scaled, extrude individual faces along their normals, insert faces (I) and extrude repeated into steps with the last one pushed in, bevel (Ctrl+B) on two edges with many segments, and loop cuts (Ctrl+R) on a cylinder with the middle loop (Alt+click) scaled into a waist.",
+ "objects": [
+  {
+   "name": "Extruded",
+   "description": "extrude region"
+  },
+  {
+   "name": "Individual",
+   "description": "extrude individual"
+  },
+  {
+   "name": "Stepped",
+   "description": "inset + extrude"
+  },
+  {
+   "name": "Rounded",
+   "description": "bevel"
+  },
+  {
+   "name": "Loops",
+   "description": "loop cuts"
+  }
+ ],
+ "expected_result": "Five pale blue objects in a row on a dark floor: a tapered block, a cube with its faces pushed apart, a stepped tower with a sunken top, a cube rounded over the top, and a cylinder with a waist.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Table",
+     "Computer"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "a clear stage for trying the tools (the table scene hidden)",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Floor",
+    "size": 14,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a floor to stand them on",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Extruded",
+    "size": 1,
+    "location": [
+     -4.6,
+     0,
+     0.5
+    ]
+   },
+   "note": "extrude region (E), the one used 90% of the time",
+   "video_time": "63:20"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Extruded",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "the top face",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Extruded",
+    "distance": 0.7
+   },
+   "note": "E: pulled up",
+   "video_time": "63:25"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Extruded",
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "and the new cap scaled down: a tapered block",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Extruded",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Individual",
+    "size": 0.8,
+    "location": [
+     -2.3,
+     0,
+     0.62
+    ]
+   },
+   "note": "extrude individual: every face out along its own normal",
+   "video_time": "64:45"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Individual"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Individual",
+    "distance": 0.22,
+    "individual": true
+   },
+   "note": "",
+   "video_time": "64:50"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Individual",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Stepped",
+    "size": 1,
+    "location": [
+     0.0,
+     0,
+     0.5
+    ]
+   },
+   "note": "insert faces (I), then extrude, again and again",
+   "video_time": "65:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Stepped",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "the top face",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Stepped",
+    "thickness": 0.1
+   },
+   "note": "I: a smaller face inside",
+   "video_time": "65:45"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Stepped",
+    "distance": 0.35
+   },
+   "note": "E: out",
+   "video_time": "65:55"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Stepped",
+    "thickness": 0.08
+   },
+   "note": "",
+   "video_time": "65:45"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Stepped",
+    "distance": 0.3
+   },
+   "note": "E: out",
+   "video_time": "65:55"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Stepped",
+    "thickness": 0.07
+   },
+   "note": "",
+   "video_time": "65:45"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Stepped",
+    "distance": -0.22
+   },
+   "note": "E backwards: the last one pushed in",
+   "video_time": "65:55"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Stepped",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Rounded",
+    "size": 1,
+    "location": [
+     2.3,
+     0,
+     0.5
+    ]
+   },
+   "note": "bevel (Ctrl+B) on two edges, scrolled up for more segments",
+   "video_time": "66:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Rounded",
+    "element": "EDGE",
+    "min": [
+     null,
+     -0.51,
+     0.49
+    ],
+    "max": [
+     null,
+     -0.49,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "edge mode (2): the front top edge",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Rounded",
+    "element": "EDGE",
+    "min": [
+     null,
+     0.49,
+     0.49
+    ],
+    "max": [
+     null,
+     0.51,
+     null
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "and the back one (shift)",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Rounded",
+    "offset": 0.35,
+    "segments": 8
+   },
+   "note": "",
+   "video_time": "66:15"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Rounded",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Rounded",
+    "smooth": true,
+    "auto_smooth_deg": 35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Loops",
+    "radius": 0.45,
+    "depth": 1.6,
+    "vertices": 32,
+    "location": [
+     4.6,
+     0,
+     0.8
+    ]
+   },
+   "note": "a cylinder for loops",
+   "video_time": "66:49"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Loops",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.5,
+     0.8
+    ]
+   },
+   "note": "Ctrl+R: loop cuts, scrolled for more, right click for the centre",
+   "video_time": "67:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Loops",
+    "element": "EDGE",
+    "min": [
+     null,
+     null,
+     0.79
+    ],
+    "max": [
+     null,
+     null,
+     0.81
+    ],
+    "space": "world"
+   },
+   "note": "Alt+click: the middle edge loop",
+   "video_time": "66:55"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Loops",
+    "factor": [
+     0.7,
+     0.7,
+     1
+    ]
+   },
+   "note": "scaled in: a waist",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Loops",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Loops",
+    "smooth": true,
+    "auto_smooth_deg": 35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Extruded",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Individual",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Stepped",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Rounded",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Loops",
+    "name": "Arcilla",
+    "base_color": "#8FB3C9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Floor",
+    "name": "Suelo",
+    "base_color": "#50545C",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -12.5,
+     4.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.55
+    ],
+    "lens": 32
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "Sun",
+    "location": [
+     0,
+     -3,
+     6
+    ],
+    "rotation_deg": [
+     40,
+     0,
+     25
+    ],
+    "power": 3.0
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

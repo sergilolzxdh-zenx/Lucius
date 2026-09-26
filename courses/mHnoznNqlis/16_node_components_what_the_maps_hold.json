@@ -1,0 +1,407 @@
+{
+ "title": "Node components: what the maps hold",
+ "summary": "The texture coordinate maps made visible: Separate XYZ splits a map into numbers, and a number in the base colour shows 0 as black and 1 as white -- Generated X, Y and Z each run black to white across the cube; Object runs -1..1 so the lower half is black; a Math node set to Absolute turns the negatives positive, white at both ends.",
+ "objects": [
+  {
+   "name": "GenX",
+   "description": ""
+  },
+  {
+   "name": "GenY",
+   "description": ""
+  },
+  {
+   "name": "GenZ",
+   "description": ""
+  },
+  {
+   "name": "ObjZ",
+   "description": ""
+  },
+  {
+   "name": "AbsZ",
+   "description": ""
+  }
+ ],
+ "expected_result": "Five cubes with grey gradients: left-to-right, front-to-back, bottom-to-top, black lower half, and white top and bottom with a black middle.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "GlowCube",
+     "TileCube",
+     "CellCube",
+     "BumpCube",
+     "BrickWall"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GenX",
+    "size": 1.3,
+    "location": [
+     -4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MapaGenX",
+    "object": "GenX",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Split",
+      "output": "X",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "Texture Coordinate > Separate XYZ > one axis into the base colour (sockets of different colours can be joined): Generated X: black (0) to white (1) along X",
+   "video_time": "182:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GenY",
+    "size": 1.3,
+    "location": [
+     -2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MapaGenY",
+    "object": "GenY",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Split",
+      "output": "Y",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "Y along Y",
+   "video_time": "182:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GenZ",
+    "size": 1.3,
+    "location": [
+     0.0,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MapaGenZ",
+    "object": "GenZ",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Split",
+      "output": "Z",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "Z along Z",
+   "video_time": "182:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "ObjZ",
+    "size": 1.3,
+    "location": [
+     2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MapaObjZ",
+    "object": "ObjZ",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Split",
+      "output": "Z",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "Object runs -1..1: everything below the middle is black",
+   "video_time": "182:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "AbsZ",
+    "size": 1.3,
+    "location": [
+     4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MapaAbsZ",
+    "object": "AbsZ",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Split",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     },
+     {
+      "name": "Abs",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "ABSOLUTE"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Split",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Split",
+      "output": "Z",
+      "to": "Abs",
+      "input": 0
+     },
+     {
+      "from": "Abs",
+      "output": 0,
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "a Math node set to Absolute: -1 becomes 1, white at both ends",
+   "video_time": "182:30"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -9.5,
+     3.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.6
+    ],
+    "lens": 27
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

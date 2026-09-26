@@ -1,0 +1,517 @@
+{
+ "title": "Textures part 1: brick, checker, gradient, magic",
+ "summary": "Four textures in detail: brick as square tiles in two colours turned 45 degrees by a mapping node, UV cube projection so every face has them; checker with its colours and scale; gradient from blue to white on a sphere, turned and scaled by a mapping node; magic at scale 60 through a bump as fabric, and a tablecloth combining checker colour with the magic bump.",
+ "objects": [
+  {
+   "name": "Tiles",
+   "description": ""
+  },
+  {
+   "name": "Checks",
+   "description": ""
+  },
+  {
+   "name": "Fade",
+   "description": ""
+  },
+  {
+   "name": "Fabric",
+   "description": ""
+  },
+  {
+   "name": "Tablecloth",
+   "description": ""
+  }
+ ],
+ "expected_result": "Diagonal cream-and-tan tiles, a blue-white checker cube, a blue-to-white sphere, a red woven cube and a red-and-white checked tablecloth cube.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "GenX",
+     "GenY",
+     "GenZ",
+     "ObjZ",
+     "AbsZ"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Tiles",
+    "size": 1.3,
+    "location": [
+     -4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Checks",
+    "size": 1.3,
+    "location": [
+     -2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Fade",
+    "radius": 0.7,
+    "location": [
+     0.0,
+     0,
+     0.7
+    ]
+   },
+   "note": "a UV sphere for the gradient",
+   "video_time": "196:30"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Fade",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Fabric",
+    "size": 1.3,
+    "location": [
+     2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Tablecloth",
+    "size": 1.3,
+    "location": [
+     4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Baldosas",
+    "object": "Tiles",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Turn",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Rotation_deg": [
+        0,
+        0,
+        45
+       ]
+      }
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexBrick",
+      "props": {
+       "offset": 0.0
+      },
+      "inputs": {
+       "Brick Width": 1.0,
+       "Row Height": 1.0,
+       "Scale": 7.0,
+       "Mortar Size": 0.05,
+       "Color1": "#E3D6B8",
+       "Color2": "#B88A5A",
+       "Mortar": "#3B3B3B"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Turn",
+      "input": "Vector"
+     },
+     {
+      "from": "Turn",
+      "output": "Vector",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the brick texture as tiles: width and row height 1 (squares), two colours, a mapping node turning it 45 degrees on Z",
+   "video_time": "190:00"
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "Tiles",
+    "method": "CUBE_PROJECT"
+   },
+   "note": "UV > Cube Projection, and UV into the vector: tiles on every face",
+   "video_time": "193:50"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Tiles",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Cuadros",
+    "object": "Checks",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexChecker",
+      "inputs": {
+       "Scale": 5.0,
+       "Color1": "#1F3A93",
+       "Color2": "#F2F2F2"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the checker texture: every other square the same colour; its colours and scale",
+   "video_time": "194:40"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Degradado",
+    "object": "Fade",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Map",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Rotation_deg": [
+        0,
+        0,
+        0
+       ],
+       "Scale": [
+        1.0,
+        1,
+        1
+       ]
+      }
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexGradient"
+     },
+     {
+      "name": "Tint",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#1E5BD6"
+       ],
+       [
+        1.0,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Map",
+      "input": "Vector"
+     },
+     {
+      "from": "Map",
+      "output": "Vector",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Fac",
+      "to": "Tint",
+      "input": "Fac"
+     },
+     {
+      "from": "Tint",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the gradient texture on a UV sphere: from blue to white; a mapping node can turn (Y rotation) and scale (X) the transition -- back at 0 and 1 it runs evenly from side to side",
+   "video_time": "196:50"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Tela",
+    "object": "Fabric",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Weave",
+      "type": "ShaderNodeTexMagic",
+      "inputs": {
+       "Scale": 60.0,
+       "Distortion": 1.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.6
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#B8423A",
+       "Roughness": 0.8
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Weave",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "fabric: the magic texture at a very high scale (60), distortion back to 1, through a bump: woven cloth",
+   "video_time": "201:10"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Mantel",
+    "object": "Tablecloth",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Checks",
+      "type": "ShaderNodeTexChecker",
+      "inputs": {
+       "Scale": 4.0,
+       "Color1": "#C62828",
+       "Color2": "#F5F5F5"
+      }
+     },
+     {
+      "name": "Weave",
+      "type": "ShaderNodeTexMagic",
+      "inputs": {
+       "Scale": 60.0,
+       "Distortion": 1.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.6
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.8
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Checks",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Weave",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a tablecloth: the checker gives the colour, the magic texture the woven feel",
+   "video_time": "201:45"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -9.5,
+     3.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.6
+    ],
+    "lens": 27
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

@@ -1,0 +1,2098 @@
+{
+ "title": "All the Deform modifiers",
+ "summary": "A gallery of the Deform modifiers as the tutor shows them: Cast (a subdivided cube into a sphere; on Suzanne the factor keyed 0 -> 1 over 100 frames), Curve (a subdivided bar along a Bezier arch), Displace (a vertex group with a noise texture), Hook (a corner dragged by an empty), Laplacian Deform (three hooked corners as anchors, bound, one moved: the cube bends smoothly), Lattice (a sphere shaped by a 3x3x3 lattice), Mesh Deform (Suzanne in a bound cage, the cage edited), Shrinkwrap (a plane wrapped over a sphere), Simple Deform twist / bend / taper on tall bars, Smooth, Laplacian Smooth (spikes relaxed), Surface Deform (a bar bound to a plane that is then bent), Warp (a plane pulled between two empties) and Wave (animated ripples).",
+ "objects": [
+  {
+   "name": "CastCube",
+   "description": ""
+  },
+  {
+   "name": "CastMonkey",
+   "description": ""
+  },
+  {
+   "name": "CurveBar",
+   "description": ""
+  },
+  {
+   "name": "Displaced",
+   "description": ""
+  },
+  {
+   "name": "Hooked",
+   "description": ""
+  },
+  {
+   "name": "Laplace",
+   "description": ""
+  },
+  {
+   "name": "LatticeBall",
+   "description": ""
+  },
+  {
+   "name": "Caged",
+   "description": ""
+  },
+  {
+   "name": "Wrapped",
+   "description": ""
+  },
+  {
+   "name": "Twisted",
+   "description": ""
+  },
+  {
+   "name": "Bent",
+   "description": ""
+  },
+  {
+   "name": "Tapered",
+   "description": ""
+  },
+  {
+   "name": "Smoothed",
+   "description": ""
+  },
+  {
+   "name": "LapSmooth",
+   "description": ""
+  },
+  {
+   "name": "SurfaceBar",
+   "description": ""
+  },
+  {
+   "name": "Warped",
+   "description": ""
+  },
+  {
+   "name": "Waves",
+   "description": ""
+  }
+ ],
+ "expected_result": "A gallery of seventeen coloured objects, each bent, twisted, wrapped or rippled by one deform modifier; Suzanne morphs into a sphere over the animation.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "ArraySuzanne",
+     "Dice",
+     "Carved",
+     "Built",
+     "LowPoly",
+     "EdgeSplit",
+     "Masked",
+     "Mirrored",
+     "Remeshed",
+     "Spring",
+     "Skinned",
+     "Cup",
+     "Triangles",
+     "Cage",
+     "Smooth",
+     "ArrayOffset"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CastCube",
+    "size": 1.2,
+    "location": [
+     -6.0,
+     -4.5,
+     0.7
+    ]
+   },
+   "note": "Cast: a cube subdivided (4 cuts)",
+   "video_time": "126:50"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "CastCube"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "CastCube",
+    "cuts": 4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "CastCube",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "CastCube",
+    "type": "CAST",
+    "props": {
+     "factor": 1.0
+    }
+   },
+   "note": "cast to a sphere, factor 1",
+   "video_time": "127:20"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "CastMonkey",
+    "size": 1.2,
+    "location": [
+     -3.0,
+     -4.5,
+     0.7
+    ]
+   },
+   "note": "the cast factor animated on Suzanne",
+   "video_time": "127:40"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "CastMonkey",
+    "type": "CAST",
+    "props": {
+     "factor": 0.0
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "CastMonkey",
+    "path": "modifiers[\"Cast\"].factor",
+    "value": 0.0,
+    "frame": 1
+   },
+   "note": "the dot next to the factor: a key at frame 1 (0) ...",
+   "video_time": "128:05"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "CastMonkey",
+    "path": "modifiers[\"Cast\"].factor",
+    "value": 1.0,
+    "frame": 100
+   },
+   "note": "... and at frame 100 (1): it turns into a sphere",
+   "video_time": "128:20"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "CastMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "BendPath",
+    "location": [
+     -1.2,
+     -4.5,
+     0.4
+    ],
+    "splines": [
+     {
+      "points": [
+       [
+        0,
+        0,
+        0
+       ],
+       [
+        1.2,
+        0,
+        0.9
+       ],
+       [
+        2.4,
+        0,
+        0
+       ]
+      ]
+     }
+    ]
+   },
+   "note": "Curve: a Bezier curve",
+   "video_time": "128:55"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CurveBar",
+    "size": 1,
+    "location": [
+     -1.2,
+     -4.5,
+     0.4
+    ]
+   },
+   "note": "a cube flattened, stretched in X, subdivided (10 cuts)",
+   "video_time": "129:15"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "CurveBar",
+    "dimensions": [
+     2.4,
+     0.35,
+     0.18
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "CurveBar",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "CurveBar"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "CurveBar",
+    "cuts": 10
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "CurveBar",
+    "offset": [
+     1.2,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "CurveBar",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "CurveBar",
+    "type": "CURVE",
+    "props": {
+     "object": "BendPath"
+    }
+   },
+   "note": "the curve modifier: the bar follows the curve's shape",
+   "video_time": "129:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Displaced",
+    "size": 2,
+    "location": [
+     3.0,
+     -4.5,
+     0.05
+    ]
+   },
+   "note": "Displace: a plane subdivided (16 cuts)",
+   "video_time": "130:15"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Displaced"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Displaced",
+    "cuts": 16
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Displaced",
+    "element": "VERT",
+    "min": [
+     -0.6,
+     -0.6,
+     null
+    ],
+    "max": [
+     0.6,
+     0.6,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "some vertices into a vertex group",
+   "video_time": "130:40"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Displaced",
+    "group": "Bumps",
+    "weight": 1.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Displaced",
+    "type": "DISPLACE",
+    "props": {
+     "vertex_group": "Bumps",
+     "texture": "NOISE",
+     "strength": 0.35,
+     "mid_level": 0.0
+    }
+   },
+   "note": "Displace on that group, with a new Noise texture, midlevel 0",
+   "video_time": "131:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Hooked",
+    "size": 1.2,
+    "location": [
+     6.0,
+     -4.5,
+     0.6
+    ]
+   },
+   "note": "Hook: a cube",
+   "video_time": "131:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Hooked",
+    "element": "VERT",
+    "min": [
+     0.55,
+     -1,
+     0.55
+    ],
+    "max": [
+     null,
+     -0.55,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: one corner vertex",
+   "video_time": "132:00"
+  },
+  {
+   "action": "add_hook",
+   "args": {
+    "object": "Hooked",
+    "hook": "Handle"
+   },
+   "note": "Ctrl+H > Hook to New Object: an empty holds it",
+   "video_time": "132:10"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Handle",
+    "location": [
+     6.8,
+     -5.2,
+     1.9
+    ]
+   },
+   "note": "move the empty: the vertex comes with it",
+   "video_time": "132:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Laplace",
+    "size": 1.2,
+    "location": [
+     -6.0,
+     -1.5,
+     0.6
+    ]
+   },
+   "note": "Laplacian Deform: a cube subdivided (8 cuts)",
+   "video_time": "132:50"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Laplace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Laplace",
+    "cuts": 8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     0.49000000000000005,
+     0.49000000000000005,
+     0.55
+    ],
+    "max": [
+     0.6100000000000001,
+     0.6100000000000001,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "three top corner vertices, each hooked to a new empty",
+   "video_time": "133:10"
+  },
+  {
+   "action": "add_hook",
+   "args": {
+    "object": "Laplace",
+    "hook": "Anchor1",
+    "size": 0.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     -0.6100000000000001,
+     0.49000000000000005,
+     0.55
+    ],
+    "max": [
+     -0.49000000000000005,
+     0.6100000000000001,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": "133:10"
+  },
+  {
+   "action": "add_hook",
+   "args": {
+    "object": "Laplace",
+    "hook": "Anchor2",
+    "size": 0.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     0.49000000000000005,
+     -0.6100000000000001,
+     0.55
+    ],
+    "max": [
+     0.6100000000000001,
+     -0.49000000000000005,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": "133:10"
+  },
+  {
+   "action": "add_hook",
+   "args": {
+    "object": "Laplace",
+    "hook": "Anchor3",
+    "size": 0.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     0.49000000000000005,
+     0.49000000000000005,
+     0.55
+    ],
+    "max": [
+     0.6100000000000001,
+     0.6100000000000001,
+     null
+    ],
+    "space": "local",
+    "extend": false
+   },
+   "note": "the three as a vertex group, the anchors",
+   "video_time": "133:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     -0.6100000000000001,
+     0.49000000000000005,
+     0.55
+    ],
+    "max": [
+     -0.49000000000000005,
+     0.6100000000000001,
+     null
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": "133:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Laplace",
+    "element": "VERT",
+    "min": [
+     0.49000000000000005,
+     -0.6100000000000001,
+     0.55
+    ],
+    "max": [
+     0.6100000000000001,
+     -0.49000000000000005,
+     null
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": "133:50"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Laplace",
+    "group": "Anchors",
+    "weight": 1.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Laplace",
+    "type": "LAPLACIANDEFORM",
+    "props": {
+     "vertex_group": "Anchors",
+     "iterations": 4
+    }
+   },
+   "note": "Laplacian Deform with those anchor weights",
+   "video_time": "134:00"
+  },
+  {
+   "action": "bind_modifier",
+   "args": {
+    "object": "Laplace",
+    "modifier": "Laplaciandeform"
+   },
+   "note": "Bind",
+   "video_time": "134:10"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Anchor1",
+    "location": [
+     -4.9,
+     -1.8,
+     2.3
+    ]
+   },
+   "note": "one hook moved: the whole cube bends smoothly after it",
+   "video_time": "134:20"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "LatticeBall",
+    "radius": 0.7,
+    "location": [
+     -3.0,
+     -1.5,
+     0.8
+    ]
+   },
+   "note": "Lattice: a UV sphere",
+   "video_time": "134:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "lattice",
+    "name": "LatticeCage",
+    "size": 1.8,
+    "location": [
+     -3.0,
+     -1.5,
+     0.8
+    ]
+   },
+   "note": "Shift+A > Lattice around it",
+   "video_time": "135:05"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "LatticeCage",
+    "path": "points_u",
+    "value": 3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "LatticeCage",
+    "path": "points_v",
+    "value": 3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "LatticeCage",
+    "path": "points_w",
+    "value": 3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "LatticeBall",
+    "type": "LATTICE",
+    "props": {
+     "object": "LatticeCage"
+    }
+   },
+   "note": "the sphere gets a Lattice modifier with it",
+   "video_time": "135:15"
+  },
+  {
+   "action": "move_lattice_points",
+   "args": {
+    "object": "LatticeCage",
+    "min": [
+     null,
+     null,
+     0.4
+    ],
+    "offset": [
+     0,
+     0,
+     0.35
+    ],
+    "factor": [
+     1.5,
+     1.5,
+     1
+    ]
+   },
+   "note": "lattice edit mode: the top points up and wider, the sphere follows",
+   "video_time": "135:25"
+  },
+  {
+   "action": "move_lattice_points",
+   "args": {
+    "object": "LatticeCage",
+    "min": [
+     null,
+     null,
+     -0.1
+    ],
+    "max": [
+     null,
+     null,
+     0.1
+    ],
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "LatticeBall",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Caged",
+    "size": 1.2,
+    "location": [
+     0.0,
+     -1.5,
+     0.7
+    ]
+   },
+   "note": "Mesh Deform: Suzanne",
+   "video_time": "135:55"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Shell",
+    "size": 1.9,
+    "location": [
+     0.0,
+     -1.5,
+     0.7
+    ]
+   },
+   "note": "a cube as the cage, scaled to cover it, subdivided",
+   "video_time": "136:10"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Shell"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Shell",
+    "cuts": 2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shell",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Shell",
+    "path": "display_type",
+    "value": "WIRE"
+   },
+   "note": "(the cage drawn as wire, not rendered)",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Shell",
+    "path": "hide_render",
+    "value": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Caged",
+    "type": "MESH_DEFORM",
+    "props": {
+     "object": "Shell",
+     "precision": 4
+    }
+   },
+   "note": "Mesh Deform with the cage",
+   "video_time": "136:40"
+  },
+  {
+   "action": "bind_modifier",
+   "args": {
+    "object": "Caged",
+    "modifier": "Mesh_Deform"
+   },
+   "note": "Bind",
+   "video_time": "136:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Shell",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.9
+    ],
+    "space": "local"
+   },
+   "note": "top vertices of the cage moved: Suzanne deforms inside it",
+   "video_time": "137:05"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Shell",
+    "offset": [
+     0,
+     0,
+     0.6
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Shell",
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shell",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Caged",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "WrapBall",
+    "radius": 0.6,
+    "location": [
+     3.0,
+     -1.5,
+     0.6
+    ]
+   },
+   "note": "Shrinkwrap: a UV sphere",
+   "video_time": "137:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Wrapped",
+    "size": 1.4,
+    "location": [
+     3.0,
+     -1.5,
+     1.7
+    ]
+   },
+   "note": "and a plane above it, subdivided",
+   "video_time": "137:40"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Wrapped"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Wrapped",
+    "cuts": 6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Wrapped",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Wrapped",
+    "type": "SHRINKWRAP",
+    "props": {
+     "target": "WrapBall",
+     "offset": 0.04
+    }
+   },
+   "note": "Shrinkwrap onto the sphere, an offset so it shows",
+   "video_time": "138:15"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "WrapBall",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Wrapped",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Twisted",
+    "size": 1,
+    "location": [
+     6.0,
+     -1.5,
+     0
+    ]
+   },
+   "note": "Simple Deform: a tall cube, subdivided",
+   "video_time": "138:55"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Twisted",
+    "dimensions": [
+     0.35,
+     0.35,
+     2.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Twisted",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Twisted"
+   },
+   "note": "edit mode: subdivided, moved up so the origin is at its foot",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Twisted",
+    "cuts": 10
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Twisted",
+    "offset": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Twisted",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Twisted",
+    "type": "SIMPLE_DEFORM",
+    "props": {
+     "deform_method": "TWIST",
+     "angle_deg": 360,
+     "deform_axis": "Z"
+    }
+   },
+   "note": "twist, 360 degrees on Z",
+   "video_time": "139:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Bent",
+    "size": 1,
+    "location": [
+     -6.0,
+     1.5,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "139:45"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Bent",
+    "dimensions": [
+     0.35,
+     0.35,
+     2.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Bent",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Bent"
+   },
+   "note": "edit mode: subdivided, moved up so the origin is at its foot",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Bent",
+    "cuts": 10
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Bent",
+    "offset": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Bent",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Bent",
+    "type": "SIMPLE_DEFORM",
+    "props": {
+     "deform_method": "BEND",
+     "angle_deg": 90,
+     "deform_axis": "X"
+    }
+   },
+   "note": "bend, on X",
+   "video_time": "139:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Tapered",
+    "size": 1,
+    "location": [
+     -3.0,
+     1.5,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": "140:05"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Tapered",
+    "dimensions": [
+     0.35,
+     0.35,
+     2.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Tapered",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Tapered"
+   },
+   "note": "edit mode: subdivided, moved up so the origin is at its foot",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Tapered",
+    "cuts": 10
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Tapered",
+    "offset": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Tapered",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Tapered",
+    "type": "SIMPLE_DEFORM",
+    "props": {
+     "deform_method": "TAPER",
+     "factor": 1.3,
+     "deform_axis": "Z"
+    }
+   },
+   "note": "taper",
+   "video_time": "140:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Smoothed",
+    "size": 1.2,
+    "location": [
+     0.0,
+     1.5,
+     0.7
+    ]
+   },
+   "note": "Smooth: Suzanne",
+   "video_time": "140:40"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Smoothed",
+    "type": "SMOOTH",
+    "props": {
+     "factor": 1.0,
+     "iterations": 8
+    }
+   },
+   "note": "factor up: smoother and a little smaller",
+   "video_time": "141:00"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "LapSmooth",
+    "size": 2,
+    "location": [
+     3.0,
+     1.5,
+     0.05
+    ]
+   },
+   "note": "Laplacian Smooth: a plane, subdivided",
+   "video_time": "141:50"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "LapSmooth"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "LapSmooth",
+    "cuts": 16
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "LapSmooth",
+    "element": "VERT",
+    "min": [
+     0.2641,
+     0.1465,
+     null
+    ],
+    "max": [
+     0.32409999999999994,
+     0.2065,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "a vertex pulled up with proportional editing: an irregular surface",
+   "video_time": "142:00"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "LapSmooth",
+    "offset": [
+     0,
+     0,
+     0.6
+    ],
+    "proportional": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "LapSmooth",
+    "element": "VERT",
+    "min": [
+     -0.44179999999999997,
+     -0.32409999999999994,
+     null
+    ],
+    "max": [
+     -0.38180000000000003,
+     -0.2641,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "a vertex pulled up with proportional editing: an irregular surface",
+   "video_time": "142:00"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "LapSmooth",
+    "offset": [
+     0,
+     0,
+     0.6
+    ],
+    "proportional": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "LapSmooth",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "LapSmooth",
+    "type": "LAPLACIANSMOOTH",
+    "props": {
+     "lambda_factor": 4.0,
+     "iterations": 3
+    }
+   },
+   "note": "the lambda factor up: the spikes relax into soft mounds",
+   "video_time": "142:20"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "SurfaceBar",
+    "size": 1,
+    "location": [
+     6.0,
+     1.5,
+     0.8
+    ]
+   },
+   "note": "Surface Deform: a cube stretched in Y, subdivided",
+   "video_time": "142:40"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "SurfaceBar",
+    "dimensions": [
+     0.3,
+     0.3,
+     1.6
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "SurfaceBar",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "SurfaceBar"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "SurfaceBar",
+    "cuts": 6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "SurfaceBar",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "SurfaceTarget",
+    "size": 1,
+    "location": [
+     6.35,
+     1.5,
+     0.8
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a plane turned 90 on Y beside it, scaled, subdivided: the target",
+   "video_time": "143:00"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "SurfaceTarget",
+    "dimensions": [
+     1.8,
+     0.8,
+     0.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "SurfaceTarget",
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "SurfaceTarget"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "SurfaceTarget",
+    "cuts": 4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "SurfaceTarget",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "SurfaceTarget",
+    "path": "display_type",
+    "value": "WIRE"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "SurfaceTarget",
+    "path": "hide_render",
+    "value": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SurfaceBar",
+    "type": "SURFACE_DEFORM",
+    "props": {
+     "target": "SurfaceTarget"
+    }
+   },
+   "note": "Surface Deform with the plane as target, Bind",
+   "video_time": "143:20"
+  },
+  {
+   "action": "bind_modifier",
+   "args": {
+    "object": "SurfaceBar",
+    "modifier": "Surface_Deform"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "SurfaceTarget",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.5
+    ],
+    "space": "local"
+   },
+   "note": "edit the plane: its top pulled over, the bar follows",
+   "video_time": "143:40"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "SurfaceTarget",
+    "offset": [
+     0.5,
+     0,
+     0
+    ],
+    "proportional": 1.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "SurfaceTarget",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Warped",
+    "size": 2,
+    "location": [
+     -3.0,
+     4.5,
+     0.05
+    ]
+   },
+   "note": "Warp: a plane subdivided (16 cuts)",
+   "video_time": "144:10"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Warped"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Warped",
+    "cuts": 16
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Warped",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "WarpFrom",
+    "location": [
+     -3.0,
+     4.5,
+     0.05
+    ],
+    "size": 0.4
+   },
+   "note": "two empties: one at the plane ...",
+   "video_time": "144:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "WarpTo",
+    "location": [
+     -3.0,
+     4.5,
+     0.95
+    ],
+    "size": 0.4
+   },
+   "note": "... one above it",
+   "video_time": "144:35"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Warped",
+    "type": "WARP",
+    "props": {
+     "object_from": "WarpFrom",
+     "object_to": "WarpTo",
+     "falloff_radius": 0.9
+    }
+   },
+   "note": "Warp from the first to the second: the plane is pulled up between them",
+   "video_time": "144:50"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Waves",
+    "size": 2,
+    "location": [
+     3.0,
+     4.5,
+     0.1
+    ]
+   },
+   "note": "Wave: a plane subdivided (16 cuts), scaled up",
+   "video_time": "145:40"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Waves"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Waves",
+    "cuts": 20
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Waves",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Waves",
+    "type": "WAVE",
+    "props": {
+     "height": 0.18,
+     "width": 0.7,
+     "speed": 0.12
+    }
+   },
+   "note": "the wave modifier: height, width, narrowness, speed -- it plays as an animation",
+   "video_time": "146:00"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Waves",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CastCube",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CastMonkey",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CurveBar",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Displaced",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hooked",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Laplace",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "LatticeBall",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Caged",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Wrapped",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Twisted",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bent",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Tapered",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Smoothed",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "LapSmooth",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "SurfaceBar",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Warped",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Waves",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "WrapBall",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "WrapBall",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -17,
+     12.5
+    ],
+    "look_at": [
+     0,
+     -0.2,
+     0.3
+    ],
+    "lens": 33
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

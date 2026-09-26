@@ -1,0 +1,326 @@
+{
+ "title": "3D text",
+ "summary": "A text object typed in edit mode on two lines (Enter), resolution 12, extruded 0.15 and turned 90 on X to stand, bevelled (depth with resolution 6), centred with character spacing 1.1; the extrusion keyed from 0 to 0.15 (the letters grow), a yellow material, then Object > Convert > Mesh (the text settings and keys go) so the second line can be box-selected and given a red material. Text on Curve: a second text following a Bezier curve (the tutor tries it and deletes it; here it stays as an arched headline).",
+ "objects": [
+  {
+   "name": "Title",
+   "description": "the two-line title"
+  },
+  {
+   "name": "ArchText",
+   "description": "the arched text"
+  }
+ ],
+ "expected_result": "Standing 3D letters: LUCIUS 3D in yellow over SUBSCRIBE in red, with A BLENDER COURSE arched above in white.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "NLAFloor",
+     "MainSpot",
+     "EchoSpot",
+     "MainMonkey",
+     "EchoMonkey"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 100,
+    "current": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "TextFloor",
+    "size": 120,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TextFloor",
+    "name": "TextFloorMat",
+    "base_color": "#2E323A",
+    "roughness": 0.6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_text",
+   "args": {
+    "name": "Title",
+    "body": "LUCIUS 3D\nSUBSCRIBE",
+    "location": [
+     0,
+     0,
+     1.35
+    ],
+    "resolution": 12
+   },
+   "note": "Shift+A > Text; in edit mode the word replaced by typing, Enter for a second line; resolution preview 12",
+   "video_time": "414:19"
+  },
+  {
+   "action": "add_text",
+   "args": {
+    "name": "Title",
+    "extrude": 0.15,
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ],
+    "bevel_depth": 0.025,
+    "bevel_resolution": 6
+   },
+   "note": "Geometry > Extrude 0.15 (the letters get depth), turned 90 on X to stand up; Bevel depth with resolution 6 for rounded edges",
+   "video_time": "416:29"
+  },
+  {
+   "action": "add_text",
+   "args": {
+    "name": "Title",
+    "align_x": "CENTER",
+    "align_y": "CENTER",
+    "space_character": 1.1,
+    "shear": 0.0
+   },
+   "note": "Paragraph: centred, character spacing 1.1 (shear back at 0)",
+   "video_time": "421:51"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Title",
+    "path": "extrude",
+    "value": 0.0,
+    "frame": 1
+   },
+   "note": "extrude keyed: 0 at frame 1 ...",
+   "video_time": "423:17"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Title",
+    "path": "extrude",
+    "value": 0.15,
+    "frame": 50
+   },
+   "note": "... 0.15 at 50 -- the letters grow out (these keys go when it becomes a mesh)",
+   "video_time": "423:40"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Title",
+    "name": "TitleYellow",
+    "base_color": "#FFC21A",
+    "roughness": 0.3,
+    "metallic": 0.3
+   },
+   "note": "a yellow material",
+   "video_time": "424:00"
+  },
+  {
+   "action": "convert_to_mesh",
+   "args": {
+    "object": "Title"
+   },
+   "note": "Object > Convert > Mesh: now its faces can be selected",
+   "video_time": "424:21"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Title",
+    "element": "FACE",
+    "max": [
+     null,
+     0.45,
+     null
+    ]
+   },
+   "note": "the second line (front view, X-ray box select) ...",
+   "video_time": "425:28"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Title",
+    "name": "TitleRed",
+    "base_color": "#D01020",
+    "roughness": 0.3,
+    "metallic": 0.3,
+    "assign": "selected_faces"
+   },
+   "note": "... a new red material slot, Assign",
+   "video_time": "425:47"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Title",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "TextArch",
+    "splines": [
+     {
+      "points": [
+       [
+        -3.4,
+        0,
+        0
+       ],
+       [
+        0,
+        1.1,
+        0
+       ],
+       [
+        3.4,
+        0,
+        0
+       ]
+      ]
+     }
+    ],
+    "location": [
+     0,
+     0,
+     2.75
+    ]
+   },
+   "note": "Text on Curve: a Bezier curve -- beyond the tutorial, kept as an arch over the title",
+   "video_time": "418:38"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "TextArch",
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_text",
+   "args": {
+    "name": "ArchText",
+    "body": "A BLENDER COURSE",
+    "location": [
+     0,
+     0,
+     2.75
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ],
+    "size": 0.55,
+    "extrude": 0.06,
+    "bevel_depth": 0.01,
+    "follow_curve": "TextArch",
+    "offset_x": 1.25
+   },
+   "note": "a second text follows it (Transform > Text on Curve), shifted along to sit in the middle",
+   "video_time": "419:21"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "ArchText",
+    "name": "ArchWhite",
+    "base_color": "#F2F2F2",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "TextArch"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "TextKey",
+    "location": [
+     3.0,
+     -5.0,
+     5.0
+    ],
+    "look_at": [
+     0,
+     0,
+     1.5
+    ],
+    "power": 700,
+    "size": 3.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -9.5,
+     2.6
+    ],
+    "look_at": [
+     0,
+     0,
+     1.9
+    ],
+    "lens": 38
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

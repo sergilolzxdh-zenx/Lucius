@@ -1,0 +1,408 @@
+{
+ "title": "Understanding the interface: a Rubik's cube",
+ "summary": "The first practical session: the default cube coloured, subdivided (2 cuts) into three-by-three faces per side, bevelled (Ctrl+B) so the pieces have rounded black edges, a material per side assigned to its nine stickers in face mode, a few rows recoloured as if turned, rotated for the camera view and rendered.",
+ "objects": [
+  {
+   "name": "Cube",
+   "description": "the Rubik's cube"
+  }
+ ],
+ "expected_result": "A Rubik's cube with black bevelled edges and coloured stickers, a few rows turned.",
+ "steps": [
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Rojo",
+    "base_color": "#C41E3A",
+    "roughness": 0.35
+   },
+   "note": "materials tab > New: the cube red",
+   "video_time": "14:20"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Cube"
+   },
+   "note": "edit mode (Tab), everything selected (A)",
+   "video_time": "16:05"
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Cube",
+    "cuts": 2
+   },
+   "note": "right click > Subdivide, 2 cuts: three by three faces on every side",
+   "video_time": "16:10"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Cube"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Cube",
+    "thickness": 0.05,
+    "depth": 0.012,
+    "individual": true
+   },
+   "note": "the gaps between the pieces: every face inset on its own (I twice), the stickers raised a little (the tutor bevels, Ctrl+B, and then selects the edge loops one by one)",
+   "video_time": "18:40"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Negro",
+    "base_color": "#0E0E0E",
+    "roughness": 0.45
+   },
+   "note": "the rims black, like a real cube's plastic (a new material assigned first to all)",
+   "video_time": "19:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.999
+   },
+   "note": "face select mode (3): the nine stickers of one side",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Blanco",
+    "base_color": "#F4F4F4",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "+ > New > Assign: a colour per side",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.999
+   },
+   "note": "",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Amarillo",
+    "base_color": "#FFD21F",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.999
+   },
+   "note": "",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Verde",
+    "base_color": "#1FA35B",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.999
+   },
+   "note": "",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Azul",
+    "base_color": "#1F5FD6",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.999
+   },
+   "note": "",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "RojoCara",
+    "base_color": "#D0202E",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.999
+   },
+   "note": "",
+   "video_time": "15:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Naranja",
+    "base_color": "#FF6A13",
+    "roughness": 0.35,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": "15:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.999,
+    "min": [
+     null,
+     null,
+     0.35
+    ],
+    "max": [
+     null,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "shift-clicked stickers: the top row of the front turned: orange",
+   "video_time": "16:58"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Naranja",
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.999,
+    "min": [
+     null,
+     -0.35,
+     null
+    ],
+    "max": [
+     null,
+     0.35,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "shift-clicked stickers: a column of the right side: white",
+   "video_time": "16:58"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Blanco",
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.999,
+    "min": [
+     null,
+     null,
+     null
+    ],
+    "max": [
+     null,
+     -0.35,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "shift-clicked stickers: the front row of the top: red",
+   "video_time": "16:58"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "RojoCara",
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.999,
+    "min": [
+     null,
+     null,
+     null
+    ],
+    "max": [
+     -0.35,
+     null,
+     -0.35
+    ],
+    "space": "local"
+   },
+   "note": "shift-clicked stickers: the bottom-left sticker of the front: blue",
+   "video_time": "16:58"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cube",
+    "name": "Azul",
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cube",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Cube",
+    "smooth": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "rotation_deg": [
+     0,
+     0,
+     18
+    ]
+   },
+   "note": "R Z: turned to show it off in the camera view",
+   "video_time": "17:45"
+  }
+ ]
+}

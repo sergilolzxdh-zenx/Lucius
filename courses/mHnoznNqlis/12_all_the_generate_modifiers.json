@@ -1,0 +1,1220 @@
+{
+ "title": "All the Generate modifiers",
+ "summary": "A gallery, one object per Generate modifier as the tutor shows it: Array with an object offset (an empty turned and scaled), Bevel on vertices (a dice), Boolean difference (a sphere carved out and hidden), Build (assembling over 100 frames), Decimate (a subdivided Suzanne down to 5%), Edge Split (crisp rims on a smooth cylinder), Mask (only a vertex group shows), Mirror (half a sphere completed, an edit mirrored), Remesh (blocks, depth 5, on a cube with a hole), Screw (an off-centre circle into a spring), Skin (three edges grown into a body), Solidify + Subdivision (a cup), Triangulate (seen through a Wireframe), Wireframe (a cube cage) and Subdivision Surface.",
+ "objects": [
+  {
+   "name": "ArraySuzanne",
+   "description": ""
+  },
+  {
+   "name": "Dice",
+   "description": ""
+  },
+  {
+   "name": "Carved",
+   "description": ""
+  },
+  {
+   "name": "Built",
+   "description": ""
+  },
+  {
+   "name": "LowPoly",
+   "description": ""
+  },
+  {
+   "name": "EdgeSplit",
+   "description": ""
+  },
+  {
+   "name": "Masked",
+   "description": ""
+  },
+  {
+   "name": "Mirrored",
+   "description": ""
+  },
+  {
+   "name": "Remeshed",
+   "description": ""
+  },
+  {
+   "name": "Spring",
+   "description": ""
+  },
+  {
+   "name": "Skinned",
+   "description": ""
+  },
+  {
+   "name": "Cup",
+   "description": ""
+  },
+  {
+   "name": "Triangles",
+   "description": ""
+  },
+  {
+   "name": "Cage",
+   "description": ""
+  },
+  {
+   "name": "Smooth",
+   "description": ""
+  }
+ ],
+ "expected_result": "A 4 x 4 gallery of coloured objects on a dark floor, each showing one generate modifier.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "ArrayCube"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ArraySuzanne",
+    "size": 0.8,
+    "location": [
+     -5.1,
+     -4.5,
+     0.5
+    ]
+   },
+   "note": "Array: Suzanne",
+   "video_time": "99:05"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "ArrayOffset",
+    "location": [
+     -4.3,
+     -4.4,
+     0.55
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     28
+    ]
+   },
+   "note": "an empty as the offset object",
+   "video_time": "100:40"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "ArrayOffset",
+    "scale": [
+     0.85,
+     0.85,
+     0.85
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ArraySuzanne",
+    "type": "ARRAY",
+    "props": {
+     "count": 4,
+     "use_relative_offset": false,
+     "use_object_offset": true,
+     "offset_object": "ArrayOffset"
+    }
+   },
+   "note": "relative offset off, object offset on: each copy turned and shrunk a step more",
+   "video_time": "100:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Dice",
+    "size": 1.2,
+    "location": [
+     -1.5,
+     -4.5,
+     0.6
+    ]
+   },
+   "note": "Bevel: a cube",
+   "video_time": "101:10"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Dice",
+    "type": "BEVEL",
+    "props": {
+     "affect": "VERTICES",
+     "width": 0.28,
+     "segments": 4
+    }
+   },
+   "note": "the bevel on the vertices, more segments: like a dice",
+   "video_time": "102:15"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Carved",
+    "size": 1.3,
+    "location": [
+     1.5,
+     -4.5,
+     0.65
+    ]
+   },
+   "note": "Boolean: a cube and a sphere moved up into it",
+   "video_time": "102:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Cutter",
+    "radius": 0.75,
+    "location": [
+     1.5,
+     -4.5,
+     1.3
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Carved",
+    "type": "BOOLEAN",
+    "props": {
+     "object": "Cutter",
+     "operation": "DIFFERENCE"
+    }
+   },
+   "note": "difference, the sphere as the object",
+   "video_time": "103:00"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Carved",
+    "modifier": "Boolean"
+   },
+   "note": "applied (Ctrl+A)",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Cutter"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "the sphere moved away: a hollow is left",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Built",
+    "size": 1.2,
+    "location": [
+     4.5,
+     -4.5,
+     0.6
+    ]
+   },
+   "note": "Build: a cube, subdivided (8 cuts) for many faces",
+   "video_time": "105:40"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Built"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Built",
+    "cuts": 8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Built",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Built",
+    "type": "BUILD",
+    "props": {
+     "frame_start": -45,
+     "frame_duration": 100,
+     "use_random_order": true
+    }
+   },
+   "note": "Build: it assembles itself over 100 frames (here caught part-way)",
+   "video_time": "106:00"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "LowPoly",
+    "size": 1.2,
+    "location": [
+     -4.5,
+     -1.5,
+     0.6
+    ]
+   },
+   "note": "Decimate: Suzanne, subdivided twice",
+   "video_time": "106:40"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "LowPoly"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "LowPoly",
+    "cuts": 2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "LowPoly",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "LowPoly",
+    "type": "DECIMATE",
+    "props": {
+     "ratio": 0.05
+    }
+   },
+   "note": "the ratio down to 0.05: far fewer faces, triangles",
+   "video_time": "107:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "EdgeSplit",
+    "radius": 0.55,
+    "depth": 1.2,
+    "vertices": 24,
+    "location": [
+     -1.5,
+     -1.5,
+     0.6
+    ]
+   },
+   "note": "Edge Split: a smooth-shaded cylinder",
+   "video_time": "107:55"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "EdgeSplit",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "EdgeSplit",
+    "type": "EDGE_SPLIT",
+    "props": {
+     "split_angle_deg": 30
+    }
+   },
+   "note": "the edges split apart where the angle is sharp: crisp rims",
+   "video_time": "108:00"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Masked",
+    "radius": 0.7,
+    "location": [
+     1.5,
+     -1.5,
+     0.7
+    ]
+   },
+   "note": "Mask: a UV sphere",
+   "video_time": "108:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Masked",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     0.2
+    ],
+    "space": "local"
+   },
+   "note": "some vertices, into a vertex group (Object Data > Vertex Groups > + > Assign)",
+   "video_time": "109:20"
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Masked",
+    "group": "Visible",
+    "weight": 1.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Masked",
+    "type": "MASK",
+    "props": {
+     "vertex_group": "Visible"
+    }
+   },
+   "note": "the mask shows only that group",
+   "video_time": "109:50"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Masked",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Mirrored",
+    "radius": 0.7,
+    "location": [
+     4.5,
+     -1.5,
+     0.7
+    ]
+   },
+   "note": "Mirror: a UV sphere",
+   "video_time": "110:20"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mirrored",
+    "element": "VERT",
+    "max": [
+     -0.001,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "top view, X-ray: half its vertices deleted",
+   "video_time": "111:10"
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Mirrored",
+    "what": "VERTS"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Mirrored",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Mirrored",
+    "type": "MIRROR",
+    "props": {
+     "use_clip": true
+    }
+   },
+   "note": "Mirror on X: the other half comes back",
+   "video_time": "111:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mirrored",
+    "element": "VERT",
+    "min": [
+     0.45,
+     null,
+     0.1
+    ],
+    "space": "local"
+   },
+   "note": "edit one side: the other follows",
+   "video_time": "112:00"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Mirrored",
+    "offset": [
+     0.3,
+     -0.1,
+     0.15
+    ],
+    "proportional": 0.45
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Mirrored",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Mirrored",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Remeshed",
+    "size": 1.3,
+    "location": [
+     -4.5,
+     1.5,
+     0.65
+    ]
+   },
+   "note": "Remesh: a cube with a hole (a boolean with a cylinder, applied, the cylinder deleted)",
+   "video_time": "112:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Drill",
+    "radius": 0.35,
+    "depth": 2,
+    "location": [
+     -4.5,
+     1.5,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Remeshed",
+    "type": "BOOLEAN",
+    "props": {
+     "object": "Drill",
+     "operation": "DIFFERENCE"
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Remeshed",
+    "modifier": "Boolean"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Drill"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Remeshed",
+    "type": "REMESH",
+    "props": {
+     "mode": "BLOCKS",
+     "octree_depth": 5
+    }
+   },
+   "note": "Remesh (blocks, octree depth 5): the surface rebuilt from evenly spread faces",
+   "video_time": "113:20"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Spring",
+    "radius": 0.16,
+    "vertices": 16,
+    "location": [
+     -1.5,
+     1.5,
+     0.2
+    ]
+   },
+   "note": "Screw: a circle",
+   "video_time": "113:55"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Spring"
+   },
+   "note": "edit mode: moved along Y, so the origin (the screw's centre) stays behind",
+   "video_time": "114:05"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Spring",
+    "offset": [
+     0.45,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Spring",
+    "axis": "x",
+    "angle_deg": 90
+   },
+   "note": "R X 90: standing up",
+   "video_time": "114:30"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Spring",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Spring",
+    "type": "SCREW",
+    "props": {
+     "screw_offset": 0.42,
+     "iterations": 3,
+     "steps": 32,
+     "render_steps": 32
+    }
+   },
+   "note": "the screw modifier on Z, with a screw offset and iterations: a spring",
+   "video_time": "114:20"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Spring",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Skinned",
+    "size": 1,
+    "location": [
+     1.5,
+     1.5,
+     0.25
+    ]
+   },
+   "note": "Skin: a plane",
+   "video_time": "116:10"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Skinned",
+    "element": "VERT",
+    "min": [
+     0.4,
+     0.4,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "one vertex deleted: three vertices, two edges, no face",
+   "video_time": "116:20"
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Skinned",
+    "what": "VERTS"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Skinned",
+    "element": "VERT",
+    "min": [
+     null,
+     0.4,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "a vertex extruded (E) along Y, then up",
+   "video_time": "116:35"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Skinned",
+    "offset": [
+     0,
+     0.5,
+     0.4
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Skinned",
+    "offset": [
+     0.2,
+     0.2,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Skinned",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Skinned",
+    "type": "SKIN"
+   },
+   "note": "the skin modifier: a body grown round the edges",
+   "video_time": "116:55"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Skinned",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Skinned",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Cup",
+    "radius": 0.5,
+    "depth": 1,
+    "vertices": 32,
+    "location": [
+     4.5,
+     1.5,
+     0.5
+    ]
+   },
+   "note": "Solidify: a cylinder with its top deleted: a cup with paper-thin walls",
+   "video_time": "117:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cup",
+    "element": "FACE",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Cup",
+    "what": "FACES"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cup",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Cup",
+    "type": "SOLIDIFY",
+    "props": {
+     "thickness": 0.06
+    }
+   },
+   "note": "thickness",
+   "video_time": "118:25"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Cup",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "and Subdivision Surface below it in the stack (levels 3): a rounded cup",
+   "video_time": "118:45"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Cup",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Triangles",
+    "size": 1.2,
+    "location": [
+     -4.5,
+     4.5,
+     0.6
+    ]
+   },
+   "note": "Triangulate: Suzanne",
+   "video_time": "120:40"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Triangles",
+    "type": "TRIANGULATE"
+   },
+   "note": "every face split into triangles",
+   "video_time": "120:50"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Triangles",
+    "type": "WIREFRAME",
+    "props": {
+     "thickness": 0.015
+    }
+   },
+   "note": "(shown with a wireframe after it, or the triangles wouldn't be seen in a render)",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Cage",
+    "size": 1.2,
+    "location": [
+     -1.5,
+     4.5,
+     0.6
+    ]
+   },
+   "note": "Wireframe: a cube",
+   "video_time": "125:20"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Cage"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Cage",
+    "cuts": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cage",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Cage",
+    "type": "WIREFRAME",
+    "props": {
+     "thickness": 0.06
+    }
+   },
+   "note": "solid turned into sticks, thickness up",
+   "video_time": "125:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Smooth",
+    "size": 1.1,
+    "location": [
+     4.5,
+     4.5,
+     0.62
+    ]
+   },
+   "note": "Subdivision Surface: a cube rounded off",
+   "video_time": "119:00"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Smooth",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Smooth",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "ArraySuzanne",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Dice",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Carved",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Built",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "LowPoly",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "EdgeSplit",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Masked",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mirrored",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Remeshed",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Spring",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Skinned",
+    "name": "Galeria0",
+    "base_color": "#D96C4E",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cup",
+    "name": "Galeria1",
+    "base_color": "#E8B04B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Triangles",
+    "name": "Galeria2",
+    "base_color": "#6FB36B",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cage",
+    "name": "Galeria3",
+    "base_color": "#4E9BD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Smooth",
+    "name": "Galeria4",
+    "base_color": "#9B6FD9",
+    "roughness": 0.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -15.5,
+     11.5
+    ],
+    "look_at": [
+     0,
+     -0.4,
+     0
+    ],
+    "lens": 38
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

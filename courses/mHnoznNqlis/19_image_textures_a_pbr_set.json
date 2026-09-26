@@ -1,0 +1,1267 @@
+{
+ "title": "Image textures: a PBR set",
+ "summary": "Image textures and PBR maps. The tutor downloads a brick set (colour, normal, roughness, displacement, AO); here Lucius bakes its own from a procedural brick material with Cycles into the same five images. Then the tutor's steps: an Image Texture with the colour image on Object coordinates, fixed on the sides with Box projection; the better way through UV coordinates and UVs scaled so the image fills each face; the normal map (Non-Color) through a Normal Map node; roughness (Non-Color); the displacement into a Bump node (strength 0.5) fed by the normal map; the AO map as the factor of a Mix Color for coloured (blue) fake shadows. Beyond the tutorial: a wall with the full set tiled by scaling its UVs.",
+ "objects": [
+  {
+   "name": "BoxProjected",
+   "description": ""
+  },
+  {
+   "name": "ColorOnly",
+   "description": ""
+  },
+  {
+   "name": "NormalMapped",
+   "description": ""
+  },
+  {
+   "name": "FullPBR",
+   "description": ""
+  },
+  {
+   "name": "BlueShadows",
+   "description": ""
+  },
+  {
+   "name": "BrickBackdrop",
+   "description": ""
+  }
+ ],
+ "expected_result": "Five brick cubes in front of a tiled brick wall: box-projected, flat colour, normal-mapped, full PBR with relief, and one with blue shadows in the joints.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "NoiseMonkey",
+     "PatchMonkey",
+     "GlowBall",
+     "Musgrave",
+     "WavesCube",
+     "CellDist",
+     "CellColor",
+     "CellPos"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "BrickSource",
+    "size": 2,
+    "location": [
+     0,
+     6,
+     0.01
+    ]
+   },
+   "note": "the texture set: a plane with a procedural brick material (a tileable 8 x 16 brick pattern -- 4 x 8 bricks -- on its UVs, grit from a noise), to be baked into image maps",
+   "video_time": "221:30"
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "BrickSource",
+    "method": "RESET"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickSource",
+    "object": "BrickSource",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Bricks",
+      "type": "ShaderNodeTexBrick",
+      "props": {
+       "offset": 0.5,
+       "offset_frequency": 2
+      },
+      "inputs": {
+       "Scale": 2.0,
+       "Brick Width": 0.5,
+       "Row Height": 0.25,
+       "Mortar Size": 0.025,
+       "Mortar Smooth": 0.3,
+       "Bias": 0.0,
+       "Color1": "#7E2A1B",
+       "Color2": "#A4492C",
+       "Mortar": "#8F8B84"
+      }
+     },
+     {
+      "name": "Grit",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 48.0,
+       "Detail": 10.0,
+       "Roughness": 0.65
+      }
+     },
+     {
+      "name": "Blotch",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 6.0,
+       "Detail": 4.0
+      }
+     },
+     {
+      "name": "Dirt",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.3,
+        "#6E6A64"
+       ],
+       [
+        0.7,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Tone",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 0.8
+      }
+     },
+     {
+      "name": "Raised",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 0.72,
+       "To Max": 0.08
+      }
+     },
+     {
+      "name": "Height",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY_ADD",
+       "use_clamp": true
+      },
+      "inputs": {
+       "1": 0.22
+      }
+     },
+     {
+      "name": "Rough",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 0.95,
+       "To Max": 0.62
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 1.0,
+       "Distance": 0.12
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Emission Strength": 1.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Bricks",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Grit",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Blotch",
+      "input": "Vector"
+     },
+     {
+      "from": "Blotch",
+      "output": "Fac",
+      "to": "Dirt",
+      "input": "Fac"
+     },
+     {
+      "from": "Bricks",
+      "output": "Color",
+      "to": "Tone",
+      "input": "A"
+     },
+     {
+      "from": "Dirt",
+      "output": "Color",
+      "to": "Tone",
+      "input": "B"
+     },
+     {
+      "from": "Tone",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Bricks",
+      "output": "Fac",
+      "to": "Raised",
+      "input": "Value"
+     },
+     {
+      "from": "Grit",
+      "output": "Fac",
+      "to": "Height",
+      "input": 0
+     },
+     {
+      "from": "Raised",
+      "output": 0,
+      "to": "Height",
+      "input": 2
+     },
+     {
+      "from": "Height",
+      "output": 0,
+      "to": "Rough",
+      "input": "Value"
+     },
+     {
+      "from": "Rough",
+      "output": 0,
+      "to": "Surface",
+      "input": "Roughness"
+     },
+     {
+      "from": "Height",
+      "output": 0,
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Height",
+      "output": 0,
+      "to": "Surface",
+      "input": "Emission Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the source material: colour, height (bricks raised, mortar low, grit), roughness from the height, a bump for the normal; the height in the emission so it can be baked too",
+   "video_time": null
+  },
+  {
+   "action": "bake_texture",
+   "args": {
+    "type": "DIFFUSE",
+    "path": "textures/mc_bricks_color.png",
+    "non_color": false,
+    "object": "BrickSource",
+    "width": 1024,
+    "height": 1024,
+    "samples": 4
+   },
+   "note": "bake the colour map (Diffuse, colour only): the ..._Color.png of the set",
+   "video_time": "221:58"
+  },
+  {
+   "action": "bake_texture",
+   "args": {
+    "type": "NORMAL",
+    "path": "textures/mc_bricks_normal.png",
+    "object": "BrickSource",
+    "width": 1024,
+    "height": 1024,
+    "samples": 4
+   },
+   "note": "the normal map (tangent space, OpenGL like NormalGL)",
+   "video_time": "225:04"
+  },
+  {
+   "action": "bake_texture",
+   "args": {
+    "type": "ROUGHNESS",
+    "path": "textures/mc_bricks_roughness.png",
+    "object": "BrickSource",
+    "width": 1024,
+    "height": 1024,
+    "samples": 4
+   },
+   "note": "the roughness map",
+   "video_time": "226:32"
+  },
+  {
+   "action": "bake_texture",
+   "args": {
+    "type": "EMIT",
+    "path": "textures/mc_bricks_height.png",
+    "object": "BrickSource",
+    "width": 1024,
+    "height": 1024,
+    "samples": 4
+   },
+   "note": "the displacement (height) map, through the emission",
+   "video_time": "227:08"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickSource",
+    "nodes": [
+     {
+      "name": "Occlusion",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.1,
+        "#1A1A1A"
+       ],
+       [
+        0.7,
+        "#FFFFFF"
+       ]
+      ]
+     }
+    ],
+    "links": [
+     {
+      "from": "Height",
+      "output": 0,
+      "to": "Occlusion",
+      "input": "Fac"
+     },
+     {
+      "from": "Occlusion",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Emission Color"
+     }
+    ]
+   },
+   "note": "the ambient occlusion map: dark in the mortar joints and brick edges, from the height",
+   "video_time": null
+  },
+  {
+   "action": "bake_texture",
+   "args": {
+    "type": "EMIT",
+    "path": "textures/mc_bricks_ao.png",
+    "object": "BrickSource",
+    "width": 1024,
+    "height": 1024,
+    "samples": 4
+   },
+   "note": "",
+   "video_time": "228:45"
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "BrickSource"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "the source plane has done its job",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BoxProjected",
+    "size": 1.3,
+    "location": [
+     -4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "ColorOnly",
+    "size": 1.3,
+    "location": [
+     -2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "NormalMapped",
+    "size": 1.3,
+    "location": [
+     0.0,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "FullPBR",
+    "size": 1.3,
+    "location": [
+     2.2,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BlueShadows",
+    "size": 1.3,
+    "location": [
+     4.4,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickBox",
+    "object": "BoxProjected",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png",
+      "projection": "BOX"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "an Image Texture node with the colour image into the base colour; Texture Coordinate > Object into its vector: right on top, smeared on the sides -- until the projection goes from Flat to Box",
+   "video_time": "223:01"
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "ColorOnly",
+    "method": "CUBE_PROJECT",
+    "size": 1.3
+   },
+   "note": "the better way, UV maps: the cube's UVs laid out (cube projection) and scaled until the whole image fits each face",
+   "video_time": "223:40"
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "NormalMapped",
+    "method": "CUBE_PROJECT",
+    "size": 1.3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "FullPBR",
+    "method": "CUBE_PROJECT",
+    "size": 1.3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "BlueShadows",
+    "method": "CUBE_PROJECT",
+    "size": 1.3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickUV",
+    "object": "ColorOnly",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "the UV output into the image's vector (projection back to Flat): flat bricks",
+   "video_time": "223:13"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickNormal",
+    "object": "NormalMapped",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     },
+     {
+      "name": "Normal",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_normal.png",
+      "non_color": true
+     },
+     {
+      "name": "NormalMap",
+      "type": "ShaderNodeNormalMap",
+      "inputs": {
+       "Strength": 2.0
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Normal",
+      "input": "Vector"
+     },
+     {
+      "from": "Normal",
+      "output": "Color",
+      "to": "NormalMap",
+      "input": "Color"
+     },
+     {
+      "from": "NormalMap",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "the normal map: the node duplicated (Shift+D), the NormalGL image, colour space Non-Color, through a Normal Map node (strength up) into the normal",
+   "video_time": "225:11"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickPBR",
+    "object": "FullPBR",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     },
+     {
+      "name": "Normal",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_normal.png",
+      "non_color": true
+     },
+     {
+      "name": "Roughness",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_roughness.png",
+      "non_color": true
+     },
+     {
+      "name": "Height",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_height.png",
+      "non_color": true
+     },
+     {
+      "name": "NormalMap",
+      "type": "ShaderNodeNormalMap",
+      "inputs": {
+       "Strength": 2.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5,
+       "Distance": 0.1
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Normal",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Roughness",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Height",
+      "input": "Vector"
+     },
+     {
+      "from": "Normal",
+      "output": "Color",
+      "to": "NormalMap",
+      "input": "Color"
+     },
+     {
+      "from": "Height",
+      "output": "Color",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "NormalMap",
+      "output": "Normal",
+      "to": "Bump",
+      "input": "Normal"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Roughness",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Roughness"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "+ roughness (Non-Color) into Roughness, + the displacement (Non-Color) as the height of a Bump node, strength 0.5, the normal map into the bump's normal and the bump into the BSDF: cracks and shadows",
+   "video_time": "228:15"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickAO",
+    "object": "BlueShadows",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     },
+     {
+      "name": "Normal",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_normal.png",
+      "non_color": true
+     },
+     {
+      "name": "Roughness",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_roughness.png",
+      "non_color": true
+     },
+     {
+      "name": "Height",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_height.png",
+      "non_color": true
+     },
+     {
+      "name": "Ao",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_ao.png",
+      "non_color": true
+     },
+     {
+      "name": "NormalMap",
+      "type": "ShaderNodeNormalMap",
+      "inputs": {
+       "Strength": 2.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5,
+       "Distance": 0.1
+      }
+     },
+     {
+      "name": "AOMix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "A": "#1D4ED8"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Normal",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Roughness",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Height",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Ao",
+      "input": "Vector"
+     },
+     {
+      "from": "Normal",
+      "output": "Color",
+      "to": "NormalMap",
+      "input": "Color"
+     },
+     {
+      "from": "Height",
+      "output": "Color",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "NormalMap",
+      "output": "Normal",
+      "to": "Bump",
+      "input": "Normal"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Roughness",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Roughness"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "AOMix",
+      "input": "B"
+     },
+     {
+      "from": "Ao",
+      "output": "Color",
+      "to": "AOMix",
+      "input": "Factor"
+     },
+     {
+      "from": "AOMix",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "+ ambient occlusion (Non-Color) as the factor of a Mix Color between blue (A) and the colour image (B): coloured fake shadows in the joints",
+   "video_time": "229:34"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "BrickBackdrop",
+    "size": 1,
+    "location": [
+     0,
+     3.0,
+     1.9
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "beyond the tutorial: a wall behind, the same PBR set with the UVs scaled (9 x 3) so the image repeats seamlessly (it tiles)",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "BrickBackdrop",
+    "dimensions": [
+     12.0,
+     3.8,
+     0.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "BrickBackdrop",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "BrickBackdrop",
+    "method": "RESET"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "uv_transform",
+   "args": {
+    "object": "BrickBackdrop",
+    "scale": [
+     9.2,
+     2.9
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "BrickWallPBR",
+    "object": "BrickBackdrop",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Color",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_color.png"
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     },
+     {
+      "name": "Normal",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_normal.png",
+      "non_color": true
+     },
+     {
+      "name": "Roughness",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_roughness.png",
+      "non_color": true
+     },
+     {
+      "name": "Height",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_height.png",
+      "non_color": true
+     },
+     {
+      "name": "Ao",
+      "type": "ShaderNodeTexImage",
+      "image": "textures/mc_bricks_ao.png",
+      "non_color": true
+     },
+     {
+      "name": "NormalMap",
+      "type": "ShaderNodeNormalMap",
+      "inputs": {
+       "Strength": 2.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5,
+       "Distance": 0.1
+      }
+     },
+     {
+      "name": "AOMix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "A": "#2B2B2B"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Color",
+      "input": "Vector"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Normal",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Roughness",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Height",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Ao",
+      "input": "Vector"
+     },
+     {
+      "from": "Normal",
+      "output": "Color",
+      "to": "NormalMap",
+      "input": "Color"
+     },
+     {
+      "from": "Height",
+      "output": "Color",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "NormalMap",
+      "output": "Normal",
+      "to": "Bump",
+      "input": "Normal"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Roughness",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Roughness"
+     },
+     {
+      "from": "Color",
+      "output": "Color",
+      "to": "AOMix",
+      "input": "B"
+     },
+     {
+      "from": "Ao",
+      "output": "Color",
+      "to": "AOMix",
+      "input": "Factor"
+     },
+     {
+      "from": "AOMix",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     }
+    ]
+   },
+   "note": "the wall's material: the full chain, dark (not blue) shadows",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -9.0,
+     3.0
+    ],
+    "look_at": [
+     0,
+     0.8,
+     1.1
+    ],
+    "lens": 30
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

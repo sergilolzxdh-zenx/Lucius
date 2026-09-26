@@ -1,0 +1,554 @@
+{
+ "title": "Node components: the basics",
+ "summary": "Materials with nodes, lit with a three-point setup (key, fill and back area lights): a magic texture through Texture Coordinate > Generated into a Principled BSDF and the Material Output; materials linked (Ctrl+L) from a red cube to two spheres; the three maps on a brick texture (Generated stretches when the cube is scaled, Object keeps it square, UV maps every side) and the UVs rotated in the UV editor; an image texture on UV coordinates (a generated colour grid in place of the tutor's downloaded wood photo), its UVs scaled.",
+ "objects": [
+  {
+   "name": "MagicCube",
+   "description": ""
+  },
+  {
+   "name": "RedCube",
+   "description": ""
+  },
+  {
+   "name": "BrickCube",
+   "description": ""
+  },
+  {
+   "name": "ImageCube",
+   "description": ""
+  }
+ ],
+ "expected_result": "A magic-pattern cube, a red cube with two red spheres, a brick box with rotated bricks and a colour-grid cube, softly lit on a dark floor.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "CastCube",
+     "CastMonkey",
+     "CurveBar",
+     "Displaced",
+     "Hooked",
+     "Laplace",
+     "LatticeBall",
+     "Caged",
+     "Wrapped",
+     "Twisted",
+     "Bent",
+     "Tapered",
+     "Smoothed",
+     "LapSmooth",
+     "SurfaceBar",
+     "Warped",
+     "Waves",
+     "WrapBall",
+     "BendPath",
+     "LatticeCage",
+     "Shell",
+     "SurfaceTarget"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 100,
+    "current": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "KeyLight",
+    "location": [
+     3.5,
+     -5.0,
+     4.5
+    ],
+    "look_at": [
+     0.5,
+     0,
+     0.6
+    ],
+    "power": 550,
+    "size": 3
+   },
+   "note": "three-point lighting: the key light, an area light in front, scaled up, power ~550 W",
+   "video_time": "150:50"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "FillLight",
+    "location": [
+     -5.0,
+     -4.0,
+     3.5
+    ],
+    "look_at": [
+     0.5,
+     0,
+     0.6
+    ],
+    "power": 300,
+    "size": 3
+   },
+   "note": "the fill light, Shift+D to the other side, 300 W",
+   "video_time": "152:00"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "BackLight",
+    "location": [
+     0.5,
+     6.0,
+     4.0
+    ],
+    "look_at": [
+     0.5,
+     0,
+     0.6
+    ],
+    "power": 100,
+    "size": 3
+   },
+   "note": "the back light behind, turned 180 degrees, ~100 W",
+   "video_time": "152:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "MagicCube",
+    "size": 1.4,
+    "location": [
+     -3.4,
+     0,
+     0.7
+    ]
+   },
+   "note": "a cube for the first material",
+   "video_time": "154:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Magico",
+    "object": "MagicCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexMagic",
+      "inputs": {
+       "Scale": 4.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a new material in the shader editor: Shift+A > Input > Texture Coordinate, Texture > Magic, Shader > Principled BSDF, Output > Material Output; sockets of the same colour joined",
+   "video_time": "155:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RedCube",
+    "size": 1.0,
+    "location": [
+     -1.1,
+     0.3,
+     0.5
+    ]
+   },
+   "note": "linking materials: a red cube ...",
+   "video_time": "156:45"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RedCube",
+    "name": "Rojo",
+    "base_color": "#C8242B",
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Ball",
+    "radius": 0.4,
+    "location": [
+     -1.5,
+     -0.6,
+     0.4
+    ]
+   },
+   "note": "... a yellow UV sphere above, duplicated",
+   "video_time": "157:00"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Ball",
+    "name": "Amarillo",
+    "base_color": "#F0C21E",
+    "roughness": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ball",
+    "new_name": "Ball.001",
+    "offset": [
+     0.85,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Ball",
+    "name": "Rojo"
+   },
+   "note": "the spheres selected, the cube last, Ctrl+L > Link Materials: they take the cube's red",
+   "video_time": "157:40"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Ball.001",
+    "name": "Rojo"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BrickCube",
+    "size": 1.2,
+    "location": [
+     1.4,
+     0,
+     0.6
+    ]
+   },
+   "note": "maps: a cube with a brick texture",
+   "video_time": "158:00"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Ladrillo",
+    "object": "BrickCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexBrick",
+      "props": {
+       "offset": 0.5
+      },
+      "inputs": {
+       "Brick Width": 1.0,
+       "Row Height": 1.0,
+       "Scale": 3.0,
+       "Mortar Size": 0.04,
+       "Color1": "#9C3D26",
+       "Color2": "#B8553A",
+       "Mortar": "#D9D2C5"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Generated",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "texture coordinate + brick texture; offset 0.5 (every other row shifted); brick width and row height 1 and scale 3: squares",
+   "video_time": "158:10"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "BrickCube",
+    "scale": [
+     1,
+     1.7,
+     1
+    ]
+   },
+   "note": "scaled in Y: with Generated the bricks stretch (and the sides show nothing)",
+   "video_time": "160:00"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Ladrillo",
+    "nodes": [
+     {
+      "name": "Pattern",
+      "inputs": {
+       "Scale": 14.0
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Pattern",
+      "input": "Vector"
+     }
+    ]
+   },
+   "note": "Object coordinates keep them square; UV maps every side (its scale raised: each face is a small part of the UV square)",
+   "video_time": "160:20"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "BrickCube"
+   },
+   "note": "the UV editor: everything selected (A) ...",
+   "video_time": "161:40"
+  },
+  {
+   "action": "uv_transform",
+   "args": {
+    "object": "BrickCube",
+    "rotate_deg": 30
+   },
+   "note": "... rotated (R): the texture turns with it",
+   "video_time": "161:50"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "BrickCube",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "ImageCube",
+    "size": 1.2,
+    "location": [
+     3.9,
+     0,
+     0.6
+    ]
+   },
+   "note": "an image texture on UV coordinates",
+   "video_time": "162:55"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Imagen",
+    "object": "ImageCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Pattern",
+      "type": "ShaderNodeTexImage",
+      "generated_image": {
+       "name": "ColorGrid",
+       "type": "COLOR_GRID",
+       "width": 1024,
+       "height": 1024
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Pattern",
+      "input": "Vector"
+     },
+     {
+      "from": "Pattern",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Shift+A > Texture > Image Texture > Open (the tutor downloads a wood photo; here a picture Blender generates, a colour grid) into the base colour",
+   "video_time": "163:10"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "ImageCube"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "uv_transform",
+   "args": {
+    "object": "ImageCube",
+    "scale": [
+     1.6,
+     1.6
+    ]
+   },
+   "note": "UVs scaled up: the image repeats smaller",
+   "video_time": "163:40"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "ImageCube",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#1E2126",
+    "strength": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.3,
+     -9.5,
+     3.8
+    ],
+    "look_at": [
+     0.3,
+     0,
+     0.6
+    ],
+    "lens": 30
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

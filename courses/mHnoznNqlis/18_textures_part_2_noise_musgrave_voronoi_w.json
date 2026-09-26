@@ -1,0 +1,683 @@
+{
+ "title": "Textures part 2: noise, Musgrave, voronoi, wave",
+ "summary": "Noise in detail: its colour on a smoothed Suzanne, its factor through a colour ramp as black patches, and through a ramp into the emission colour as glowing patches; Musgrave as a noise texture with Normalize off straight into the output; voronoi's Distance, Color and Position outputs; a wave texture's rings with distortion.",
+ "objects": [
+  {
+   "name": "NoiseMonkey",
+   "description": ""
+  },
+  {
+   "name": "PatchMonkey",
+   "description": ""
+  },
+  {
+   "name": "GlowBall",
+   "description": ""
+  },
+  {
+   "name": "Musgrave",
+   "description": ""
+  },
+  {
+   "name": "WavesCube",
+   "description": ""
+  },
+  {
+   "name": "CellDist",
+   "description": ""
+  },
+  {
+   "name": "CellColor",
+   "description": ""
+  },
+  {
+   "name": "CellPos",
+   "description": ""
+  }
+ ],
+ "expected_result": "Two Suzannes (rainbow noise, black patches on yellow), a sphere with glowing orange patches, a Musgrave sphere, a wood-ring cube, and three voronoi cubes behind.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Tiles",
+     "Checks",
+     "Fade",
+     "Fabric",
+     "Tablecloth"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "NoiseMonkey",
+    "size": 1.4,
+    "location": [
+     -4.8,
+     0,
+     0.75
+    ]
+   },
+   "note": "Suzanne, with a subdivision surface (its shape was rough)",
+   "video_time": "204:30"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "NoiseMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "NoiseMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "PatchMonkey",
+    "size": 1.4,
+    "location": [
+     -2.4,
+     0,
+     0.75
+    ]
+   },
+   "note": "Suzanne, with a subdivision surface (its shape was rough)",
+   "video_time": "204:30"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "PatchMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "PatchMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "GlowBall",
+    "radius": 0.75,
+    "location": [
+     0.0,
+     0,
+     0.75
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "GlowBall",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Musgrave",
+    "radius": 0.75,
+    "location": [
+     2.4,
+     0,
+     0.75
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Musgrave",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "WavesCube",
+    "size": 1.3,
+    "location": [
+     4.8,
+     0,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CellDist",
+    "size": 1.3,
+    "location": [
+     -2.4,
+     2.6,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CellColor",
+    "size": 1.3,
+    "location": [
+     0.0,
+     2.6,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CellPos",
+    "size": 1.3,
+    "location": [
+     2.4,
+     2.6,
+     0.65
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Ruido",
+    "object": "NoiseMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Noise",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 4.0,
+       "Detail": 8.0,
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Noise",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the noise texture's colour: scale, detail (more blending), roughness, distortion (0 looks natural)",
+   "video_time": "205:10"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Manchas",
+    "object": "PatchMonkey",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Noise",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 5.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Patches",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#141414"
+       ],
+       [
+        0.52,
+        "#E8B730"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Noise",
+      "output": "Fac",
+      "to": "Patches",
+      "input": "Fac"
+     },
+     {
+      "from": "Patches",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "its factor through a colour ramp: black patches on yellow",
+   "video_time": "208:40"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Brasas",
+    "object": "GlowBall",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Noise",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 3.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Patches",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.5,
+        "#000000"
+       ],
+       [
+        0.62,
+        "#FFB21E"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#2A2A2A",
+       "Emission Strength": 6.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Noise",
+      "output": "Fac",
+      "to": "Patches",
+      "input": "Fac"
+     },
+     {
+      "from": "Patches",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Emission Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "his favourite: the noise through a colour ramp into the emission colour, strength 6 -- glowing patches (the black handle moved towards the yellow shrinks them)",
+   "video_time": "210:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Musgrave",
+    "object": "Musgrave",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Noise",
+      "type": "ShaderNodeTexNoise",
+      "props": {
+       "normalize": false
+      },
+      "inputs": {
+       "Scale": 3.0,
+       "Detail": 10.0,
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Noise",
+      "output": "Fac",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Musgrave (removed in 4.1): a noise texture straight into the material output with Normalize off",
+   "video_time": "212:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "VoronoiDistance",
+    "object": "CellDist",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 4.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Cells",
+      "output": "Distance",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "voronoi, three outputs: Distance (a faint gradient) ...",
+   "video_time": "214:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "VoronoiColor",
+    "object": "CellColor",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 4.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Cells",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "... Color (colourful cells) ...",
+   "video_time": "214:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "VoronoiPosition",
+    "object": "CellPos",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 4.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Cells",
+      "output": "Position",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "... Position (a gradient-like texture)",
+   "video_time": "214:30"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Ondas",
+    "object": "WavesCube",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Waves",
+      "type": "ShaderNodeTexWave",
+      "props": {
+       "wave_type": "RINGS"
+      },
+      "inputs": {
+       "Scale": 3.0,
+       "Distortion": 4.0,
+       "Detail": 3.0
+      }
+     },
+     {
+      "name": "Tint",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#5A3312"
+       ],
+       [
+        1.0,
+        "#D9A066"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Waves",
+      "input": "Vector"
+     },
+     {
+      "from": "Waves",
+      "output": "Fac",
+      "to": "Tint",
+      "input": "Fac"
+     },
+     {
+      "from": "Tint",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the wave texture: rings with noise distortion (bands work the same way) -- wood-like",
+   "video_time": "217:10"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -10.5,
+     5.2
+    ],
+    "look_at": [
+     0,
+     1.0,
+     0.7
+    ],
+    "lens": 28
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

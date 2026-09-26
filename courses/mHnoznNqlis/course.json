@@ -1,0 +1,483 @@
+{
+ "video_id": "mHnoznNqlis",
+ "url": "https://www.youtube.com/watch?v=mHnoznNqlis",
+ "title": "The COMPLETE BLENDER MASTERCOURSE (Part-1) #blender #b3d #animation",
+ "duration": 43119,
+ "language": "en",
+ "channel": "JB 3D Studio",
+ "chapters": [
+  {
+   "title": "Introduction",
+   "start_time": 0,
+   "end_time": 44
+  },
+  {
+   "title": "Chap-1 About Blender: Installation",
+   "start_time": 44,
+   "end_time": 233
+  },
+  {
+   "title": "Chap-2 Understanding the Interface of Blender",
+   "start_time": 233,
+   "end_time": 1297
+  },
+  {
+   "title": "Chap-3 Editors, Workspaces & Themes in Blender",
+   "start_time": 1297,
+   "end_time": 1892
+  },
+  {
+   "title": "Chap-4 Navigating & Saving in Blender",
+   "start_time": 1892,
+   "end_time": 2237
+  },
+  {
+   "title": "Chap-5 Objects in 3D View Editor",
+   "start_time": 2237,
+   "end_time": 2979
+  },
+  {
+   "title": "Chap-6 Editing Objects in Blender",
+   "start_time": 2979,
+   "end_time": 3664
+  },
+  {
+   "title": "Chap-7 Editing Tools in Blender",
+   "start_time": 3664,
+   "end_time": 4116
+  },
+  {
+   "title": "Chap-8 Modeling Basic Objects in Blender",
+   "start_time": 4116,
+   "end_time": 5242
+  },
+  {
+   "title": "Chap-9 Advanced Tools in Blender",
+   "start_time": 5242,
+   "end_time": 5761
+  },
+  {
+   "title": "Chap-10 Modifiers in Blender",
+   "start_time": 5761,
+   "end_time": 5929
+  },
+  {
+   "title": "Chap-11 All Generate Modifiers",
+   "start_time": 5929,
+   "end_time": 7549
+  },
+  {
+   "title": "Chap-12All Deform Modifiers",
+   "start_time": 7549,
+   "end_time": 8850
+  },
+  {
+   "title": "Chap-13 Node Components (Basics)",
+   "start_time": 8850,
+   "end_time": 9833
+  },
+  {
+   "title": "Chap-14 Node Components (Intermediate)",
+   "start_time": 9833,
+   "end_time": 10923
+  },
+  {
+   "title": "Chap-15 Node Components (Advanced)",
+   "start_time": 10923,
+   "end_time": 11285
+  },
+  {
+   "title": "Chap-16 Textures (Part-1)",
+   "start_time": 11285,
+   "end_time": 12147
+  },
+  {
+   "title": "Chap-17 Textures (Part-2)",
+   "start_time": 12147,
+   "end_time": 13177
+  },
+  {
+   "title": "Chap-18 Image Textures",
+   "start_time": 13177,
+   "end_time": 13863
+  },
+  {
+   "title": "Chap-19 Using Object Shape to place Materials (Vertex Paint)",
+   "start_time": 13863,
+   "end_time": 14336
+  },
+  {
+   "title": "Chap-20 Object Info Node",
+   "start_time": 14336,
+   "end_time": 14767
+  },
+  {
+   "title": "Chap-21 Basic Shaders (Part-1)",
+   "start_time": 14767,
+   "end_time": 16353
+  },
+  {
+   "title": "Chap-22 Basic Shaders (Part-2)",
+   "start_time": 16353,
+   "end_time": 18312
+  },
+  {
+   "title": "Chap-23 Procedural Shaders (Part-1)",
+   "start_time": 18312,
+   "end_time": 19747
+  },
+  {
+   "title": "Chap-24 Procedural Shaders (Part-2)",
+   "start_time": 19747,
+   "end_time": 20505
+  },
+  {
+   "title": "Chap-25 Scene Lighting & Camera",
+   "start_time": 20505,
+   "end_time": 21259
+  },
+  {
+   "title": "Chap-26 Animation (Basics)",
+   "start_time": 21259,
+   "end_time": 23290
+  },
+  {
+   "title": "Chap-27 Animation (Advanced) Part-1",
+   "start_time": 23290,
+   "end_time": 24155
+  },
+  {
+   "title": "Chap-28 Animation (Advanced) Part-2",
+   "start_time": 24155,
+   "end_time": 24800
+  },
+  {
+   "title": "Chap-29 3D Text in Blender",
+   "start_time": 24800,
+   "end_time": 25579
+  },
+  {
+   "title": "Chap-30 Geometry Nodes: Creating a Snowman",
+   "start_time": 25579,
+   "end_time": 26641
+  },
+  {
+   "title": "Chap-31 Geometry Nodes: Creating Buildings",
+   "start_time": 26641,
+   "end_time": 28535
+  },
+  {
+   "title": "Chap-32 Geometry Nodes: Creating Fence",
+   "start_time": 28535,
+   "end_time": 29535
+  },
+  {
+   "title": "Chap-33 Geometry Nodes: Creating Base of Landscape",
+   "start_time": 29535,
+   "end_time": 30307
+  },
+  {
+   "title": "Chap-34 Geometry Nodes: Creating Grass",
+   "start_time": 30307,
+   "end_time": 31894
+  },
+  {
+   "title": "Chap-35 Geometry Nodes: Creating Rocks",
+   "start_time": 31894,
+   "end_time": 33578
+  },
+  {
+   "title": "Chap-36 Geometry Nodes: Creating a House",
+   "start_time": 33578,
+   "end_time": 36600
+  },
+  {
+   "title": "Chap-37 Geometry Nodes: Creating a Donut",
+   "start_time": 36600,
+   "end_time": 37973
+  },
+  {
+   "title": "Chap-38 Geometry Nodes: Creating a Meteor Apocalypse Scene",
+   "start_time": 37973,
+   "end_time": 40041
+  },
+  {
+   "title": "Chap-39 Geometry Nodes: Creating a Sci-Fi Corridor",
+   "start_time": 40041,
+   "end_time": 41959
+  },
+  {
+   "title": "Chap-40 Geometry Nodes: Creating a Billboard with Text",
+   "start_time": 41959,
+   "end_time": 43119
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/mHnoznNqlis` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 3,
+   "title": "Chap-2 Understanding the Interface of Blender",
+   "recipe": "03_understanding_the_interface_a_rubik_s_cu.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/03.jpg",
+   "frame_at": "20:05",
+   "note": "The tutor's Rubik's cube: default cube coloured, subdivided with 2 cuts, a material per side assigned in face mode, rows recoloured, rotated for the camera. For the black edges he bevels and then picks each edge loop by hand; here every face is inset on its own (I twice, a little depth), the rims black and the raised stickers picked by facing direction -- the same look, cleaner."
+  },
+  {
+   "chapter": 6,
+   "title": "Chap-5 Objects in 3D View Editor",
+   "recipe": "06_objects_in_the_3d_view_a_table_scene.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/06.jpg",
+   "frame_at": "49:25",
+   "note": "The tutor's table scene: cube tabletop and leg scaled per axis (S Shift+Z), Shift+D duplicates, Ctrl+J join renamed Table, Suzanne at the 3D cursor on the top, camera, brown and yellow materials, two point lights."
+  },
+  {
+   "chapter": 7,
+   "title": "Chap-6 Editing Objects in Blender",
+   "recipe": "07_editing_objects_a_computer_on_the_table.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/07.jpg",
+   "frame_at": "1:00:50",
+   "note": "The tutor's computer: a cube screen scaled and bevelled in edit mode, cylinder stand and flattened base placed from the front/right views, joined as Computer, on the chapter-5 table, light blue with the screen face black, Suzanne hidden with H and the camera icon."
+  },
+  {
+   "chapter": 8,
+   "title": "Chap-7 Editing Tools in Blender",
+   "recipe": "08_editing_tools_extrude_inset_bevel_loop_c.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/08.jpg",
+   "frame_at": "1:05:50",
+   "note": "The editing-tools tour made concrete, one object per tool: extrude region with the cap scaled, extrude individual faces, the tutor's inset-extrude-inset-extrude-inset-push-in sequence, a two-edge bevel with segments, loop cuts with the middle loop scaled. (Rip region is shown in the video only; it opens a cube and is not kept.)"
+  },
+  {
+   "chapter": 9,
+   "title": "Chap-8 Modeling Basic Objects in Blender",
+   "recipe": "09_modeling_basic_objects_chair_treasure_ch.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/09.jpg",
+   "frame_at": "1:21:20",
+   "note": "The tutor's three models step by step: the loop-cut chair with extruded legs, a leaned back and slats made with Bridge Edge Loops (removing the faces and walling the holes), bevel and brown; the chest with the individually inset and inward-extruded panels, the lid, coloured faces and a two-cube extruded lock; the 16x16 UV-sphere grenade with poles deleted, openings narrowed with proportional editing, individually extruded blocks, bevel, filled ends, fuse, an extruded-and-rotated lever, colours by select-linked and a face loop. Side by side in one scene rather than three files."
+  },
+  {
+   "chapter": 10,
+   "title": "Chap-9 Advanced Tools in Blender",
+   "recipe": "10_advanced_tools_knife_bisect_spin_slide_s.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/10.jpg",
+   "frame_at": "1:33:50",
+   "note": "The advanced tools, one object each: knife cuts across a face (the band then extrudes alone) and a cut-through at an angle, a bisected sphere (clear outer + fill) on a tilted plane, a cylinder end spun 90 degrees round a pivot into a pipe bend and extruded on, an edge loop slid along the faces (shape unchanged, faces above coloured), Suzanne's crown fattened."
+  },
+  {
+   "chapter": 11,
+   "title": "Chap-10 Modifiers in Blender",
+   "recipe": "11_modifiers_what_they_do.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/11.jpg",
+   "frame_at": "1:38:30",
+   "note": "The tutor's example exactly: a cube with an Array modifier, count 5, X factor up for gaps."
+  },
+  {
+   "chapter": 12,
+   "title": "Chap-11 All Generate Modifiers",
+   "recipe": "12_all_the_generate_modifiers.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/12.jpg",
+   "frame_at": "1:59:10",
+   "note": "Every Generate modifier the tutor demonstrates, each on its own object set up his way (array with an object-offset empty, vertex bevel dice, boolean difference applied and the cutter hidden, build caught mid-way, decimate to 5%, edge split, mask by vertex group, mirror with an edit mirrored, remesh blocks on a drilled cube, screw spring from an off-centre circle, skin on three edges, solidified subdivided cup, triangulate shown through a wireframe, wireframe cage, subdivision). Multiresolution (he defers it to sculpting), volume-to-mesh and weld (no visible change) are not kept."
+  },
+  {
+   "chapter": 13,
+   "title": "Chap-12All Deform Modifiers",
+   "recipe": "13_all_the_deform_modifiers.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/13.jpg",
+   "frame_at": "2:20:00",
+   "note": "Every Deform modifier the tutor demonstrates, each set up his way: cast (and his keyed cast-factor animation on Suzanne), curve, displace by vertex group and noise texture, hook, Laplacian deform with three hooked anchors and Bind, lattice, mesh deform with a bound cage, shrinkwrap, simple deform twist/bend/taper, smooth, Laplacian smooth, surface deform bound to a plane, warp between two empties, wave. Armature is his character chapter (done in the rigging course); corrective smooth he skips.",
+   "video": "videos/13.mp4"
+  },
+  {
+   "chapter": 14,
+   "title": "Chap-13 Node Components (Basics)",
+   "recipe": "14_node_components_the_basics.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/14.jpg",
+   "frame_at": "2:41:50",
+   "note": "The tutor's node basics: three-point area lights (key 550 W, fill 300, back 100), texture coordinate + magic texture + principled + output, Ctrl+L link materials, the brick texture on Generated / Object / UV (scale raised, UVs rotated in the UV editor), and an image texture on UV coordinates -- a Blender-generated colour grid stands in for his downloaded wood photo."
+  },
+  {
+   "chapter": 15,
+   "title": "Chap-14 Node Components (Intermediate)",
+   "recipe": "15_node_components_colours_patterns_structu.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/15.jpg",
+   "frame_at": "3:00:10",
+   "note": "The tutor's intermediate nodes: emission with a magic texture through a three-handle colour ramp, brick tiles (offset 0, square, mapping-rotated 45, thicker smoother mortar), a grid voronoi, a noise bump; and his practical brick wall: brick factor mixing red and grey Principled BSDFs, wave-texture bump on the bricks, detail-15 noise bump on the mortar (a mapping turned 90 on X so the wall's front gets the pattern)."
+  },
+  {
+   "chapter": 16,
+   "title": "Chap-15 Node Components (Advanced)",
+   "recipe": "16_node_components_what_the_maps_hold.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/16.jpg",
+   "frame_at": "3:05:00",
+   "note": "The tutor's map demonstration: Separate XYZ of Generated X/Y/Z into the base colour (0 black, 1 white), Object Z (-1..1, black lower half), and a Math Absolute node making both ends white."
+  },
+  {
+   "chapter": 17,
+   "title": "Chap-16 Textures (Part-1)",
+   "recipe": "17_textures_part_1_brick_checker_gradient_m.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/17.jpg",
+   "frame_at": "3:21:50",
+   "note": "The tutor's four textures: brick as 45-degree square tiles with UV cube projection, checker, a blue-to-white gradient on a sphere through a mapping node, magic at scale 60 with a bump as fabric, and his tablecloth (checker colour + magic bump)."
+  },
+  {
+   "chapter": 18,
+   "title": "Chap-17 Textures (Part-2)",
+   "recipe": "18_textures_part_2_noise_musgrave_voronoi_w.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/18.jpg",
+   "frame_at": "3:31:30",
+   "note": "The tutor's second texture set: noise colour on a subdivided Suzanne, noise through a colour ramp as patches, noise through a ramp into emission (glowing patches), Musgrave as noise with Normalize off, voronoi's Distance/Color/Position outputs, wave rings with distortion."
+  },
+  {
+   "chapter": 19,
+   "title": "Chap-18 Image Textures",
+   "recipe": "19_image_textures_a_pbr_set.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/19.jpg",
+   "frame_at": "3:50:10",
+   "note": "The tutor's PBR chain step by step on five cubes (box projection on object coordinates, UV coordinates with the UVs fitted to each face, normal map through a Normal Map node, roughness, displacement into a bump fed by the normal map, AO as the factor of a Mix Color for blue shadows) plus a tiled wall. The downloaded ambientCG set is replaced by one Lucius bakes itself (bake_texture: colour, tangent normal, roughness, height and AO from a procedural brick material), so the chapter replays offline; the AO map is derived from the height rather than baked as true occlusion of a flat plane."
+  },
+  {
+   "chapter": 20,
+   "title": "Chap-19 Using Object Shape to place Materials (Vertex Paint)",
+   "recipe": "20_vertex_paint_colour_attributes.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/20.jpg",
+   "frame_at": "3:58:10",
+   "note": "The tutor's steps on two subdivided Suzannes: Dirty Vertex Colors (Normalize off) shown through an Attribute node's Fac; Eyes and Head colour attributes painted with brush strokes (red eyes and nose, green crown) and combined with two Mix Color nodes over light blue at factor 0.5, as pale as the tutor's result. Beyond it: a one-mesh toadstool painted through the face selection mask, spots dabbed on, grime from dirty vertex colours in a second attribute multiplied in. Brush strokes are 3D spheres along the stroke rather than screen-space dabs; the old point lamps are hidden and the exposure lowered so the pale colours read."
+  },
+  {
+   "chapter": 21,
+   "title": "Chap-20 Object Info Node",
+   "recipe": "21_the_object_info_node.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/21.jpg",
+   "frame_at": "4:05:15",
+   "note": "Both outputs the tutor covers, each on its own row of five spheres sharing one material: Random into a five-stop constant colour ramp (repeats happen, as the tutor points out) and Object Index with pass indices 1..5 divided by 5, giving blue, green, red, yellow, pink in order. Beyond the tutorial, the Location output colours nine blocks by their X position with Random varying the brightness. The tutor's spheres run along Y; here they are in rows along X so both rows fit one camera."
+  },
+  {
+   "chapter": 22,
+   "title": "Chap-21 Basic Shaders (Part-1)",
+   "recipe": "22_basic_shaders_part_1_a_studio_and_a_mate.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/22.jpg",
+   "frame_at": "4:32:00",
+   "note": "The tutor's studio (floor scaled, back edge extruded into a wall, the corner bevelled into a curve, smooth by angle, dark rough grey, Blender's own interior HDRI, a white and a pink lamp, a straight-on locked camera with passepartout 1) and the whole material library, each marked as an asset: chrome, brushed aluminium (anisotropic), dark grey metal, gold (hex D4AF37), glossy green, glossy green painted (a copy at roughness 0.25), plus copper by the same hex trick. The tutor shows one sphere at a time; here they stand in a row. Saving the startup file and the asset library path in the preferences are not reproduced (the assets live in the saved .blend)."
+  },
+  {
+   "chapter": 23,
+   "title": "Chap-22 Basic Shaders (Part-2)",
+   "recipe": "23_basic_shaders_part_2_clear_coat_glass_a_.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/23.jpg",
+   "frame_at": "5:04:50",
+   "note": "All four of the tutor's pieces, each material marked as an asset: clear coat (dark purple, roughness 0, coat 1, noise bump), glass on a subdivided Suzanne, the candle modelled step by step (dip, bent wick, melted rim, bevel + subdivision, drop-shaped emissive flame, subsurface wax, black wick in its own slot) and a cloth simulation (subdivided plane, self collision, baked over 60 frames) draped over a collision icosphere in red fabric (magic + noise into a bump). The tutor turns the lights off to judge the candle and appends the cloth from another file; here everything shares one dimly lit scene and the cloth also collides with the floor."
+  },
+  {
+   "chapter": 24,
+   "title": "Chap-23 Procedural Shaders (Part-1)",
+   "recipe": "24_procedural_shaders_part_1_every_shader_n.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/24.jpg",
+   "frame_at": "5:28:40",
+   "note": "Every shader node the tutor walks through, each on its own subdivided Suzanne instead of swapping nodes on one (Principled, Diffuse, Subsurface Scattering with a red light behind, Glossy, anisotropic Glossy, Refraction, Translucent with a blue light behind, Sheen, Emission, Transparent, Glass, Toon diffuse and glossy, Principled Volume, Volume Scatter, Volume Absorption), then the procedural car paint (coat, specular IOR level 2.5, red tint, noise-ramp flakes mixed into the base colour) marked as an asset, plus a second colourway on a torus. The tutor renders the car paint in Eevee; here the whole chapter stays in Cycles so the SSS and volumes read correctly."
+  },
+  {
+   "chapter": 25,
+   "title": "Chap-24 Procedural Shaders (Part-2)",
+   "recipe": "25_procedural_shaders_part_2_sand_and_a_sky.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/25.jpg",
+   "frame_at": "5:40:40",
+   "note": "The sand shader as built by the tutor (three noise layers on object coordinates multiplied together, into a bump and the roughness, coloured by mixing cadmium yellow FDDA0D and dioxazine purple 5C3A93) and the sky texture world with his settings (sun size 5, elevation 100, rotation 90, altitude 5500 m, ozone 10, strength 0.1; Blender 5's single-scattering model is the old Nishita sky). Two deliberate changes: the noise scales are 200/100/60 instead of 500/250/150 so the grains survive a render from the camera, and the roughness goes through a 0.75..1 map range so the sand is matte. Beyond the tutorial the ground becomes sand dunes (displace + the same material)."
+  },
+  {
+   "chapter": 26,
+   "title": "Chap-25 Scene Lighting & Camera",
+   "recipe": "26_scene_lighting_and_cameras.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/26.jpg",
+   "frame_at": "5:49:20",
+   "note": "The four light types as the tutor sets them on a Suzanne turned 90 degrees over a plane (point moved to the face, yellow, 1000 W; sun at strength 6, angled; spot 1000 W light blue rotated onto the face; area scaled up for soft light), shown side by side on four stages; plus a second, orthographic camera and a 40 mm main camera. Beyond the tutorial, light linking keeps each lamp on its own stage (without it the sun would light all four). The tutor demonstrates one lamp switching type; here each type has its own lamp."
+  },
+  {
+   "chapter": 27,
+   "title": "Chap-26 Animation (Basics)",
+   "recipe": "27_animation_basics_keyframes_and_a_loop.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/27.jpg",
+   "frame_at": "6:27:40",
+   "note": "The keyframe basics as the tutor does them (cube scale keys at 1/40/80/120, a sphere moving and returning, a Suzanne's colour and roughness keyed) and then his loop animation: a base with four Boolean pockets, a counter-rotating rod turned 45 degrees and four balls that hop over it into the next pockets, library materials, a dark floor, portrait 1080x1920. Two cleanups over the tutor's hand-tuned version: the rotations are linear and keyed on frame 61 so frame 60 flows into frame 1 without a pause, and all four balls follow one timing (up at 12, held to 19, down at 31, twice a loop) instead of his per-pair nudges to avoid collisions.",
+   "video": "videos/27.mp4"
+  },
+  {
+   "chapter": 28,
+   "title": "Chap-27 Animation (Advanced) Part-1",
+   "recipe": "28_advanced_animation_1_f_curves_and_the_gr.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/28.jpg",
+   "frame_at": "6:40:30",
+   "note": "The graph editor lesson turned into a race so the F-curves can be compared side by side: the tutor's cube move (keys at 1, 100, 200, along Y and back) on six cubes with Bezier, Linear, Sinusoidal, hand-dragged Bezier handles (long flat start, steep arrival), a Noise modifier on X, and Bounce easing (beyond the tutorial), each Y curve made cyclic. The tutor extends the timeline to 1000 frames to show the repeat; here the rendered range is 1-150 (the curves run to 200 and repeat), and the noise strength is smaller so the shaking cube stays in its lane.",
+   "video": "videos/28.mp4"
+  },
+  {
+   "chapter": 29,
+   "title": "Chap-28 Animation (Advanced) Part-2",
+   "recipe": "29_advanced_animation_2_actions_and_the_nla.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/29.jpg",
+   "frame_at": "6:52:40",
+   "note": "The tutor's NLA session step by step: three named actions (UpDown, RotateZ, MoveX, each with full location/rotation/scale keys) pushed down into tracks, the upper track replacing the lower, a track muted and soloed, a strip dragged to another track and back, and Combine blending so all three play at once. The Suzanne sits at the origin under an empty so its keys start from zero (Combine adds locations). Beyond the tutorial the same actions are reused on a second Suzanne with UpDown at double speed and repeated and RotateZ offset to frame 20.",
+   "video": "videos/29.mp4"
+  },
+  {
+   "chapter": 30,
+   "title": "Chap-29 3D Text in Blender",
+   "recipe": "30_3d_text.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/30.jpg",
+   "frame_at": "7:05:50",
+   "note": "The tutor's text workflow: typed on two lines, resolution 12, extrude 0.15, stood up 90 on X, bevel depth with resolution 6, centred with character spacing 1.1, the extrusion keyed 0 to 0.15, a yellow material, converted to a mesh (which drops the keys, as he points out) and the second line box-selected and given red. The tutor's own channel name is replaced by LUCIUS 3D, the text is centred rather than padded with spaces, and his Text on Curve experiment is kept (beyond the tutorial) as an arched headline following a hidden Bezier curve. Custom system fonts are not used (Blender's built-in font)."
+  }
+ ]
+}

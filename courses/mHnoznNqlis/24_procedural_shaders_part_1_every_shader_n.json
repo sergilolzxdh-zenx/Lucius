@@ -1,0 +1,1528 @@
+{
+ "title": "Procedural shaders part 1: every shader node, car paint",
+ "summary": "The shader nodes one by one, each on its own subdivided Suzanne (the tutor swaps them on one): Principled, Diffuse (blue), Subsurface Scattering (scale 5, a red light behind), Glossy (roughness 0), Glossy with anisotropy, Refraction (roughness 0.4), Translucent (a blue light behind), Sheen, Emission (yellow, 6), Transparent (colour darkened a little), Glass (green), Toon (diffuse and glossy, size 0.25), and the volumes into the Volume socket: Principled Volume (red), Volume Scatter, Volume Absorption (blue). Then a procedural car paint: dark red, roughness 0, coat 1 (coat roughness 0.1), specular IOR level 2.5 and a red specular tint, a noise through a constant colour ramp as the factor of a Mix Color for blue spots, marked as an asset. Beyond the tutorial: a second colourway (midnight blue with gold flakes) on a torus.",
+ "objects": [
+  {
+   "name": "ShaderPrincipled",
+   "description": "Principled"
+  },
+  {
+   "name": "ShaderDiffuse",
+   "description": "Diffuse"
+  },
+  {
+   "name": "ShaderSubsurface",
+   "description": "Subsurface"
+  },
+  {
+   "name": "ShaderGlossy",
+   "description": "Glossy"
+  },
+  {
+   "name": "ShaderAnisotropic",
+   "description": "Anisotropic"
+  },
+  {
+   "name": "ShaderRefraction",
+   "description": "Refraction"
+  },
+  {
+   "name": "ShaderTranslucent",
+   "description": "Translucent"
+  },
+  {
+   "name": "ShaderSheen",
+   "description": "Sheen"
+  },
+  {
+   "name": "ShaderEmission",
+   "description": "Emission"
+  },
+  {
+   "name": "ShaderTransparent",
+   "description": "Transparent"
+  },
+  {
+   "name": "ShaderGlass",
+   "description": "Glass"
+  },
+  {
+   "name": "ShaderToon",
+   "description": "Toon"
+  },
+  {
+   "name": "ShaderToonGlossy",
+   "description": "ToonGlossy"
+  },
+  {
+   "name": "ShaderVolumeRed",
+   "description": "VolumeRed"
+  },
+  {
+   "name": "ShaderScatter",
+   "description": "Scatter"
+  },
+  {
+   "name": "ShaderAbsorption",
+   "description": "Absorption"
+  },
+  {
+   "name": "CarPaint",
+   "description": "car paint"
+  },
+  {
+   "name": "CarPaintBlue",
+   "description": "second colourway"
+  }
+ ],
+ "expected_result": "Two rows of Suzannes each in a different shader (blue, red-lit, mirror, brushed, frosted, blue-lit, velvet, glowing yellow, faint, green glass, cartoon, red fog, white fog, blue smoke), a red car-paint sphere with blue flakes and a blue torus with gold flakes in front.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "ClearCoatBall",
+     "GlassMonkey",
+     "CandleBase",
+     "Candle",
+     "Flame",
+     "ClothBall",
+     "ClothSheet"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "nodes": [
+     {
+      "name": "Background",
+      "inputs": {
+       "Strength": 0.7
+      }
+     }
+    ]
+   },
+   "note": "the lights back up",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "StudioLamp",
+    "path": "energy",
+    "value": 1000
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "PinkLamp",
+    "path": "energy",
+    "value": 500
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderPrincipled",
+    "size": 1.05,
+    "location": [
+     -5.425,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "Suzanne instead of the sphere, smooth, subdivision level 3 -- one per shader node (the tutor swaps the node on a single monkey)",
+   "video_time": "306:32"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderPrincipled",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderPrincipled",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderDiffuse",
+    "size": 1.05,
+    "location": [
+     -3.875,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderDiffuse",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderDiffuse",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderSubsurface",
+    "size": 1.05,
+    "location": [
+     -2.3249999999999997,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderSubsurface",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderSubsurface",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderGlossy",
+    "size": 1.05,
+    "location": [
+     -0.7749999999999995,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderGlossy",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderGlossy",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderAnisotropic",
+    "size": 1.05,
+    "location": [
+     0.7750000000000004,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderAnisotropic",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderAnisotropic",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderRefraction",
+    "size": 1.05,
+    "location": [
+     2.325,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderRefraction",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderRefraction",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderTranslucent",
+    "size": 1.05,
+    "location": [
+     3.875000000000001,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderTranslucent",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderTranslucent",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderSheen",
+    "size": 1.05,
+    "location": [
+     5.425,
+     0.5,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderSheen",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderSheen",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderEmission",
+    "size": 1.05,
+    "location": [
+     -5.425,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderEmission",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderEmission",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderTransparent",
+    "size": 1.05,
+    "location": [
+     -3.875,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderTransparent",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderTransparent",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderGlass",
+    "size": 1.05,
+    "location": [
+     -2.3249999999999997,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderGlass",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderGlass",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderToon",
+    "size": 1.05,
+    "location": [
+     -0.7749999999999995,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderToon",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderToon",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderToonGlossy",
+    "size": 1.05,
+    "location": [
+     0.7750000000000004,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderToonGlossy",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderToonGlossy",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderVolumeRed",
+    "size": 1.05,
+    "location": [
+     2.325,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderVolumeRed",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderVolumeRed",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderScatter",
+    "size": 1.05,
+    "location": [
+     3.875000000000001,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderScatter",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderScatter",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "ShaderAbsorption",
+    "size": 1.05,
+    "location": [
+     5.425,
+     2.3,
+     0.52
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "ShaderAbsorption",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "ShaderAbsorption",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodePrincipled",
+    "object": "ShaderPrincipled",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {},
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the Principled BSDF: many shader nodes combined in one (the most used)",
+   "video_time": "306:51"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeDiffuse",
+    "object": "ShaderDiffuse",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfDiffuse",
+      "inputs": {
+       "Color": "#1E5BFF"
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Diffuse BSDF: only a colour (blue)",
+   "video_time": "308:17"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeSubsurface",
+    "object": "ShaderSubsurface",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeSubsurfaceScattering",
+      "inputs": {
+       "Scale": 5.0
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Subsurface Scattering: light goes into the surface and scatters -- scale 5, a strong red light behind the ears shows it",
+   "video_time": "310:52"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeGlossy",
+    "object": "ShaderGlossy",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfGlossy",
+      "inputs": {
+       "Roughness": 0.0
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Glossy BSDF at roughness 0: a mirror",
+   "video_time": "311:32"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeAnisotropic",
+    "object": "ShaderAnisotropic",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfGlossy",
+      "inputs": {
+       "Roughness": 0.3,
+       "Anisotropy": 0.9
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "its anisotropy up: brushed highlights (anisotropic BSDF was a separate node before)",
+   "video_time": "312:13"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeRefraction",
+    "object": "ShaderRefraction",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfRefraction",
+      "inputs": {
+       "Roughness": 0.4
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Refraction BSDF: bends light like glass, roughness 0.4 frosts it",
+   "video_time": "313:13"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeTranslucent",
+    "object": "ShaderTranslucent",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfTranslucent",
+      "inputs": {},
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Translucent BSDF: lets some light through -- a blue light behind shows it",
+   "video_time": "314:51"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeSheen",
+    "object": "ShaderSheen",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfSheen",
+      "inputs": {
+       "Color": "#7A1FA2"
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Sheen BSDF (velvet before): a soft rim for cloth",
+   "video_time": "318:01"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeEmission",
+    "object": "ShaderEmission",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#FFD21A",
+       "Strength": 6.0
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Emission: the object gives light, yellow, strength 6",
+   "video_time": "315:49"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeTransparent",
+    "object": "ShaderTransparent",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfTransparent",
+      "inputs": {
+       "Color": "#8A8A8A"
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Transparent BSDF: invisible at white, seen once the colour is darkened a little",
+   "video_time": "316:47"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeGlass",
+    "object": "ShaderGlass",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfGlass",
+      "inputs": {
+       "Color": "#3CD66B"
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Glass BSDF, tinted green",
+   "video_time": "317:26"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeToon",
+    "object": "ShaderToon",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfToon",
+      "inputs": {
+       "Size": 0.6,
+       "Smooth": 0.05
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Toon BSDF (diffuse): cartoon light bands, size and smooth set them",
+   "video_time": "319:01"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeToonGlossy",
+    "object": "ShaderToonGlossy",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeBsdfToon",
+      "inputs": {
+       "Size": 0.25
+      },
+      "props": {
+       "component": "GLOSSY"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Toon BSDF in Glossy mode, size 0.25: cartoon metal",
+   "video_time": "319:21"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeVolumeRed",
+    "object": "ShaderVolumeRed",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeVolumePrincipled",
+      "inputs": {
+       "Color": "#FF2A1A",
+       "Density": 1.5
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Volume"
+     }
+    ]
+   },
+   "note": "Principled Volume into the Volume socket: a red fog in the monkey's shape",
+   "video_time": "320:21"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeScatter",
+    "object": "ShaderScatter",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeVolumeScatter",
+      "inputs": {
+       "Density": 1.5
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Volume"
+     }
+    ]
+   },
+   "note": "Volume Scatter: a white fog",
+   "video_time": "321:00"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NodeAbsorption",
+    "object": "ShaderAbsorption",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Shader",
+      "type": "ShaderNodeVolumeAbsorption",
+      "inputs": {
+       "Color": "#1E5BFF",
+       "Density": 3.0
+      },
+      "props": {}
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Shader",
+      "output": 0,
+      "to": "Output",
+      "input": "Volume"
+     }
+    ]
+   },
+   "note": "Volume Absorption: light absorbed as it passes, blue, denser = darker",
+   "video_time": "321:19"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "BehindRed",
+    "location": [
+     -2.3249999999999997,
+     1.3,
+     0.85
+    ],
+    "power": 250,
+    "color": "#FF1A1A"
+   },
+   "note": "a light duplicated behind the monkey: red, 5000 W in the tutor (close, so less here)",
+   "video_time": "309:56"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "BehindBlue",
+    "location": [
+     3.875000000000001,
+     1.3,
+     0.85
+    ],
+    "power": 200,
+    "color": "#2A5BFF"
+   },
+   "note": "and a blue one behind the translucent monkey",
+   "video_time": "314:32"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "CarPaint",
+    "radius": 0.6,
+    "location": [
+     -1.3,
+     -1.7,
+     0.6
+    ]
+   },
+   "note": "procedural car paint on a sphere",
+   "video_time": "321:58"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "CarPaint",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "CarPaint",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Simple Car Paint",
+    "object": "CarPaint",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Flakes",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 140.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Spots",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.36,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      },
+      "inputs": {
+       "A": "#2A4BFF",
+       "B": "#7A0508"
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.0,
+       "Coat Weight": 1.0,
+       "Coat Roughness": 0.1,
+       "Specular IOR Level": 2.5,
+       "Specular Tint": "#B01010"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Flakes",
+      "output": "Fac",
+      "to": "Spots",
+      "input": "Fac"
+     },
+     {
+      "from": "Spots",
+      "output": "Color",
+      "to": "Mix",
+      "input": "Factor"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Simple Car Paint: dark red, roughness 0, Coat 1 with coat roughness 0.1, Specular IOR Level typed past 1 to 2.5 (metallic without the background's colours), specular tint red; a noise (scale up) through a Constant colour ramp makes spots, the ramp into the factor of a Mix Color -- colour B the red paint, colour A the spots (blue) -- into the base colour",
+   "video_time": "327:17"
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Simple Car Paint",
+    "tags": [
+     "paint"
+    ]
+   },
+   "note": "",
+   "video_time": "328:54"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "CarPaintBlue",
+    "major_radius": 0.48,
+    "minor_radius": 0.2,
+    "location": [
+     1.3,
+     -1.7,
+     0.55
+    ],
+    "rotation_deg": [
+     55,
+     0,
+     0
+    ]
+   },
+   "note": "beyond the tutorial: 'play with the values' -- another colourway on a torus: deep blue paint with gold flakes, smaller and sparser",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "CarPaintBlue",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 1,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "CarPaintBlue",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Midnight Gold Paint",
+    "copy_from": "Simple Car Paint",
+    "object": "CarPaintBlue",
+    "nodes": [
+     {
+      "name": "Flakes",
+      "inputs": {
+       "Scale": 220.0
+      }
+     },
+     {
+      "name": "Spots",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.3,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Mix",
+      "inputs": {
+       "A": "#E0B040",
+       "B": "#06124A"
+      }
+     },
+     {
+      "name": "Surface",
+      "inputs": {
+       "Specular Tint": "#2040FF"
+      }
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "mark_asset",
+   "args": {
+    "name": "Midnight Gold Paint",
+    "tags": [
+     "paint"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -8.6,
+     6.6
+    ],
+    "look_at": [
+     0,
+     0.6,
+     0.4
+    ],
+    "lens": 29
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

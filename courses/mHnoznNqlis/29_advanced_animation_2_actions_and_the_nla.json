@@ -1,0 +1,654 @@
+{
+ "title": "Advanced animation 2: actions and the NLA editor",
+ "summary": "Nonlinear animation: three named actions made in the Action Editor on a Suzanne (UpDown: up 3 m at frame 50 and down by 100; RotateZ: 180 degrees and back; MoveX: along X by 40 and back by 80, all full location/rotation/scale keys), pushed down into NLA tracks. The upper track replaces the lower (only the rotation plays); a track's checkbox mutes it, the star solos it; a strip dragged to another track and back; Combine blending layers them so the Suzanne moves, turns and rises at once. Beyond the tutorial: the same actions reused on a second Suzanne and rearranged (UpDown at double speed, repeated; RotateZ starting at frame 20).",
+ "objects": [
+  {
+   "name": "MainMonkey",
+   "description": "the three actions combined"
+  },
+  {
+   "name": "EchoMonkey",
+   "description": "the same actions rearranged"
+  }
+ ],
+ "expected_result": "Two Suzannes (orange and blue) rising, turning and sliding along X over a grey floor, the blue one bouncing twice as often.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Track",
+     "StartLine",
+     "FinishLine",
+     "RacerBezier",
+     "RacerLinear",
+     "RacerSine",
+     "RacerSlowFast",
+     "RacerShaky",
+     "RacerBounce"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 120,
+    "current": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "NLAFloor",
+    "size": 120,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "NLAFloor",
+    "name": "NLAFloorMat",
+    "base_color": "#555B66",
+    "roughness": 0.7
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "MainSpot",
+    "size": 0.5,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "Suzanne, smooth, subdivision 3 -- at the origin (so its keys start from zero), carried by an empty placed where it stands",
+   "video_time": "403:18"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "MainMonkey",
+    "size": 1.6,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "MainMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "MainMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "MainMonkey",
+    "name": "MainMonkeyMat",
+    "base_color": "#E8A33B",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "parent_object",
+   "args": {
+    "object": "MainMonkey",
+    "parent": "MainSpot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "MainSpot",
+    "location": [
+     -3.2,
+     0,
+     0.85
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "EchoSpot",
+    "size": 0.5,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "EchoMonkey",
+    "size": 1.6,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "EchoMonkey",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "EchoMonkey",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "EchoMonkey",
+    "name": "EchoMonkeyMat",
+    "base_color": "#3BB0E8",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "parent_object",
+   "args": {
+    "object": "EchoMonkey",
+    "parent": "EchoSpot"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "EchoSpot",
+    "location": [
+     3.2,
+     0,
+     0.85
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "new_action",
+   "args": {
+    "object": "MainMonkey",
+    "name": "UpDown"
+   },
+   "note": "Dope Sheet > Action Editor > New: an action named UpDown",
+   "video_time": "404:18"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 1
+   },
+   "note": "keys (I: location, rotation, scale) at 1 and 100 ...",
+   "video_time": "404:59"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     3.0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 50
+   },
+   "note": "... and up 3 m at frame 50",
+   "video_time": "405:21"
+  },
+  {
+   "action": "new_action",
+   "args": {
+    "object": "MainMonkey",
+    "name": "RotateZ"
+   },
+   "note": "unlinked (X) -- kept as an action -- and a new one, RotateZ",
+   "video_time": "406:21"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     180
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 50
+   },
+   "note": "180 degrees on Z at frame 50, back by 100",
+   "video_time": "406:41"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "MainMonkey",
+    "action": "UpDown"
+   },
+   "note": "NLA editor: UpDown pushed down into a track ...",
+   "video_time": "407:43"
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "MainMonkey",
+    "action": "RotateZ"
+   },
+   "note": "... and RotateZ above it: only the rotation plays -- the upper track replaces the lower",
+   "video_time": "408:26"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "RotateZ",
+    "mute": true
+   },
+   "note": "the RotateZ track's checkbox off: now the up-down plays",
+   "video_time": "408:47"
+  },
+  {
+   "action": "new_action",
+   "args": {
+    "object": "MainMonkey",
+    "name": "MoveX"
+   },
+   "note": "a third action, MoveX: along X by frame 40, back at 80",
+   "video_time": "409:27"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     2.2,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 40
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation": [
+     0,
+     0,
+     0
+    ],
+    "object": "MainMonkey",
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "MainMonkey",
+    "action": "MoveX"
+   },
+   "note": "",
+   "video_time": "409:46"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "RotateZ",
+    "mute": false,
+    "solo": true
+   },
+   "note": "RotateZ back on, and soloed (the star): only it plays, whatever the order",
+   "video_time": "410:07"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "RotateZ",
+    "solo": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "MoveX",
+    "track": 1,
+    "frame": 101
+   },
+   "note": "MoveX dragged down onto RotateZ's track, after it: rotate, then move",
+   "video_time": "410:49"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "MoveX",
+    "track": 2,
+    "frame": 1
+   },
+   "note": "and back to its own track at frame 1",
+   "video_time": "411:08"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "MoveX",
+    "blend": "COMBINE"
+   },
+   "note": "Blending Combine on MoveX: it moves along X and turns at once ...",
+   "video_time": "411:47"
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "MainMonkey",
+    "strip": "RotateZ",
+    "blend": "COMBINE"
+   },
+   "note": "... and Combine on RotateZ too: all three actions together",
+   "video_time": "412:28"
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "EchoMonkey",
+    "action": "UpDown"
+   },
+   "note": "beyond the tutorial: the same actions on a second Suzanne, rearranged -- UpDown twice as fast and repeated, RotateZ starting at frame 20, MoveX layered on top",
+   "video_time": null
+  },
+  {
+   "action": "nla_strip",
+   "args": {
+    "object": "EchoMonkey",
+    "strip": "UpDown",
+    "scale": 0.5,
+    "repeat": 2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "EchoMonkey",
+    "action": "RotateZ",
+    "frame": 20,
+    "blend": "COMBINE"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "push_down",
+   "args": {
+    "object": "EchoMonkey",
+    "action": "MoveX",
+    "blend": "COMBINE"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -13.5,
+     5.2
+    ],
+    "look_at": [
+     0.3,
+     0,
+     2.0
+    ],
+    "lens": 35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "current": 40
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}
