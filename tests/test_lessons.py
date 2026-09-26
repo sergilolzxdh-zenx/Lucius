@@ -357,3 +357,118 @@ def test_inset_works_on_a_lone_face_like_blender(headless_blender):
     ex("scale_selection", object="Dish", factor=[0.5, 0.5, 1])
     dish = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Dish")
     assert dish["dimensions"][0] == pytest.approx(4.0, abs=0.01)
+
+
+def test_scene_setup_for_a_final_shot(tmp_path):
+    """Pattern and bump materials, light and camera updates that keep what is not given, working to scale, a
+    particle system changed by name, and renders with the scene's own lights and settings."""
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    out = tmp_path / "out"
+    out.mkdir()
+    with HeadlessBlender(allowed_save_dirs=[str(out)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=300)["result"]
+
+        def objects():
+            return {o["name"]: o for o in bridge.request("scene_summary")["objects"]}
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="plane", name="Cloth", size=20)
+        made = ex("set_material", object="Cloth", name="Cloth", base_color=[1, 1, 1], pattern="brick",
+                  pattern_color=[1, 1, 1], line_color=[0.01, 0.05, 0.31], pattern_scale=0.3, mortar_size=0.16,
+                  bump="magic")
+        assert made["set"]["pattern"] == "brick" and made["set"]["bump"] == "magic"
+        ex("add_primitive", kind="torus", name="Donut", major_radius=1, minor_radius=0.4, location=[0, 0, 0.4])
+        ex("add_primitive", kind="cube", name="Grain", size=0.05, location=[0, 0, -3])
+        ex("add_scatter", object="Donut", instance="Grain", name="Sugar", count=100)
+        ex("add_scatter", object="Donut", instance="Grain", name="Sugar", count=200, scale=1.5)   # changes it
+        assert [m["type"] for m in objects()["Donut"]["modifiers"]] == ["PARTICLE_SYSTEM"]
+
+        ex("add_light", type="SPOT", name="Key", location=[0, -6, 8], look_at=[0, 0, 0], power=5000,
+           temperature=4500, spot_size=34, spot_blend=0.4)
+        ex("add_light", name="Key", power=900)                          # only the power changes
+        key = objects()["Key"]
+        assert key["light"] == {"type": "SPOT", "energy": 900.0} and key["location"] == [0.0, -6.0, 8.0]
+        ex("add_light", name="Key", type="AREA", size=3)                # a spot becomes a panel
+        assert objects()["Key"]["light"]["type"] == "AREA"
+        with pytest.raises(Exception, match="needs a location"):
+            ex("add_light", name="Fill", power=10)
+
+        ex("add_camera", name="Shot", location=[0, -9, 7], look_at=[0, 0, 0.4], lens=50)
+        ex("add_camera", name="Shot", focus_object="Donut", fstop=1.0)   # focus only: the camera stays put
+        shot = objects()["Shot"]
+        assert shot["location"] == [0.0, -9.0, 7.0]
+        assert shot["camera"] == {"lens": 50.0, "fstop": 1.0, "focus_object": "Donut"}
+
+        ex("scale_scene", factor=0.05)
+        scaled = objects()
+        assert scaled["Donut"]["dimensions"][0] == pytest.approx(0.14, abs=1e-3)
+        assert scaled["Shot"]["location"] == pytest.approx([0.0, -0.45, 0.35])
+        assert scaled["Key"]["location"] == pytest.approx([0.0, -0.3, 0.4])
+
+        lit = ex("render_image", path=str(out / "lit.png"), view="three_quarter", frame=["Donut"], samples=1,
+                 width=48, height=48, lights="scene")
+        assert Path(lit["path"]).exists()
+        ex("set_render", samples=1, width=40, height=40, view_transform="Standard")
+        final = ex("render_image", path=str(out / "final.png"), camera="scene", scene_settings=True)
+        from PIL import Image
+
+        assert Image.open(final["path"]).size == (40, 40)
+
+
+def test_previews_frame_the_subject_not_the_ground():
+    from lucius.lessons.teacher import subject_names
+
+    objects = [{"name": "Cloth", "type": "MESH", "dimensions": [26, 26, 0]},
+               {"name": "Plate", "type": "MESH", "dimensions": [6, 6, 0.4]},
+               {"name": "Lamp", "type": "LIGHT", "dimensions": [0, 0, 0]}]
+    assert subject_names(objects) == ["Plate"]
+    assert subject_names(objects[:1]) == ["Cloth"]          # a plane alone is the subject
+
+
+def test_a_course_pack_is_replayed_on_another_machine(tmp_path, headless_blender):
+    """A pack of kept chapter recipes is rebuilt in order in an empty data folder, each chapter continuing
+    from the one before, and kept with its teacher's score; a second replay skips what is already kept."""
+    from PIL import Image
+
+    from lucius.lessons.teacher import Teacher
+
+    pack = tmp_path / "pack"
+    (pack / "frames").mkdir(parents=True)
+    Image.new("RGB", (32, 18), (90, 60, 30)).save(pack / "frames" / "01.jpg")
+    (pack / "01_base.json").write_text(json.dumps({"title": "Base", "steps": [
+        {"action": "add_primitive", "args": {"kind": "circle", "name": "Base", "vertices": 8, "fill": True}}]}))
+    (pack / "02_cup.json").write_text(json.dumps({"title": "Cup", "steps": [
+        {"action": "select_all", "args": {"object": "Base"}},
+        {"action": "extrude", "args": {"object": "Base", "offset": [0, 0, 1]}},
+        {"action": "set_material", "args": {"object": "Base", "name": "Clay", "base_color": "#C08040"}}]}))
+    (pack / "course.json").write_text(json.dumps({
+        "video_id": "vid456", "title": "Curso corto", "duration": 600, "teacher": "someone",
+        "chapters": [{"title": "Base", "start_time": 0, "end_time": 300},
+                     {"title": "Taza", "start_time": 300, "end_time": 600}],
+        "lessons": [{"chapter": 1, "recipe": "01_base.json", "score": 9, "frame": "frames/01.jpg"},
+                    {"chapter": 2, "recipe": "02_cup.json", "score": 7, "teacher": "another"}]}))
+    app = Lucius(data_dir=tmp_path / "data", background_processing=False)
+    try:
+        teacher = Teacher(app, render_samples=2)
+        results = teacher.install_course(pack)
+        assert [r["status"] for r in results] == ["learned", "learned"], results
+        assert results[0]["skill_id"] == "lesson_vid456_01"
+        assert (teacher.projects.get(results[0]["project_id"]).dir / "tutorial_frame.png").exists()
+        chapters = teacher.learner._state(teacher.video("vid456"))["chapters"]
+        assert chapters["0-300"]["teacher"] == "someone" and chapters["300-600"]["teacher"] == "another"
+        assert "Base (MESH)" in chapters["300-600"]["scene_after"]      # built on chapter 1's scene
+        assert "Clay" in chapters["300-600"]["scene_after"] and teacher.name == "teacher"
+        assert [r["status"] for r in teacher.install_course(pack)] == ["already learned"] * 2
+        # A removed skill is forgotten with its chapter, so the next replay builds that chapter again.
+        from lucius.cli import forget_lessons
+
+        app.library.remove("lesson_vid456_02")
+        forget_lessons(app.config.data_dir / "lessons", {"lesson_vid456_02"})
+        assert not app.library.exists("lesson_vid456_02")
+        assert [r["status"] for r in teacher.install_course(pack)] == ["already learned", "learned"]
+        assert app.library.exists("lesson_vid456_02")
+    finally:
+        app.close()

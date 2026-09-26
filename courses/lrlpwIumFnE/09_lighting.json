@@ -1,0 +1,66 @@
+{
+ "title": "Lighting",
+ "summary": "Two lights: a warm point light (3200 K) at the back for a soft rim, and a spot light high near the camera aimed at the donuts, with a soft cone.",
+ "objects": [
+  {
+   "name": "Luz calida",
+   "description": "warm back light"
+  },
+  {
+   "name": "Foco",
+   "description": "main spot light"
+  }
+ ],
+ "expected_result": "A dark scene with a pool of warm light on the plate and donuts, and a warm glow from behind.",
+ "steps": [
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Luz calida",
+    "location": [
+     1.5,
+     9.0,
+     5.5
+    ],
+    "power": 600,
+    "temperature": 3200,
+    "size": 1.5
+   },
+   "note": "a point light at the back, higher, bigger radius (soft shadows), warm 3200 K, power lowered: only a detail",
+   "video_time": "106:54"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SPOT",
+    "name": "Foco",
+    "location": [
+     0.0,
+     -9.0,
+     13.0
+    ],
+    "look_at": [
+     0.0,
+     0.3,
+     0.8
+    ],
+    "power": 7000,
+    "spot_size": 34,
+    "spot_blend": 0.4,
+    "temperature": 4500
+   },
+   "note": "the main light: a spot near the camera but very high, aimed at the donuts, a soft-edged cone, a bit warm",
+   "video_time": "110:53"
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#0D0D0D",
+    "strength": 1.0
+   },
+   "note": "the default dark world: the spot does the lighting",
+   "video_time": null
+  }
+ ]
+}

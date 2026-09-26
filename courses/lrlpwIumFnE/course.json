@@ -1,0 +1,146 @@
+{
+ "video_id": "lrlpwIumFnE",
+ "url": "https://www.youtube.com/watch?v=lrlpwIumFnE",
+ "title": "🔥LA GUÍA DEFINITIVA DE BLENDER! (Curso completo en Español) | Desde cero! 4.5",
+ "duration": 8102,
+ "language": "es",
+ "channel": "Aura Prods",
+ "chapters": [
+  {
+   "title": "Intro",
+   "start_time": 0,
+   "end_time": 53
+  },
+  {
+   "title": "Bienvenida",
+   "start_time": 53,
+   "end_time": 220
+  },
+  {
+   "title": "Instalación Blender",
+   "start_time": 220,
+   "end_time": 588
+  },
+  {
+   "title": "Interfaz",
+   "start_time": 588,
+   "end_time": 1917
+  },
+  {
+   "title": "Modelar la taza y el plato",
+   "start_time": 1917,
+   "end_time": 3472
+  },
+  {
+   "title": "Modelar donut y croissant",
+   "start_time": 3472,
+   "end_time": 4738
+  },
+  {
+   "title": "Sistema de partículas",
+   "start_time": 4738,
+   "end_time": 5272
+  },
+  {
+   "title": "Materiales",
+   "start_time": 5272,
+   "end_time": 6313
+  },
+  {
+   "title": "Iluminación",
+   "start_time": 6313,
+   "end_time": 6770
+  },
+  {
+   "title": "Cámara",
+   "start_time": 6770,
+   "end_time": 7099
+  },
+  {
+   "title": "Renderizado",
+   "start_time": 7099,
+   "end_time": 7948
+  },
+  {
+   "title": "Final",
+   "start_time": 7948,
+   "end_time": 8102
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/lrlpwIumFnE` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 4,
+   "title": "Navigating the interface (Interfaz)",
+   "recipe": "04_interface.json",
+   "score": 10.0,
+   "frame": "frames/04.jpg",
+   "teacher": "gemini lesson loop",
+   "note": "Learned by the Gemini lesson loop: default scene, a subdivided and transformed cube, primitives, edit-mode selections, ending with the circle the mug starts from."
+  },
+  {
+   "chapter": 5,
+   "title": "Modelar la taza y el plato",
+   "recipe": "05_mug_plate.json",
+   "score": 7.0,
+   "frame": "frames/05.jpg",
+   "frame_at": "53:40",
+   "note": "Mug from the circle: extrude, inset, hollow, rim and base bevels, loop cuts, handle bridged between two face patches, subsurf. Plate: circle filled, insets for the dish and rim, underside extruded, foot."
+  },
+  {
+   "chapter": 6,
+   "title": "Modelar donut y croissant",
+   "recipe": "06_donut_croissant.json",
+   "score": 8.0,
+   "frame": "frames/06.jpg",
+   "frame_at": "1:07:00",
+   "note": "Croissant: circle profile mirrored, extruded in grooved segments along a curve, tips closed; donut: torus with cloud displacement; a second donut duplicated and tilted."
+  },
+  {
+   "chapter": 7,
+   "title": "Sistema de partículas",
+   "recipe": "07_particles_composition.json",
+   "score": 8.0,
+   "frame": "frames/07.jpg",
+   "frame_at": "1:25:40",
+   "note": "Sugar crystal scattered over both donuts with a hair particle system; everything placed as in the tutor's composition."
+  },
+  {
+   "chapter": 8,
+   "title": "Materiales",
+   "recipe": "08_materials.json",
+   "score": 8.0,
+   "frame": "frames/08.jpg",
+   "frame_at": "1:44:40",
+   "note": "Porcelain, donut dough (subsurface), glassy sugar, croissant, tablecloth with a brick pattern and a fabric bump."
+  },
+  {
+   "chapter": 9,
+   "title": "Iluminación",
+   "recipe": "09_lighting.json",
+   "score": 8.0,
+   "frame": "frames/09.jpg",
+   "frame_at": "1:51:00",
+   "note": "Spot from the front-top gives the pool of light on the plate, warm point light behind as rim, black world."
+  },
+  {
+   "chapter": 10,
+   "title": "Cámara",
+   "recipe": "10_camera.json",
+   "score": 8.0,
+   "frame": "frames/10.jpg",
+   "frame_at": "1:56:50",
+   "note": "Camera front/above; scene scaled x0.05 to real size; lights lowered to keep the look; depth of field on the donut at f/1; square 1080."
+  },
+  {
+   "chapter": 11,
+   "title": "Renderizado",
+   "recipe": "11_render.json",
+   "score": 8.0,
+   "frame": "frames/11.jpg",
+   "frame_at": "2:10:20",
+   "note": "Final Cycles render: key area panel front-left at 4500 K, rim light raised, bigger sugar, glossier croissant, blue cloth with small white squares turned on Z, f/2.8, Standard view."
+  }
+ ]
+}

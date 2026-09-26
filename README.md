@@ -233,19 +233,71 @@ bevel, array, boolean, displace…), shade smooth, Principled BSDF materials, li
 colour and particle scattering (sprinkles). There is no sculpting, curves, texture images or node
 editing yet: recipes approximate them and say so.
 
-**First lesson (2026-09-25, the Spanish beginner course, free-tier Gemini).** Every chapter's
-notes came from the models still answering that day (mostly `gemini-3.5-flash-lite`: 3.8-flash's free
-daily quota is small and the other flash models were overloaded), and the free daily quotas of all
-of them ran out after three chapters:
+### Teaching without a model API
 
-| Chapter | Result | Best score |
-|---|---|---|
-| Interface (ends with the mug's base) | learned | 10/10 |
-| Mug and plate | learned: hollow mug with rim and handle, dished plate | 7/10 |
-| Donut and croissant | partial: lumpy donut and a segmented croissant, badly placed | 4/10 |
-| Particles, materials, lights, camera, render | not yet (quota) | – |
+A model API is not needed to teach Lucius. A teacher (a person, or an assistant working in the same
+checkout such as Claude Code) reads what the tutor says, looks at the tutorial's frames, writes the
+chapter's recipe, and Lucius does the rest of a lesson: builds it in headless Blender continuing from
+the previous chapter's scene, renders it, and puts the tutorial's frame next to the renders. The
+teacher looks, corrects the recipe, builds again, and keeps it with a score:
 
-What it took to get there, and what it says about the approach:
+```bash
+lucius teach narration --video lrlpwIumFnE --start 1:52:50 --end 1:58:20   # what the tutor says
+lucius teach frames --video lrlpwIumFnE --start 1:52:50 --end 1:58:20      # the tutorial's frames, in one picture
+lucius teach chapter my_camera.json --video lrlpwIumFnE --chapter 10 --frame-at 1:56:50   # trial build
+lucius teach chapter my_camera.json --video lrlpwIumFnE --chapter 10 --frame-at 1:56:50 --score 8 --teacher me
+lucius teach task sword.json --task "a sword" --reference sword.jpg --score 7            # something new
+```
+
+A recipe file is `{"title", "summary", "objects", "expected_result", "steps": [{"action", "args",
+"note", "video_time"}]}`, with the actions listed above (angles in degrees, colours as `"#RRGGBB"`).
+A failing step is reported with the scene and what the steps before it selected. The kept recipe is
+the chapter's skill, with the teacher recorded as the judge.
+
+### Course packs: what Lucius learned, on any machine
+
+Skills live in the data folder (`.lucius/`) of the machine that learned them. A **course pack** is
+what a teacher kept for a tutorial -- one recipe per chapter, the scores, and the tutorial's frames --
+in a folder you can copy or commit. Replaying it rebuilds every chapter in order on your machine and
+keeps each one, so Lucius has the same skills, projects and renders there, with no API:
+
+```bash
+lucius teach course courses/lrlpwIumFnE          # about 10 minutes on a CPU; chapters already learned are skipped
+lucius teach course courses/lrlpwIumFnE --redo   # build them all again
+```
+
+To start clean -- for example to drop skills a small model half-learned -- remove them first. A
+removed skill is forgotten with its history (examples, failures, links), and a lesson chapter whose
+skill was removed counts as not learned:
+
+```bash
+lucius skills                          # what is learned
+lucius skills remove --learned         # forget every learned skill (the built-in ones stay)
+lucius skills remove made_a_sword_54a31d lesson_lrlpwiumfne_06   # or just some
+```
+
+**The Spanish beginner course, learned (2026-09-26).** [`courses/lrlpwIumFnE`](courses/lrlpwIumFnE)
+("LA GUÍA DEFINITIVA DE BLENDER", the breakfast scene). The first chapters were learned by the Gemini
+lesson loop until its free daily quotas ran out; the rest were taught by Claude Code from the
+narration and the preview frames, checking each render against the tutor's:
+
+| Chapter | What Lucius builds | Score | Teacher |
+|---|---|---|---|
+| 4. Interface | default scene, transforms, primitives, edit mode; ends with the mug's base | 10 | Gemini |
+| 5. Mug and plate | hollow mug with rim, bevels and a bridged handle; plate with dish, rim and foot | 7 | Claude Code |
+| 6. Donut and croissant | segmented, mirrored croissant; displaced donuts, one duplicated and tilted | 8 | Claude Code |
+| 7. Particles | sugar crystals scattered on both donuts; the tutor's composition | 8 | Claude Code |
+| 8. Materials | porcelain, dough with subsurface, glassy sugar, tablecloth pattern with a weave bump | 8 | Claude Code |
+| 9. Lighting | spot pool on the plate, warm rim light, black world | 8 | Claude Code |
+| 10. Camera | shot framed like the tutor's; scene scaled to real size; depth of field on the donut | 8 | Claude Code |
+| 11. Render | key panel, Cycles, denoise, Standard view, blue patterned cloth: the final image | 8 | Claude Code |
+
+![Lucius' final render of the course](courses/lrlpwIumFnE/final.jpg)
+
+[`overview.jpg`](courses/lrlpwIumFnE/overview.jpg) has each chapter's tutorial frame next to what
+Lucius built. The scores are the teacher's judgement from those comparisons, not measurements.
+
+What the Gemini runs taught about the approach:
 
 * Recipes written by a small model fail on details (a typo in an argument name, a selection box
   that misses the geometry). Corrections that see the error, the object's local bounds and what the
@@ -253,19 +305,12 @@ What it took to get there, and what it says about the approach:
 * Practice helps when it edits a recipe (change, insert or delete steps by index) and hurts when the
   model rewrites it: rewrites of the 71-step mug recipe came back with 20 steps and scored lower.
   Relearning continues from the best recipe so far, so learning accumulates across runs.
-* The runs found real bugs: extrude removed a lone face's original (a filled circle became a tube,
-  not a cup), previews were framed before loaded objects had their positions, and failed practice
-  runs counted against the skill they were practising.
-* Judging is noisy: the same mug recipe was scored 3, 4 and 7 by different models. The best score is
-  kept, which favours lucky judgements; your rating in **Projects** is the correction.
-
-`lucius make "a sword"` before and after those chapters, with the same free-tier models: before, only
-basic object handling was allowed and it stacked five primitives (judged 7/10, and it named extrude,
-inset, bevel and materials as missing). After, its first plan copied that earlier sword; once earlier
-attempts were shown as things to improve on (with their critique) and tutorial recipes as the
-techniques to use, it bevelled the guard and extruded and scaled the blade to a point -- but left the
-blade too thin and detached (4/10). The techniques transfer; with the smallest models, the plans
-around them are still poor.
+* Judging is noisy: the same mug recipe was scored 3, 4 and 7 by different models. Your rating in
+  **Projects** is the correction.
+* The lessons found real differences from Blender, now fixed: extrude kept or removed a lone face's
+  original differently, inset did nothing on a lone face, an extruded rim scaled the wrong loop,
+  hair instances were scaled by the hair length, and a light or camera changed by name lost the
+  values the step did not give.
 
 ## Make something new, or from a reference image
 
@@ -277,6 +322,10 @@ lucius make "a mug like this" --reference photo_of_my_mug.jpg
 Or in the control center (`lucius serve`, then http://127.0.0.1:8765/ → **Projects**): type what
 to make, optionally drop reference images (a photo, a drawing, a screenshot), press **Make it**, and
 the result appears with its pictures. Open it and press **Good** or **Bad**.
+
+`lucius make` needs a model provider (Gemini by default) to plan and judge. Without one, a teacher
+writes the recipe from the learned techniques and builds it with `lucius teach task` (above) --
+that is how Claude Code makes things for you in a chat.
 
 The maker plans a recipe **only with the techniques Lucius has learned** (actions used by lesson
 recipes it passed) plus basic object handling, and uses the learned recipes as worked examples. A
@@ -294,8 +343,9 @@ Any of these works:
   make, press *Choose Files* and pick the image (photo, drawing or screenshot), then **Make it**.
 * **Command line:** `lucius make "a sword like this" --reference path/to/image.jpg` (repeat
   `--reference` for several views).
-* **Through Claude Code:** attach the image in the chat and ask for it to be made; it is saved next to
-  the project and passed with `--reference`.
+* **Through Claude Code:** attach the image in the chat and ask for it to be made. Claude Code writes
+  the recipe from the learned techniques, builds it with `lucius teach task ... --reference`, compares
+  the renders with your image, and sends you the pictures (no API needed).
 
 The image goes to the model that plans and judges the build, and is kept in the project folder next
 to the renders so you can compare them.
@@ -304,12 +354,17 @@ to the renders so you can compare them.
 
 ```powershell
 cd C:\path\to\Lucius
+git pull
 .venv\Scripts\Activate.ps1
-$env:GEMINI_API_KEY = "your key"
-lucius learn "https://www.youtube.com/watch?v=lrlpwIumFnE"
-lucius make "a sword" --reference "C:\Users\you\Pictures\sword.jpg"
+pip install -e ".[all,dev]" bpy
+lucius skills remove --learned             # forget the half-learned skills from the Gemini runs
+lucius teach course courses\lrlpwIumFnE    # learn the Spanish course here (no API key needed)
 lucius projects
 lucius serve          # then open http://127.0.0.1:8765/ and go to Projects
+
+# with a model API key (planning and judging new things):
+$env:GEMINI_API_KEY = "your key"
+lucius make "a sword" --reference "C:\Users\you\Pictures\sword.jpg"
 ```
 
 Pictures of every project are in `.lucius\projects\<project-id>\` (open `sheet.png`).

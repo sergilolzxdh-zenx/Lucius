@@ -75,6 +75,10 @@ def set_material(p):
         applied[key] = list(value) if isinstance(value, tuple) else value
     if p.get("base_color") is not None:
         material.diffuse_color = _unit_color(p["base_color"], "base_color")  # the solid viewport colour
+    if p["pattern"] is not None:
+        applied["pattern"] = _pattern(material, bsdf, p)
+    if p["bump"] is not None:
+        applied["bump"] = _bump(material, bsdf, p)
     if p["assign"] == "replace":
         obj.data.materials.clear()
         obj.data.materials.append(material)
@@ -100,6 +104,73 @@ def set_material(p):
     return {"object": obj.name, "material": material.name, "set": applied}
 
 
+def _node(tree, kind, name):
+    node = tree.nodes.get(name)
+    if node is None or node.bl_idname != kind:
+        if node is not None:
+            tree.nodes.remove(node)
+        node = tree.nodes.new(kind)
+        node.name = name
+    return node
+
+
+def _pattern(material, bsdf, p):
+    """A procedural colour pattern on Base Color: brick (a check tablecloth: square bricks, coloured mortar
+    lines), checker or noise, over the object's own coordinates."""
+    tree = material.node_tree
+    kind = {"brick": "ShaderNodeTexBrick", "checker": "ShaderNodeTexChecker", "noise": "ShaderNodeTexNoise"}[p["pattern"]]
+    coords = _node(tree, "ShaderNodeTexCoord", "LuciusPatternCoords")
+    texture = _node(tree, kind, "LuciusPattern")
+    tree.links.new(coords.outputs["Object"], texture.inputs["Vector"])
+    base = _unit_color(p["base_color"], "base_color") or tuple(bsdf.inputs["Base Color"].default_value)
+    second = _unit_color(p["pattern_color"], "pattern_color") or base
+    if p["pattern_scale"] is not None:
+        texture.inputs["Scale"].default_value = p["pattern_scale"]
+    if p["pattern"] == "brick":
+        texture.inputs["Color1"].default_value = base
+        texture.inputs["Color2"].default_value = second
+        texture.inputs["Mortar"].default_value = _unit_color(p["line_color"], "line_color") or (0.1, 0.2, 0.6, 1.0)
+        texture.inputs["Mortar Size"].default_value = p["mortar_size"]
+        texture.inputs["Brick Width"].default_value = p["brick_width"]
+        texture.inputs["Row Height"].default_value = p["row_height"]
+        texture.offset_frequency = 1
+        texture.offset = 0.0
+        texture.squash_frequency = 1
+        output = texture.outputs["Color"]
+    elif p["pattern"] == "checker":
+        texture.inputs["Color1"].default_value = base
+        texture.inputs["Color2"].default_value = second
+        output = texture.outputs["Color"]
+    else:
+        ramp = _node(tree, "ShaderNodeMix", "LuciusPatternMix")
+        ramp.data_type = "RGBA"
+        tree.links.new(texture.outputs["Fac"], ramp.inputs["Factor"])
+        ramp.inputs["A"].default_value = base
+        ramp.inputs["B"].default_value = second
+        output = ramp.outputs["Result"]
+    tree.links.new(output, bsdf.inputs["Base Color"])
+    return p["pattern"]
+
+
+def _bump(material, bsdf, p):
+    """Surface relief from a procedural texture (a fabric's weave: magic texture, large scale, distorted)."""
+    tree = material.node_tree
+    kind = {"magic": "ShaderNodeTexMagic", "noise": "ShaderNodeTexNoise", "voronoi": "ShaderNodeTexVoronoi"}[p["bump"]]
+    coords = _node(tree, "ShaderNodeTexCoord", "LuciusPatternCoords")
+    texture = _node(tree, kind, "LuciusBumpTexture")
+    tree.links.new(coords.outputs["Object"], texture.inputs["Vector"])
+    texture.inputs["Scale"].default_value = p["bump_scale"]
+    if p["bump"] == "magic":
+        texture.inputs["Distortion"].default_value = p["bump_distortion"]
+    elif "Distortion" in texture.inputs:
+        texture.inputs["Distortion"].default_value = p["bump_distortion"]
+    bump = _node(tree, "ShaderNodeBump", "LuciusBump")
+    bump.inputs["Strength"].default_value = p["bump_strength"]
+    tree.links.new(texture.outputs["Fac"] if "Fac" in texture.outputs else texture.outputs[0], bump.inputs["Height"])
+    tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
+    return p["bump"]
+
+
 # -- lights, camera, world -----------------------------------------------------------------------
 
 def _existing(name, kind):
@@ -110,57 +181,101 @@ def _existing(name, kind):
 
 
 def add_light(p):
-    """Add a light, or change the light of that name (the default scene's "Light")."""
+    """Add a light, or change the light of that name (the default scene's "Light"): only what is given changes."""
     _leave_edit_mode()
     obj = _existing(p["name"], "LIGHT")
     if obj is None:
-        data = bpy.data.lights.new(p["name"] or p["type"].title(), type=p["type"])
+        if p["location"] is None:
+            raise BridgeCommandError("invalid_param", "a new light needs a location", param="location")
+        light_type = p["type"] or "AREA"
+        data = bpy.data.lights.new(p["name"] or light_type.title(), type=light_type)
         obj = bpy.data.objects.new(data.name, data)
         bpy.context.scene.collection.objects.link(obj)
+        data.energy = {"SUN": 3.0, "POINT": 800.0, "SPOT": 800.0, "AREA": 400.0}[light_type]
     else:
-        obj.data.type = p["type"]
+        if p["type"] is not None and obj.data.type != p["type"]:
+            obj.data.type = p["type"]   # the datablock becomes another light class: fetch it again below
         data = obj.data
-    data.energy = p["power"] if p["power"] is not None else {"SUN": 3.0, "POINT": 800.0, "SPOT": 800.0,
-                                                              "AREA": 400.0}[p["type"]]
+    if p["power"] is not None:
+        data.energy = p["power"]
     if p["color"] is not None:
         data.color = _unit_color(p["color"], "color")[:3]
+    if p["temperature"] is not None:
+        if not 800 <= p["temperature"] <= 20000:
+            raise BridgeCommandError("invalid_param", "temperature is in kelvin, 800..20000", param="temperature")
+        if hasattr(data, "use_temperature"):
+            data.use_temperature = True
+            data.temperature = p["temperature"]
+        else:
+            data.color = _kelvin(p["temperature"])
+    if data.type == "SPOT":
+        if p["spot_size"] is not None:
+            data.spot_size = math.radians(max(1.0, min(180.0, p["spot_size"])))
+        if p["spot_blend"] is not None:
+            data.spot_blend = max(0.0, min(1.0, p["spot_blend"]))
     if p["size"] is not None:
-        if p["type"] == "AREA":
+        if data.type == "AREA":
             data.size = p["size"]
-        elif p["type"] == "SUN":
+        elif data.type == "SUN":
             data.angle = math.radians(min(180.0, p["size"]))
         else:
             data.shadow_soft_size = p["size"]
-    obj.location = p["location"]
+    if p["location"] is not None:
+        obj.location = p["location"]
     if p["look_at"] is not None:
         _look_at(obj, p["look_at"])
     elif p["rotation"] is not None:
         obj.rotation_euler = p["rotation"]
-    return {"object": obj.name, "type": p["type"], "power": data.energy}
+    return {"object": obj.name, "type": data.type, "power": data.energy, "location": list(obj.location)}
+
+
+def _kelvin(kelvin):
+    """Approximate RGB of a black body (for Blender versions without light temperature)."""
+    t = kelvin / 100.0
+    r = 255.0 if t <= 66 else 329.698727446 * ((t - 60) ** -0.1332047592)
+    g = 99.4708025861 * math.log(t) - 161.1195681661 if t <= 66 else 288.1221695283 * ((t - 60) ** -0.0755148492)
+    b = 255.0 if t >= 66 else (0.0 if t <= 19 else 138.5177312231 * math.log(t - 10) - 305.0447927307)
+    return tuple(max(0.0, min(255.0, c)) / 255.0 for c in (r, g, b))
 
 
 def add_camera(p):
-    """Add a camera, or move and set up the camera of that name (the default scene's "Camera")."""
+    """Add a camera, or move and set up the camera of that name (the default scene's "Camera"): only what is
+    given changes, so a later step can just set the focus or the lens."""
     _leave_edit_mode()
     obj = _existing(p["name"], "CAMERA")
     if obj is None:
+        if p["location"] is None:
+            raise BridgeCommandError("invalid_param", "a new camera needs a location", param="location")
         data = bpy.data.cameras.new(p["name"] or "Camera")
         obj = bpy.data.objects.new(data.name, data)
         bpy.context.scene.collection.objects.link(obj)
+        data.lens = 50.0
     data = obj.data
-    data.lens = p["lens"]
-    obj.location = p["location"]
+    if p["lens"] is not None:
+        data.lens = p["lens"]
+    if p["location"] is not None:
+        obj.location = p["location"]
     if p["look_at"] is not None:
         _look_at(obj, p["look_at"])
     elif p["rotation"] is not None:
         obj.rotation_euler = p["rotation"]
-    if p["dof_distance"] is not None:
+    if p["dof_distance"] is not None or p["focus_object"] is not None:
+        # Depth of field: sharp at the focus object (or distance), blurred elsewhere; a lower f-stop blurs more.
         data.dof.use_dof = True
-        data.dof.focus_distance = p["dof_distance"]
+        if p["focus_object"] is not None:
+            data.dof.focus_object = _obj(p["focus_object"])
+        else:
+            data.dof.focus_object = None
+            data.dof.focus_distance = p["dof_distance"]
+        data.dof.aperture_fstop = p["fstop"] if p["fstop"] is not None else 2.8
+    elif p["fstop"] is not None:
         data.dof.aperture_fstop = p["fstop"]
+    if p["dof"] is not None:
+        data.dof.use_dof = p["dof"]
     if p["active"]:
         bpy.context.scene.camera = obj
-    return {"object": obj.name, "lens": data.lens, "rotation": list(obj.rotation_euler)}
+    return {"object": obj.name, "lens": data.lens, "location": list(obj.location),
+            "rotation": list(obj.rotation_euler), "dof": data.dof.use_dof}
 
 
 def set_world(p):
@@ -187,7 +302,29 @@ def set_render(p):
         scene.cycles.use_denoising = p["denoise"]
     elif hasattr(scene, "eevee"):
         scene.eevee.taa_render_samples = p["samples"]
-    return {"engine": scene.render.engine, "samples": p["samples"], "resolution": [p["width"], p["height"]]}
+    if p["view_transform"] is not None:
+        scene.view_settings.view_transform = p["view_transform"]
+    return {"engine": scene.render.engine, "samples": p["samples"], "resolution": [p["width"], p["height"]],
+            "view_transform": scene.view_settings.view_transform}
+
+
+def scale_scene(p):
+    """A then S: scale every object of the scene about a point (to bring a model to real-world size).
+    Lights keep their power -- at a new scale they usually need less (the tutor's lesson on working to scale)."""
+    _leave_edit_mode()
+    factor = p["factor"]
+    if not 1e-4 <= factor <= 1e4:
+        raise BridgeCommandError("invalid_param", "factor must be between 0.0001 and 10000", param="factor")
+    pivot = Vector(p["pivot"])
+    scaled = []
+    for obj in bpy.context.scene.objects:
+        if obj.parent is not None:
+            continue   # children follow their parent
+        obj.location = pivot + (obj.location - pivot) * factor
+        obj.scale = obj.scale * factor
+        scaled.append(obj.name)
+    bpy.context.view_layer.update()
+    return {"scaled": scaled, "factor": factor}
 
 
 # -- rendering -----------------------------------------------------------------------------------
@@ -208,8 +345,9 @@ def _visible_bounds(names=None):
     return (lo + hi) / 2, max((hi - lo).length / 2, 0.05)
 
 
-def _studio(view, names=None):
-    """A temporary camera framing the visible objects (or ``names``) and three studio lights."""
+def _studio(view, names=None, lights=True):
+    """A temporary camera framing the visible objects (or ``names``) and (unless ``lights`` is false) three
+    studio lights."""
     scene = bpy.context.scene
     made = []
     centre, radius = _visible_bounds(names)
@@ -227,8 +365,8 @@ def _studio(view, names=None):
     cam.location = centre + direction * distance
     cam_data.clip_end = max(100.0, distance * 4)
     _look_at(cam, centre)
-    # Previews are for seeing the shape: studio lights always (the scene's own lights are for its own camera).
-    for name, kind, energy, offset in (("LuciusKey", "AREA", 450.0, (1.2, -1.0, 1.2)),
+    # Previews are for seeing the shape: studio lights (the scene's own lights are for its own camera).
+    for name, kind, energy, offset in () if not lights else (("LuciusKey", "AREA", 450.0, (1.2, -1.0, 1.2)),
                                        ("LuciusFill", "AREA", 120.0, (-1.4, -0.6, 0.8)),
                                        ("LuciusRim", "AREA", 250.0, (-0.3, 1.5, 1.4))):
         data = bpy.data.lights.new(name, type=kind)
@@ -265,31 +403,37 @@ def render_image(p):
     saved = {"engine": render.engine, "x": render.resolution_x, "y": render.resolution_y,
              "pct": render.resolution_percentage, "path": render.filepath, "camera": scene.camera,
              "format": render.image_settings.file_format}
-    render.engine = p["engine"]
-    render.resolution_x, render.resolution_y, render.resolution_percentage = p["width"], p["height"], 100
-    if p["engine"] == "CYCLES":
-        saved["samples"] = scene.cycles.samples
-        scene.cycles.samples = p["samples"]
-        if bpy.app.background:
-            scene.cycles.device = "CPU"
+    if not p["scene_settings"]:
+        # (with scene_settings: the engine, size and samples the scene was set up with -- a finished shot)
+        render.engine = p["engine"]
+        render.resolution_x, render.resolution_y, render.resolution_percentage = p["width"], p["height"], 100
+        if p["engine"] == "CYCLES":
+            saved["samples"] = scene.cycles.samples
+            scene.cycles.samples = p["samples"]
+    if render.engine == "CYCLES" and bpy.app.background:
+        scene.cycles.device = "CPU"
+    elif render.engine != "CYCLES" and bpy.app.background:
+        render.engine = "CYCLES"   # Eevee needs a GPU context headless Blender does not have
     render.image_settings.file_format = "JPEG" if path.lower().endswith((".jpg", ".jpeg")) else "PNG"
     render.filepath = path
     temporary = []
     hidden = []
     world_created = False
     try:
+        studio = p["lights"] == "studio"
         if p["camera"] == "auto" or scene.camera is None:
-            camera, temporary = _studio(p["view"], set(p["frame"] or []))
-        if p["camera"] == "auto":
+            camera, temporary = _studio(p["view"], set(p["frame"] or []), lights=studio)
+        if p["camera"] == "auto" and studio:
             for obj in scene.objects:   # the scene's own lights stay out of a studio preview
                 if obj.type == "LIGHT" and obj not in temporary and not obj.hide_render:
                     obj.hide_render = True
                     hidden.append(obj)
+        if p["camera"] == "auto" or scene.camera is None:
             scene.camera = camera
         if scene.world is None:
             scene.world = bpy.data.worlds.new("LuciusPreviewWorld")
             world_created = True
-        if p["camera"] == "auto":
+        if p["camera"] == "auto" and studio:
             # A shape preview, like the viewport's solid mode: grey clay when nothing has a material yet, and soft
             # ambient light so hollows (a dish, the inside of a mug) read.
             meshes = [o for o in scene.objects if o.type == "MESH" and not o.hide_render]
@@ -359,7 +503,12 @@ def add_scatter(p):
     instance = _obj(p["instance"])
     if instance == obj:
         raise BridgeCommandError("invalid_param", "an object cannot be scattered over itself", param="instance")
-    modifier = obj.modifiers.new(name=p["name"] or "Scatter", type="PARTICLE_SYSTEM")
+    name = p["name"] or "Scatter"
+    existing = obj.modifiers.get(name)
+    if existing is not None and existing.type == "PARTICLE_SYSTEM":
+        modifier = existing   # the same system again: its settings change (more sugar, bigger crystals)
+    else:
+        modifier = obj.modifiers.new(name=name, type="PARTICLE_SYSTEM")
     settings = modifier.particle_system.settings
     settings.type = "HAIR"
     settings.use_advanced_hair = True
@@ -388,22 +537,31 @@ ACTIONS = {
         "metallic": ("float", None), "alpha": ("float", None), "emission_color": COLOR,
         "emission_strength": ("float", None), "transmission": ("float", None), "subsurface": ("float", None),
         "coat": ("float", None), "ior": ("float", None),
-        "assign": (("replace", "append", "selected_faces"), "replace")}),
+        "assign": (("replace", "append", "selected_faces"), "replace"),
+        "pattern": (("brick", "checker", "noise"), None), "pattern_color": COLOR, "line_color": COLOR,
+        "pattern_scale": ("float", None), "mortar_size": ("float", 0.02), "brick_width": ("float", 0.5),
+        "row_height": ("float", 0.5), "bump": (("magic", "noise", "voronoi"), None), "bump_scale": ("float", 200.0),
+        "bump_distortion": ("float", 15.0), "bump_strength": ("float", 0.3)}),
     "add_light": (add_light, {
-        "type": (("POINT", "SUN", "SPOT", "AREA"), "AREA"), "name": ("name", None), "location": ("vec3", REQUIRED),
+        "type": (("POINT", "SUN", "SPOT", "AREA"), None), "name": ("name", None), "location": ("vec3", None),
         "rotation": ("vec3", None), "look_at": ("vec3", None), "power": ("float", None), "color": COLOR,
-        "size": ("float", None)}),
+        "size": ("float", None), "temperature": ("float", None), "spot_size": ("float", None),
+        "spot_blend": ("float", None)}),
     "add_camera": (add_camera, {
-        "name": ("name", None), "location": ("vec3", REQUIRED), "rotation": ("vec3", None), "look_at": ("vec3", None),
-        "lens": ("float", 50.0), "active": ("bool", True), "dof_distance": ("float", None), "fstop": ("float", 2.8)}),
+        "name": ("name", None), "location": ("vec3", None), "rotation": ("vec3", None), "look_at": ("vec3", None),
+        "lens": ("float", None), "active": ("bool", True), "dof_distance": ("float", None), "fstop": ("float", None),
+        "focus_object": ("name", None), "dof": ("bool", None)}),
     "set_world": (set_world, {"color": COLOR, "strength": ("float", 1.0)}),
     "set_render": (set_render, {
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
-        "samples": ("int", 64), "width": ("int", 1280), "height": ("int", 720), "denoise": ("bool", True)}),
+        "samples": ("int", 64), "width": ("int", 1280), "height": ("int", 720), "denoise": ("bool", True),
+        "view_transform": (("Standard", "AgX", "Filmic", "Khronos PBR Neutral"), None)}),
+    "scale_scene": (scale_scene, {"factor": ("float", REQUIRED), "pivot": ("vec3", [0.0, 0.0, 0.0])}),
     "render_image": (render_image, {
         "path": ("path", REQUIRED), "camera": (("scene", "auto"), "auto"), "view": (tuple(VIEW_DIRECTIONS), "three_quarter"),
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
-        "samples": ("int", 24), "width": ("int", 800), "height": ("int", 600), "frame": ("names", None)}),
+        "samples": ("int", 24), "width": ("int", 800), "height": ("int", 600), "frame": ("names", None),
+        "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio")}),
     "add_scatter": (add_scatter, {
         "object": OBJ, "instance": ("name", REQUIRED), "name": ("name", None), "count": ("int", 300),
         "scale": ("float", 1.0), "scale_random": ("float", 0.3),

@@ -1,0 +1,168 @@
+{
+ "title": "Sugar particles and the breakfast composition",
+ "summary": "A small cube scattered as 5000 sugar crystals over both donuts with a hair particle system rendered as objects; then the scene composed from the top view: plate in the centre, donuts on it (one leaning on the other), mug and croissant behind, nothing through the ground or the plate.",
+ "objects": [
+  {
+   "name": "Sugar",
+   "description": "sugar crystal (instanced)"
+  },
+  {
+   "name": "Plate",
+   "description": "plate"
+  },
+  {
+   "name": "Donut",
+   "description": "donut"
+  },
+  {
+   "name": "Donut2",
+   "description": "donut"
+  },
+  {
+   "name": "Mug",
+   "description": "mug"
+  },
+  {
+   "name": "Croissant",
+   "description": "croissant"
+  }
+ ],
+ "expected_result": "Two sugared donuts on the plate, the croissant and the mug behind it.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Sugar",
+    "size": 0.035,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "a cube out of the scene, scaled small in edit mode: one sugar crystal",
+   "video_time": "81:38"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.0,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 1
+   },
+   "note": "particle system 'azucar' on the donut: hair, rendered as the Sugar object, 5000, scale randomness 1",
+   "video_time": "82:01"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut2",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.0,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 2
+   },
+   "note": "the same sugar on the second donut",
+   "video_time": "82:50"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Plate",
+    "location": [
+     0,
+     0,
+     0.42
+    ]
+   },
+   "note": "top view: the plate is the main object, in the centre",
+   "video_time": "84:30"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Donut",
+    "location": [
+     -1.0,
+     -0.2,
+     0.62
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the donuts on the plate",
+   "video_time": "84:52"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Donut2",
+    "location": [
+     1.2,
+     0.3,
+     1.33
+    ],
+    "rotation_deg": [
+     0,
+     15,
+     20
+    ]
+   },
+   "note": "the second donut leaning on the first",
+   "video_time": "85:18"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Mug",
+    "location": [
+     2.9,
+     4.3,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     35
+    ],
+    "scale": [
+     1.15,
+     1.15,
+     1.15
+    ]
+   },
+   "note": "the mug behind the plate, a little bigger",
+   "video_time": "84:52"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Croissant",
+    "location": [
+     -3.6,
+     3.2,
+     0.62
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     30
+    ]
+   },
+   "note": "the croissant rotated, behind on the other side, resting on the ground",
+   "video_time": "85:05"
+  }
+ ]
+}

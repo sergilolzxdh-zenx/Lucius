@@ -158,7 +158,10 @@ def object_summary(obj):
     if obj.type == "LIGHT" and obj.data is not None:
         data["light"] = {"type": obj.data.type, "energy": round(float(obj.data.energy), 3)}
     if obj.type == "CAMERA" and obj.data is not None:
-        data["camera"] = {"lens": round(float(obj.data.lens), 2)}
+        dof = obj.data.dof
+        data["camera"] = {"lens": round(float(obj.data.lens), 2),
+                          "fstop": round(float(dof.aperture_fstop), 2) if dof.use_dof else None,
+                          "focus_object": dof.focus_object.name if dof.use_dof and dof.focus_object else None}
     if obj.type == "MESH" and obj.data is not None:
         mesh = obj.data
         data["mesh"] = {

@@ -1,0 +1,97 @@
+{
+ "title": "Camera",
+ "summary": "A camera in front of the table, above it, looking down at the plate; the scene scaled to real-world size (the plate 30 cm) so the lights and depth of field behave; lights lowered to match; depth of field focused on the donut at f/1; a square 1080x1080 frame with a touch more zoom.",
+ "objects": [
+  {
+   "name": "Camera",
+   "description": "the shot: front, above, looking down at the donuts"
+  }
+ ],
+ "expected_result": "A square shot from the front and above: the plate with the two donuts in the middle, the croissant back left and the mug back right, the donut sharp and the back softly blurred, lit by the spot.",
+ "steps": [
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.0,
+     -9.5,
+     11.0
+    ],
+    "look_at": [
+     0.0,
+     1.2,
+     0.6
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "Shift+A > Camera, then View > Lock camera to view and frame it: in front of the table and above, looking down at the plate, the croissant and mug at the back",
+   "video_time": "112:50"
+  },
+  {
+   "action": "scale_scene",
+   "args": {
+    "factor": 0.05,
+    "pivot": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "note": "the scene was built far too big (plate 6-7 m): A then S to shrink everything so the plate is ~30 cm; lights and depth of field depend on real scale",
+   "video_time": "114:56"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Luz calida",
+    "power": 1.5,
+    "size": 0.075
+   },
+   "note": "at the new scale the lights are 20x closer, so the same look needs ~1/400 of the power (the tutor: 5000 -> 10); radius scaled too",
+   "video_time": "115:47"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Foco",
+    "power": 18,
+    "size": 0.02
+   },
+   "note": "the spot the same way (the tutor: 7000 -> 100)",
+   "video_time": "115:47"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "focus_object": "Donut",
+    "fstop": 1.0
+   },
+   "note": "Depth of Field on, Focus Object = the donut, F-stop 1: what is not at the donut's distance goes soft",
+   "video_time": "116:13"
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 64,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true
+   },
+   "note": "Output properties: a square 1080 x 1080 frame (the tutor still uses Eevee here; headless renders with Cycles)",
+   "video_time": "117:05"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "lens": 52
+   },
+   "note": "the square frame changed the framing, so a bit more zoom (focal length)",
+   "video_time": "117:30"
+  }
+ ]
+}

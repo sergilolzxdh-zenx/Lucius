@@ -248,6 +248,19 @@ reproduce the result, which is the evidence that it learned something.
   reference images), revise, keep the best. The resulting skill (`made_recipe`) is not validated by
   the model's own critique; a person's rating (`lucius projects good|bad`, or the control center)
   confirms or rejects it.
+* **Teacher mode** (`Teacher`, `lucius teach`): the same lesson without a model. A teacher writes the
+  recipe (from `teach narration`, the captions, and `teach frames`, the storyboard frames), Lucius
+  builds it from the previous chapter's scene and renders it (through the scene's camera and final
+  render settings once the recipe sets them up); with a score the recipe is kept as the chapter's
+  skill and the teacher is recorded as the judge. `teach task` does the same for something new, with
+  reference images beside the renders. Lights, cameras, materials and particle systems addressed by
+  an existing name are changed, not duplicated; a light or camera update changes only the values
+  given.
+* **Course packs** (`courses/<video id>/`): `course.json` (the video's chapters and, per chapter, the
+  kept recipe file, score, teacher and the tutorial frame) plus the recipes. `lucius teach course`
+  replays a pack in order on another machine and keeps every chapter, so skills move between data
+  folders as recipes that are rebuilt and checked, not as copied database rows. A chapter already kept
+  from a recipe with the same digest (actions and values) is skipped.
 * **Projects** (`<data dir>/projects/<id>/`) hold `project.json` (attempts, runs, scores, comparison
   notes, rating), every attempt's recipe and renders, `sheet.png` and `scene.blend`. The API serves
   them read-only by name inside the project folder.

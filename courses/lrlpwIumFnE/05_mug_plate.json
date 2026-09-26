@@ -1,0 +1,597 @@
+{
+ "title": "Mug and plate",
+ "summary": "The mug from the filled circle: extrude up, inset the rim, extrude the inside down, bevel rim and base, a lip under the base, loop cuts, a handle bridged between two extruded patches, subdivision and smooth shading. The plate from a filled circle: three insets pushed down into a dish, the rim extruded down and in for thickness, a foot ring, subdivision and smooth shading.",
+ "objects": [
+  {
+   "name": "Mug",
+   "description": "mug (taza) with a rounded handle"
+  },
+  {
+   "name": "Plate",
+   "description": "shallow plate (plato)"
+  }
+ ],
+ "expected_result": "A white mug with a thick rim and a D-shaped handle standing behind a wide shallow plate.",
+ "steps": [
+  {
+   "action": "rename_object",
+   "args": {
+    "object": "Circle",
+    "new_name": "Mug"
+   },
+   "note": "the filled circle from the interface chapter is the mug's base",
+   "video_time": "31:54"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Mug"
+   },
+   "note": "face mode, the base face",
+   "video_time": "32:06"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Mug",
+    "offset": [
+     0,
+     0,
+     2.1
+    ]
+   },
+   "note": "E, then G Z up to a mug's proportion",
+   "video_time": "35:50"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Mug",
+    "thickness": 0.1
+   },
+   "note": "I: the rim where the lips go",
+   "video_time": "36:23"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Mug",
+    "offset": [
+     0,
+     0,
+     -1.9
+    ]
+   },
+   "note": "extrude the inside down without going through the base",
+   "video_time": "36:34"
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Mug"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "EDGE",
+    "min": [
+     null,
+     null,
+     2.05
+    ],
+    "space": "local",
+    "sharp_deg": 30
+   },
+   "note": "Alt+Shift+click the outer and inner rim loops",
+   "video_time": "39:57"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Mug",
+    "offset": 0.045,
+    "segments": 4
+   },
+   "note": "Ctrl+B with C (clamp): a rounded rim",
+   "video_time": "40:03"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "EDGE",
+    "max": [
+     null,
+     null,
+     0.02
+    ],
+    "space": "local",
+    "sharp_deg": 30
+   },
+   "note": "the outer bottom loop",
+   "video_time": "40:24"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Mug",
+    "offset": 0.06,
+    "segments": 4
+   },
+   "note": "",
+   "video_time": "40:24"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     0.01
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the base face",
+   "video_time": "40:36"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Mug",
+    "thickness": 0.12
+   },
+   "note": "the lip under the base",
+   "video_time": "40:50"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Mug",
+    "offset": [
+     0,
+     0,
+     0.04
+    ]
+   },
+   "note": "a little up",
+   "video_time": "40:55"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Mug",
+    "factor": [
+     0.95,
+     0.95,
+     1
+    ]
+   },
+   "note": "S",
+   "video_time": "41:00"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Mug",
+    "axis": "z",
+    "positions": [
+     0.15,
+     0.25,
+     0.35,
+     0.5,
+     0.65,
+     0.75,
+     0.85
+    ]
+   },
+   "note": "Ctrl+R with the wheel: squares to take the handle from",
+   "video_time": "42:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "FACE",
+    "min": [
+     0.8,
+     -0.2,
+     1.4
+    ],
+    "max": [
+     null,
+     0.2,
+     1.75
+    ],
+    "space": "local",
+    "facing": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "2x2 squares near the top of the side",
+   "video_time": "43:39"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Mug",
+    "distance": 0.55
+   },
+   "note": "E outwards",
+   "video_time": "44:47"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "FACE",
+    "min": [
+     0.8,
+     -0.2,
+     0.35
+    ],
+    "max": [
+     null,
+     0.2,
+     0.7
+    ],
+    "space": "local",
+    "facing": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "2x2 squares near the bottom",
+   "video_time": "45:30"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Mug",
+    "distance": 0.55
+   },
+   "note": "",
+   "video_time": "45:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "FACE",
+    "min": [
+     1.4,
+     -0.3,
+     0.5
+    ],
+    "space": "local",
+    "facing": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "both ends",
+   "video_time": "46:40"
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Mug",
+    "what": "ONLY_FACES"
+   },
+   "note": "X > Faces: two holes to join",
+   "video_time": "46:43"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mug",
+    "element": "EDGE",
+    "min": [
+     1.4,
+     null,
+     null
+    ],
+    "space": "local",
+    "boundary": true
+   },
+   "note": "Alt+click both hole loops",
+   "video_time": "47:22"
+  },
+  {
+   "action": "bridge_edge_loops",
+   "args": {
+    "object": "Mug",
+    "cuts": 4
+   },
+   "note": "Bridge Edge Loops: the handle",
+   "video_time": "47:47"
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Mug"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Mug",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "Ctrl+2",
+   "video_time": "49:06"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Mug",
+    "smooth": true
+   },
+   "note": "Shade Smooth",
+   "video_time": "48:32"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Mug",
+    "location": [
+     -3,
+     3.5,
+     0
+    ]
+   },
+   "note": "G Shift+Z: the mug to the back",
+   "video_time": "50:15"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Plate",
+    "radius": 3,
+    "vertices": 32,
+    "fill": true,
+    "location": [
+     0,
+     0,
+     0.42
+    ]
+   },
+   "note": "a circle, scaled up and filled with F",
+   "video_time": "50:46"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Plate"
+   },
+   "note": "",
+   "video_time": "51:05"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Plate",
+    "thickness": 0.5
+   },
+   "note": "I: the flat rim of the plate",
+   "video_time": "51:05"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Plate",
+    "thickness": 0.12
+   },
+   "note": "another inset",
+   "video_time": "51:10"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     -0.2
+    ]
+   },
+   "note": "G Z down: the step from the rim into the plate",
+   "video_time": "51:10"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Plate",
+    "thickness": 0.35
+   },
+   "note": "another inset, moved down: a medium-deep plate",
+   "video_time": "51:19"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     -0.12
+    ]
+   },
+   "note": "",
+   "video_time": "51:22"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Plate",
+    "thickness": 1.0
+   },
+   "note": "the last inset towards the centre",
+   "video_time": "51:30"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     -0.03
+    ]
+   },
+   "note": "a little down",
+   "video_time": "51:35"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Plate",
+    "element": "EDGE",
+    "space": "local",
+    "boundary": true
+   },
+   "note": "the outer edges",
+   "video_time": "51:53"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     -0.06
+    ]
+   },
+   "note": "E Z down: the rim's thickness",
+   "video_time": "52:00"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     -0.36
+    ]
+   },
+   "note": "E again, towards the centre and down: a shell (carcasa)",
+   "video_time": "52:15"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Plate",
+    "factor": [
+     0.7,
+     0.7,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": "52:15"
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Plate"
+   },
+   "note": "F: close the bottom",
+   "video_time": "52:31"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Plate",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     -0.4
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the bottom",
+   "video_time": "52:45"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Plate",
+    "thickness": 0.3
+   },
+   "note": "the lip underneath, like the mug's",
+   "video_time": "52:50"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Plate",
+    "offset": [
+     0,
+     0,
+     0.02
+    ]
+   },
+   "note": "G Z up, carefully",
+   "video_time": "52:55"
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Plate"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Plate",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "Ctrl+2",
+   "video_time": "53:30"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Plate",
+    "smooth": true
+   },
+   "note": "Shade Smooth",
+   "video_time": "54:50"
+  }
+ ]
+}

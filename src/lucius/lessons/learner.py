@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from lucius.errors import ProviderError, ProviderUnavailable
+from lucius.errors import NotFoundError, ProviderError, ProviderUnavailable
 from lucius.ingestion.captions import CaptionTrack
 from lucius.ingestion.download import DownloadedVideo, parse_timestamp
 from lucius.lessons.catalogue import RECIPE_ACTIONS, catalogue
@@ -591,6 +591,8 @@ class LessonLearner:
                    f"project {project.id}"])
         if library.exists(skill_id):
             library.new_version(skill_id, definition, change_note="relearned from the tutorial", created_by="lesson")
+            if library.get(skill_id).status.value == "disabled":
+                library.set_disabled(skill_id, False)
         else:
             library.create(definition, created_by="lesson", change_note="learned from a tutorial chapter")
         skill = library.get(skill_id)
@@ -680,6 +682,14 @@ class LessonLearner:
             key = (int(src.get("start", 0)), int(src.get("end", 0)))
             if key not in best or (data.get("score") or 0) > (best[key].get("score") or 0):
                 best[key] = data
+        for entry in self._state(video).get("chapters", {}).values():
+            # The version kept for a chapter (the last one scored), even if an earlier attempt scored as high.
+            try:
+                data = self.projects.get(str(entry.get("project_id"))).data
+            except NotFoundError:
+                continue
+            src = data.get("source") or {}
+            best[(int(src.get("start", 0)), int(src.get("end", 0)))] = data
         if not best:
             return None
         tiles: list[tuple[Path | None, str]] = []

@@ -1,0 +1,147 @@
+{
+ "title": "Render",
+ "summary": "The final shot: the main spot becomes a big square area panel from the front-left of the camera (4500 K) with the warm back light raised; Cycles with denoise and the Standard view; a brighter, glossier croissant, bigger sugar crystals, a blue tablecloth with small white squares turned slightly on Z, and a softer depth of field (f/2.8).",
+ "objects": [
+  {
+   "name": "Foco",
+   "description": "now the big square key panel, front-left"
+  },
+  {
+   "name": "Mantel",
+   "description": "blue with small white squares, slightly rotated"
+  }
+ ],
+ "expected_result": "A finished square render: plate with sugared donuts in focus, croissant back left and white mug back right softly blurred, on a blue tablecloth with a white square pattern, soft light from the front-left and a warm rim from behind.",
+ "steps": [
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Foco",
+    "type": "AREA",
+    "location": [
+     -0.45,
+     -0.38,
+     0.42
+    ],
+    "look_at": [
+     0.0,
+     0.02,
+     0.03
+    ],
+    "size": 0.6,
+    "power": 6,
+    "temperature": 4500
+   },
+   "note": "the spot turned into an area light (Cycles gives it spread), a giant square panel in front-left of the camera aimed at the donuts, moved close; with Cycles its strength lowered (15 was too much once close), 4500 K so the scene is not so warm",
+   "video_time": "120:10"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Luz calida",
+    "power": 4
+   },
+   "note": "the back (rim) light raised so it lights the scene from that side",
+   "video_time": "129:21"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Croissant",
+    "name": "Croissant",
+    "base_color": "#CD8A43",
+    "roughness": 0.45,
+    "subsurface": 0.5
+   },
+   "note": "the croissant came out dark: its colour a bit lighter, and less roughness for a little shine",
+   "video_time": "127:06"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.25,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 1
+   },
+   "note": "the donuts barely showed their sugar: particles > render > scale up a little (too much, then back)",
+   "video_time": "127:34"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut2",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.25,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 2
+   },
+   "note": "the same on the other donut",
+   "video_time": "127:34"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mantel",
+    "name": "Mantel",
+    "base_color": "#E6E6E6",
+    "pattern": "brick",
+    "pattern_color": "#E6E6E6",
+    "line_color": "#1E3C96",
+    "pattern_scale": 0.3,
+    "mortar_size": 0.19,
+    "brick_width": 0.5,
+    "row_height": 0.5,
+    "bump": "magic",
+    "bump_scale": 200,
+    "bump_distortion": 10,
+    "bump_strength": 0.2,
+    "roughness": 0.8
+   },
+   "note": "the tablecloth pattern changed: a much wider mortar in blue leaves small white squares; the weave bump softer (distortion and strength)",
+   "video_time": "128:01"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Mantel",
+    "rotation_deg": [
+     0,
+     0,
+     7
+    ]
+   },
+   "note": "an imperfection: the tablecloth turned a little on Z so it is not perfectly lined up with the camera",
+   "video_time": "128:55"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "fstop": 2.8
+   },
+   "note": "the blur at f/1 was too much: F-stop 2.8",
+   "video_time": "128:29"
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 128,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles, render samples (the tutor uses 500; with denoise 128 is clean), denoise on, Color Management view Standard (what an exported sRGB image really looks like, not AgX)",
+   "video_time": "130:11"
+  }
+ ]
+}

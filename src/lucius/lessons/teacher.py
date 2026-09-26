@@ -11,8 +11,10 @@ before it selected, for the teacher to correct.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import shutil
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -30,6 +32,7 @@ if TYPE_CHECKING:
     from lucius.ingestion.tutorial import TutorialPart
 
 IMAGE_TYPES = (".png", ".jpg", ".jpeg", ".webp")
+COURSE_INFO_KEYS = ("title", "duration", "chapters", "channel", "language", "license")
 
 
 def load_recipe(path: str | Path) -> Recipe:
@@ -128,7 +131,7 @@ class Teacher:
 
     # -- building ----------------------------------------------------------------------------------------
     def teach_chapter(self, recipe: Recipe, video_id: str, chapter: int, *, score: float | None = None,
-                      frame_at: str | None = None, note: str = "") -> TeachResult:
+                      frame_at: str | None = None, note: str = "", frame_image: Path | None = None) -> TeachResult:
         video = self.video(video_id)
         part = self.part(video, chapter)
         start_from, default_cube = self.start_scene(video, part)
@@ -143,8 +146,11 @@ class Teacher:
         t = part.end - 15.0
         if frame_at:
             t = min(part.end, max(part.start, parse_timestamp(frame_at)))
-        frame = storyboard_frame(info, t, self.learner._lesson_dir(video) / "storyboard",
-                                 project.path("tutorial_frame.png"))
+        if frame_image is not None and Path(frame_image).is_file():
+            frame: Path | None = Path(shutil.copyfile(frame_image, project.path("tutorial_frame.png")))
+        else:
+            frame = storyboard_frame(info, t, self.learner._lesson_dir(video) / "storyboard",
+                                     project.path("tutorial_frame.png"))
         tiles = [(frame, f"Tutorial at {_clock(t)}")] + [(r, f"Lucius ({r.stem.split('_')[-1]})")
                                                           for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=part.task_text)
@@ -161,14 +167,66 @@ class Teacher:
             state["chapters"][key] = {"chapter": part.task_text, "project_id": project.id, "status": result.status,
                                       "score": score, "skill_id": result.skill_id, "teacher": self.name,
                                       "blend": str(project.path("scene.blend").resolve()),
-                                      "scene_after": run.scene_text(),
+                                      "scene_after": run.scene_text(), "recipe_digest": recipe_digest(recipe),
                                       "uses_camera": "add_camera" in recipe.actions_used() or self._uses_camera(video)}
             self.learner._save_state(video, state)
+            project.save()
             self.learner.overview(video)
         else:
             project.data["status"] = "trial" if run.ok else "failed"
         project.save()
         return result
+
+    # -- course packs ------------------------------------------------------------------------------------
+    def install_course(self, folder: str | Path, *, redo: bool = False,
+                       on_progress: Callable[[str], None] | None = None) -> list[dict[str, Any]]:
+        """Replay a course pack on this machine, without a model API.
+
+        A pack (``course.json`` plus one recipe per chapter) holds what a teacher kept for a tutorial.
+        Every chapter is built again in order, each continuing from the scene of the one before, and
+        kept with the teacher's score: the same skills, projects and renders as where it was taught.
+        A chapter already kept from the same recipe is skipped (``redo`` builds it again); the first
+        chapter that fails stops the replay, since the later ones build on it.
+        """
+        folder = Path(folder)
+        course = json.loads((folder / "course.json").read_text())
+        video_id = str(course["video_id"])
+        info = self.app.config.data_dir / "downloads" / f"{video_id}.info.json"
+        if not info.exists():
+            # Only what a lesson needs (title, duration, chapters): nothing is downloaded.
+            info.parent.mkdir(parents=True, exist_ok=True)
+            meta = {"id": video_id, "webpage_url": course.get("url") or f"https://www.youtube.com/watch?v={video_id}"}
+            meta.update({key: course[key] for key in COURSE_INFO_KEYS if key in course})
+            info.write_text(json.dumps(meta, ensure_ascii=False, indent=1))
+        video = self.video(video_id)
+        default_name, results = self.name, []
+        try:
+            for lesson in course.get("lessons") or []:
+                chapter = int(lesson["chapter"])
+                recipe = load_recipe(folder / lesson["recipe"])
+                part = self.part(video, chapter)
+                kept = self.learner._state(video).get("chapters", {}).get(f"{int(part.start)}-{int(part.end)}") or {}
+                if (not redo and kept.get("recipe_digest") == recipe_digest(recipe) and kept.get("blend")
+                        and Path(kept["blend"]).exists() and self.app.library.exists(str(kept.get("skill_id")))):
+                    results.append({"chapter": chapter, "title": part.task_text, "status": "already learned",
+                                    "score": kept.get("score"), "project_id": kept.get("project_id")})
+                    continue
+                if on_progress:
+                    on_progress(f"chapter {chapter}: {part.task_text} ({len(recipe.steps)} steps)")
+                self.name = str(lesson.get("teacher") or course.get("teacher") or default_name)
+                frame = folder / lesson["frame"] if lesson.get("frame") else None
+                result = self.teach_chapter(recipe, video_id, chapter, score=float(lesson["score"]),
+                                            frame_at=lesson.get("frame_at"), note=str(lesson.get("note") or ""),
+                                            frame_image=frame)
+                results.append({"chapter": chapter, "title": part.task_text, "status": result.status,
+                                 "score": lesson["score"] if result.ok else None, "project_id": result.project_id,
+                                 "skill_id": result.skill_id, "error": result.error,
+                                 "sheet": str(result.sheet) if result.sheet else None})
+                if not result.ok:
+                    break
+        finally:
+            self.name = default_name
+        return results
 
     def teach_task(self, recipe: Recipe, task: str, *, references: list[str | Path] | None = None,
                    score: float | None = None, note: str = "") -> TeachResult:
@@ -181,8 +239,8 @@ class Teacher:
             shutil.copyfile(ref, copy)
             copies.append(copy)
         project.data["references"] = [c.name for c in copies]
-        result, run = self._build(project, recipe, start_from=None, default_cube=False, scene_camera=False,
-                                  clear=True)
+        result, run = self._build(project, recipe, start_from=None, default_cube=False,
+                                  scene_camera="add_camera" in recipe.actions_used(), clear=True)
         tiles = [(c, f"Reference {i + 1}") for i, c in enumerate(copies)]
         tiles += [(r, f"Lucius ({r.stem.split('_')[-1]})") for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=f"Task: {task}")
@@ -215,12 +273,27 @@ class Teacher:
         project.add_attempt({"number": 1, "score": None, "run": run.to_dict(), "fixes": 0, "renders": [],
                              "teacher": self.name})
         if run.ok:
-            meshes = [o["name"] for o in run.scene.get("objects", []) if o.get("type") == "MESH"]
-            frame = [n for n in recipe.object_names() if n in meshes] or meshes
+            frame = subject_names(run.scene.get("objects", []))
             views = [("scene", "three_quarter", "camera")] if scene_camera and run.scene.get("camera") else []
+            lit = any(o.get("type") == "LIGHT" for o in run.scene.get("objects", []))
+            if not views and lit and "add_light" in recipe.actions_used():
+                views.append(("auto_lit", "three_quarter", "lit"))   # the lighting itself, before there is a camera
             views += [("auto", "three_quarter", "three_quarter"), ("auto", "front", "front"), ("auto", "top", "top")]
+            final = "set_render" in recipe.actions_used()
             for camera, view, label in views[:3]:
                 path = project.path(f"render_{label}.png")
+                if camera == "scene" and final:
+                    # A finished shot: the scene's own camera, size, samples and colour settings.
+                    runner._bridge("render_image", {"path": str(path.resolve()), "camera": "scene",
+                                                    "scene_settings": True})
+                    result.renders.append(path)
+                    continue
+                if camera == "auto_lit":
+                    runner._bridge("render_image", {"path": str(path.resolve()), "camera": "auto", "view": view,
+                                                    "frame": frame, "samples": self.render_samples,
+                                                    "lights": "scene"})
+                    result.renders.append(path)
+                    continue
                 result.renders.append(runner.render(path, camera=camera, view=view, frame=frame or None,
                                                     samples=self.render_samples))
             runner.save_blend(project.path("scene.blend"))
@@ -229,6 +302,26 @@ class Teacher:
 
     def _uses_camera(self, video: DownloadedVideo) -> bool:
         return any(entry.get("uses_camera") for entry in self.learner._state(video).get("chapters", {}).values())
+
+
+def recipe_digest(recipe: Recipe) -> str:
+    """What a recipe does (its actions and values, not its notes): the same digest means the same build."""
+    steps = [[step.action, step.args] for step in recipe.steps]
+    return hashlib.sha256(json.dumps(steps, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
+
+def subject_names(objects: list[dict[str, Any]]) -> list[str]:
+    """The meshes a preview should frame: all of them except a ground (a flat plane much larger than the rest --
+    a table or tablecloth would otherwise shrink the subject to a speck)."""
+    meshes = [o for o in objects if o.get("type") == "MESH"]
+
+    def ground(o: dict[str, Any]) -> bool:
+        x, y, z = (o.get("dimensions") or [0, 0, 0])[:3]
+        others = [max((m.get("dimensions") or [0, 0, 0])[:2]) for m in meshes if m is not o]
+        return z <= 0.01 * max(x, y, 1e-9) and bool(others) and max(x, y) > 2.5 * max(others)
+
+    subjects = [o["name"] for o in meshes if not ground(o)]
+    return subjects or [o["name"] for o in meshes]
 
 
 def _clock(seconds: float) -> str:

@@ -260,6 +260,18 @@ class SkillLibrary:
         self._log_edit(skill_id, "disable" if disabled else "enable", None, None, user_id)
         return self.get(skill_id)
 
+    def remove(self, skill_id: str, *, user_id: str = "local") -> None:
+        """Forget a skill completely: its versions, examples, graph links, index entry and the failures
+        recorded against it (they describe what it did wrong). Runs that used it stay, as history."""
+        self.get(skill_id)
+        with self.db.transaction() as conn:
+            conn.execute("DELETE FROM failure_records WHERE skill_id = ?", (skill_id,))
+            conn.execute("DELETE FROM graph_edges WHERE (src_kind = 'skill' AND src_id = ?) "
+                         "OR (dst_kind = 'skill' AND dst_id = ?)", (skill_id, skill_id))
+            conn.execute("DELETE FROM embeddings WHERE owner_kind = 'skill' AND owner_id = ?", (skill_id,))
+            conn.execute("DELETE FROM skills WHERE id = ?", (skill_id,))   # versions and examples cascade
+        self._log_edit(skill_id, "remove", None, None, user_id)
+
     def merge(self, src_id: str, dst_id: str, *, user_id: str = "local") -> Skill:
         """Fold ``src`` into ``dst``: evidence moves over, ``src`` is kept (status merged) for history."""
         if src_id == dst_id:

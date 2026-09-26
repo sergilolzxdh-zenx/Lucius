@@ -73,19 +73,30 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "shade": ("right click > Shade Smooth / Flat", "object, smooth (true|false)"),
     "set_material": ("Material properties > Principled BSDF",
                      "object, name, base_color \"#RRGGBB\", roughness 0..1, metallic 0..1, alpha, emission_color, "
-                     "emission_strength, transmission 0..1 (glass), subsurface 0..1, coat 0..1, ior, assign: replace "
-                     "(only material) | append | selected_faces (faces selected in edit mode get it)"),
-    "add_light": ("Shift+A > Light (an existing light's name changes that light)",
+                     "emission_strength, transmission 0..1 (glass), subsurface 0..1 (soft food, skin), coat 0..1, "
+                     "ior, assign: replace (only material) | append | selected_faces (faces selected in edit mode get "
+                     "it). Patterns on the colour: pattern brick|checker|noise, pattern_color (second colour), "
+                     "line_color (brick mortar), pattern_scale, mortar_size (0..0.125), brick_width, row_height "
+                     "(0.5 and 0.5: square tiles, a check tablecloth). Relief: bump magic|noise|voronoi, "
+                     "bump_scale, bump_distortion, bump_strength (a fabric: magic, 200, 15). The same name on "
+                     "another object shares the material (Ctrl+L)."),
+    "add_light": ("Shift+A > Light (an existing light's name changes only the values given)",
                   "type: POINT|SUN|SPOT|AREA, name, location [x,y,z], look_at [x,y,z] or "
-                  "rotation_deg, power (watts; sun: strength ~1-10), color \"#RRGGBB\", size (area size, point "
-                  "radius, sun angle in degrees)"),
+                  "rotation_deg, power (watts; sun: strength ~1-10), color \"#RRGGBB\" or temperature (kelvin: "
+                  "3200 warm, 6500 neutral), size (area size, point radius -- softer shadows, sun angle in "
+                  "degrees), spot_size (cone, degrees), spot_blend (0..1 soft edge)"),
     "add_camera": ("Shift+A > Camera, Ctrl+Numpad0 (an existing camera's name, e.g. the default \"Camera\", "
-                   "moves and sets up that camera)", "name, location [x,y,z], look_at [x,y,z] or rotation_deg, "
-                   "lens (mm, default 50), active (true), dof_distance (metres, enables depth of field), fstop"),
+                   "changes only the values given)", "name, location [x,y,z], look_at [x,y,z] or rotation_deg, "
+                   "lens (mm, default 50), active (true), depth of field: focus_object (sharp there) or dof_distance "
+                   "(metres), fstop (lower = more blur, default 2.8), dof (false turns the blur off)"),
+    "set_render": ("Render / Output / Color Management properties", "engine CYCLES|BLENDER_EEVEE, samples, width, "
+                   "height (pixels), denoise, view_transform Standard|AgX|Filmic"),
+    "scale_scene": ("A, then S", "factor, pivot [x,y,z]: every object scaled about the pivot (bring a scene to "
+                    "real-world size; lights then need less power)"),
     "set_world": ("World properties", "color \"#RRGGBB\", strength"),
     "add_scatter": ("Particle system (hair, render as object)", "object (surface), instance (object copied over "
-                    "it, hidden itself), count, scale (size of the copies), scale_random 0..1, rotation_random "
-                    "0..1, seed"),
+                    "it, hidden itself), name (the same name again changes that system), count, scale (size of "
+                    "the copies), scale_random 0..1, rotation_random 0..1, seed"),
 }
 
 # Always usable: making, placing and selecting objects (what anyone knows after opening Blender once).
@@ -95,7 +106,7 @@ RECIPE_ACTIONS = tuple(ACTION_DOCS)
 
 # Bridge parameters given in radians, which recipes write in degrees.
 DEGREE_ARGS = {"rotation_deg": "rotation", "angle_deg": "angle"}
-COLOR_ARGS = ("base_color", "emission_color", "color")
+COLOR_ARGS = ("base_color", "emission_color", "color", "pattern_color", "line_color")
 HEX = re.compile(r"^#?([0-9a-fA-F]{6})$")
 
 

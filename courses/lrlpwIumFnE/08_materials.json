@@ -1,0 +1,118 @@
+{
+ "title": "Materials",
+ "summary": "Principled BSDF materials: porcelain (white, roughness 0.35) shared by mug and plate, a shiny cream donut material shared by both donuts with subsurface scattering, glossy semi-transparent sugar, a rough toasted croissant with subsurface, and a picnic tablecloth plane with a brick-texture check pattern and a magic-texture bump.",
+ "objects": [
+  {
+   "name": "Mantel",
+   "description": "tablecloth"
+  }
+ ],
+ "expected_result": "White porcelain mug and plate, golden sugared donuts, a brown croissant, on a blue and white check tablecloth.",
+ "steps": [
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mug",
+    "name": "Porcelana",
+    "base_color": "#FFFFFF",
+    "metallic": 0.0,
+    "roughness": 0.35
+   },
+   "note": "new material 'Porcelana': white, not metallic, roughness halfway (blurred reflections)",
+   "video_time": "91:23"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Plate",
+    "name": "Porcelana"
+   },
+   "note": "the plate shares the porcelain",
+   "video_time": "91:45"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Donut",
+    "name": "Donut",
+    "base_color": "#E6B274",
+    "roughness": 0.3,
+    "metallic": 0.0,
+    "subsurface": 0.5
+   },
+   "note": "donut: a cream colour, shiny (it is oily), soft: subsurface 0.5",
+   "video_time": "92:36"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Donut2",
+    "name": "Donut"
+   },
+   "note": "the second donut: the same material (Ctrl+L)",
+   "video_time": "94:39"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Sugar",
+    "name": "Azucarillo",
+    "base_color": "#FFFFFF",
+    "roughness": 0.05,
+    "alpha": 0.55
+   },
+   "note": "sugar crystals: white, very glossy, half transparent (alpha)",
+   "video_time": "93:25"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Croissant",
+    "name": "Croissant",
+    "base_color": "#B9732F",
+    "roughness": 0.7,
+    "metallic": 0.0,
+    "subsurface": 0.5
+   },
+   "note": "croissant: toasted, rough, soft: subsurface 0.5",
+   "video_time": "95:31"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Mantel",
+    "size": 26,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+A plane, scaled: the tablecloth (mantel)",
+   "video_time": "99:47"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mantel",
+    "name": "Mantel",
+    "base_color": "#FFFFFF",
+    "pattern": "brick",
+    "pattern_color": "#FFFFFF",
+    "line_color": "#2F5BD0",
+    "pattern_scale": 0.28,
+    "mortar_size": 0.025,
+    "brick_width": 0.5,
+    "row_height": 0.5,
+    "bump": "magic",
+    "bump_scale": 200,
+    "bump_distortion": 15,
+    "bump_strength": 0.3,
+    "roughness": 0.8
+   },
+   "note": "tablecloth: brick texture, frequency 1, width and height 0.5 (squares), thin vibrant blue lines, white squares; bump from a magic texture (scale 200, distortion 15): fabric",
+   "video_time": "100:34"
+  }
+ ]
+}

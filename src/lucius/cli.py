@@ -195,6 +195,17 @@ def cmd_run(args: argparse.Namespace) -> int:
 def cmd_skills(args: argparse.Namespace) -> int:
     app = _app(args)
     try:
+        if args.action == "remove":
+            skills = [s for s in app.library.list(include_inactive=True) if s.source_class != "system_seeded"]
+            ids = [s.id for s in skills] if args.learned else list(args.skill_ids or [])
+            if not ids:
+                print("give skill ids, or --learned for every learned skill", file=sys.stderr)
+                return 2
+            for skill_id in ids:
+                app.library.remove(skill_id)
+            forget_lessons(app.config.data_dir / "lessons", set(ids))
+            _print({"removed": len(ids), "skills": ids})
+            return 0
         rows = [{"id": s.id, "status": s.status.value, "confidence": round(s.confidence, 3), "version": s.current_version,
                  "uses": f"{s.success_count}/{s.usage_count}", "source": s.source_class}
                 for s in app.library.list(include_inactive=True)
@@ -203,6 +214,17 @@ def cmd_skills(args: argparse.Namespace) -> int:
     finally:
         app.close()
     return 0
+
+
+def forget_lessons(lessons_dir: Path, removed: set[str]) -> None:
+    """Chapters whose skill was removed are no longer learned: a later `learn` or `teach course` builds them."""
+    for state_path in lessons_dir.glob("*/state.json"):
+        state = json.loads(state_path.read_text())
+        chapters = state.get("chapters", {})
+        kept = {key: entry for key, entry in chapters.items() if entry.get("skill_id") not in removed}
+        if len(kept) != len(chapters):
+            state["chapters"] = kept
+            state_path.write_text(json.dumps(state, indent=1, ensure_ascii=False))
 
 
 def cmd_practice(args: argparse.Namespace) -> int:
@@ -363,6 +385,13 @@ def cmd_teach(args: argparse.Namespace) -> int:
             if line and start is not None:
                 print(f"[{int(start // 60)}:{int(start % 60):02d}] {' '.join(line)}")
             return 0
+        if args.what == "course":
+            if not args.recipe:
+                print("give the course folder (e.g. courses/lrlpwIumFnE)", file=sys.stderr)
+                return 2
+            results = teacher.install_course(args.recipe, redo=args.redo, on_progress=_say)
+            _print(results)
+            return 0 if results and all(r["status"] != "failed" for r in results) else 2
         recipe = load_recipe(args.recipe)
         if args.what == "chapter":
             result = teacher.teach_chapter(recipe, args.video, args.chapter, score=args.score, frame_at=args.frame_at,
@@ -481,8 +510,11 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--reference", action="append", help="reference media id (repeatable)")
     s.set_defaults(func=cmd_run)
 
-    s = sub.add_parser("skills", help="list skills")
-    s.add_argument("--all", action="store_true", help="include system-seeded capabilities")
+    s = sub.add_parser("skills", help="list skills, or remove them (e.g. half-learned ones, to learn again)")
+    s.add_argument("action", nargs="?", choices=["list", "remove"], default="list")
+    s.add_argument("skill_ids", nargs="*", help="remove: the skills to forget")
+    s.add_argument("--learned", action="store_true", help="remove: every learned skill (not the built-in ones)")
+    s.add_argument("--all", action="store_true", help="list: include system-seeded capabilities")
     s.set_defaults(func=cmd_skills)
 
     s = sub.add_parser("practice", help="practise a curriculum stage")
@@ -558,10 +590,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("teach", help="teach without a model API: build a recipe you wrote (for a tutorial chapter "
                                      "or a task), see it next to the tutorial, keep it with --score")
-    s.add_argument("what", choices=["chapter", "task", "frames", "narration"],
+    s.add_argument("what", choices=["chapter", "task", "frames", "narration", "course"],
                    help="chapter/task: build RECIPE; frames: the tutorial's preview frames; narration: what the "
-                        "tutor says (captions) between --start and --end")
-    s.add_argument("recipe", nargs="?", help="recipe JSON file (chapter, task)")
+                        "tutor says (captions) between --start and --end; course: replay a course pack (a folder "
+                        "with course.json) so Lucius learns every chapter on this machine")
+    s.add_argument("recipe", nargs="?", help="recipe JSON file (chapter, task) or course folder (course)")
     s.add_argument("--video", help="video id of a saved tutorial (e.g. lrlpwIumFnE)")
     s.add_argument("--chapter", type=int, help="1-based chapter number")
     s.add_argument("--task", help="what the recipe makes (task)")
@@ -576,6 +609,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--out", help="frames: where the picture goes")
     s.add_argument("--teacher", default="teacher", help="who wrote and judged it (recorded with the skill)")
     s.add_argument("--note", help="what you changed or noticed")
+    s.add_argument("--redo", action="store_true", help="course: build chapters already learned again")
     s.set_defaults(func=cmd_teach)
 
     s = sub.add_parser("projects", help="what Lucius built: list, show, or rate a project good/bad")
