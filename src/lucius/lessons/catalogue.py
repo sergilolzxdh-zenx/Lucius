@@ -200,6 +200,21 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                   "the selected faces (all if none) flat in the UV map; texture coordinate UV then follows it"),
     "uv_transform": ("UV editor: A, then R / S / G", "object, rotate_deg, scale [u, v], offset [u, v]: the selected "
                      "faces' UVs (all if none) about their centre -- the texture turns / shrinks / slides"),
+    "color_attribute": ("Object Data > Color Attributes (+ / -)", "object, name, color (what it starts filled "
+                        "with, default white), domain CORNER|POINT, data_type BYTE_COLOR|FLOAT_COLOR, active, remove: "
+                        "a colour layer vertex paint writes into; a material reads it with an Attribute node "
+                        "(edit_nodes text {attribute_name: <name>}, case sensitive)"),
+    "vertex_paint": ("Vertex Paint mode: the brush", "object, attribute (default the active one), color, strokes "
+                     "[{points [[x,y,z], ...] (where the brush is dragged over the surface), radius}], radius "
+                     "(default for strokes), strength 0..1, falloff SMOOTH|LINEAR|CONSTANT|SPHERE, blend MIX|MULTIPLY|"
+                     "ADD|SUBTRACT|DARKEN|LIGHTEN, space world|local; or selected true (paint the selected faces: the "
+                     "face selection mask) or fill true (the whole mesh)"),
+    "dirty_vertex_colors": ("Vertex Paint > Paint > Dirty Vertex Colors", "object, attribute, blur_strength, "
+                            "blur_iterations, clean_angle_deg, dirt_angle_deg, dirt_only, normalize (off spreads the "
+                            "darkness over the whole object): darkens the crevices of the colour attribute"),
+    "mark_asset": ("Outliner > right click > Mark as Asset", "kind MATERIAL|OBJECT|NODE_GROUP|WORLD|COLLECTION, "
+                   "name, description, tags, clear: puts it in the asset library (Asset Browser) so other files "
+                   "can drag it in"),
     "bake_texture": ("Render properties > Bake (Cycles)", "object (with a UV map and a node material), type "
                      "DIFFUSE (colour only) | ROUGHNESS | NORMAL (tangent) | AO | EMIT (whatever is routed into an "
                      "emission, e.g. a height map) | COMBINED | GLOSSY, path textures/<name>.png, width, height, "
@@ -216,7 +231,11 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "ShaderNodeMix, ShaderNodeMapping, ShaderNodeTexCoord, ShaderNodeEmission, ShaderNodeMixShader, "
                    "ShaderNodeBsdfTransparent, ShaderNodeShaderToRGB, GeometryNode..., ...), inputs {socket name: "
                    "value; Rotation_deg for degrees}, props {operation, blend_type, data_type, ...}, ramp [[pos, "
-                   "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file, or textures/<name>.png made by bake_texture), non_color (data maps), projection FLAT|BOX, generated_image {name, type UV_GRID|COLOR_GRID|BLANK, width, height, color} (Image > New), "
+                   "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file, textures/<name>.png made by bake_texture, or studio:interior|studio|city|"
+                   "courtyard|forest|night|sunrise|sunset -- the HDRIs Blender ships, for an Environment Texture), "
+                   "non_color (data maps), projection FLAT|BOX, text {attribute_name | layer_name | uv_map: "
+                   "a name}, generated_image {name, type UV_GRID|COLOR_GRID|BLANK, width, height, color} "
+                   "(Image > New), "
                    "object (texture coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "
                    "(socket names or numbers), unlink [{to, input}]. Keep the material output's Surface linked"),
     "set_property": ("hover any field (its Python tooltip path); I to key it", "target object|data|material|nodes|"

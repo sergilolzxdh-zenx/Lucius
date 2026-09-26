@@ -1849,9 +1849,10 @@ GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
 def registry():
     """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
-    from . import anim, nodes, physics, rig, scene
+    from . import anim, nodes, paint, physics, rig, scene
 
-    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS, **nodes.ACTIONS, **physics.ACTIONS}
+    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS, **nodes.ACTIONS, **physics.ACTIONS,
+            **paint.ACTIONS}
 
 
 def execute_action(name, args):

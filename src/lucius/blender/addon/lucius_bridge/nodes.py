@@ -8,6 +8,7 @@ choices; never text paths or pointers), and images load only from the allowed fo
 """
 
 import ctypes.util
+import os
 import re
 import sys
 
@@ -62,6 +63,52 @@ def _number(value, param, integer=False):
     if abs(value) > 1e7:
         raise BridgeCommandError("invalid_param", f"{param} is out of range", param=param)
     return int(value) if integer else float(value)
+
+
+TEXT_PROPS = ("attribute_name", "layer_name", "uv_map")
+STUDIO_LIGHTS = ("city", "courtyard", "forest", "interior", "night", "studio", "sunrise", "sunset")
+
+
+def _studio_light(name, param):
+    """The HDRIs Blender ships for the viewport's look-dev shading (``studio:interior`` ...), usable in a world."""
+    if name not in STUDIO_LIGHTS:
+        raise BridgeCommandError("invalid_param", f"{param}: studio:<{'|'.join(STUDIO_LIGHTS)}>", param="nodes")
+    folder = bpy.utils.system_resource("DATAFILES", path="studiolights/world")
+    path = os.path.join(folder or "", f"{name}.exr")
+    if not folder or not os.path.exists(path):
+        raise BridgeCommandError("invalid_param", f"{param}: this Blender has no studio light {name}", param="nodes")
+    return path
+
+
+ASSET_KINDS = {"MATERIAL": "materials", "OBJECT": "objects", "NODE_GROUP": "node_groups", "WORLD": "worlds",
+               "COLLECTION": "collections"}
+
+
+def mark_asset(p):
+    """Outliner > right click > Mark as Asset: the material (or object, node group, world, collection) joins the
+    asset library -- saved with the file, it shows in the Asset Browser to drag onto other objects and scenes.
+    ``clear`` takes the mark off again."""
+    blocks = getattr(bpy.data, ASSET_KINDS[p["kind"]])
+    block = blocks.get(p["name"])
+    if block is None:
+        raise BridgeCommandError("invalid_param", f"no {p['kind'].lower().replace('_', ' ')} {p['name']!r}",
+                                 param="name")
+    if p["clear"]:
+        block.asset_clear()
+        return {"name": block.name, "asset": False}
+    block.asset_mark()
+    data = block.asset_data
+    if p["description"]:
+        data.description = str(p["description"])[:300]
+    for tag in (p["tags"] or [])[:16]:
+        if isinstance(tag, str) and tag and tag not in data.tags:
+            data.tags.new(tag[:63])
+    try:
+        block.asset_generate_preview()
+    except Exception:  # needs a GPU context; the Asset Browser makes one later
+        pass
+    assets = sorted(b.name for kind in ASSET_KINDS.values() for b in getattr(bpy.data, kind) if b.asset_data)
+    return {"name": block.name, "asset": True, "tags": [t.name for t in data.tags], "assets": assets[:100]}
 
 
 def _rna_value(owner, attr, value, param, index=None, degrees=False):
@@ -418,7 +465,9 @@ def edit_nodes(p):
         if spec.get("image") is not None:
             if not hasattr(node, "image"):
                 raise BridgeCommandError("invalid_param", f"{param}: {node.bl_idname} takes no image", param="nodes")
-            if isinstance(spec["image"], str) and spec["image"].startswith("textures/"):
+            if isinstance(spec["image"], str) and spec["image"].startswith("studio:"):
+                path = _studio_light(spec["image"][7:], param)   # one of the HDRIs that ship with Blender
+            elif isinstance(spec["image"], str) and spec["image"].startswith("textures/"):
                 from .actions import _texture_path
 
                 path = _texture_path(spec["image"], write=False)   # a texture a bake_texture step made
@@ -450,6 +499,15 @@ def edit_nodes(p):
             if gen.get("color") is not None:
                 image.generated_color = _color(gen["color"], param)
             node.image = image
+        for key, value in (spec.get("text") or {}).items():
+            # the name fields of a node: an Attribute node's attribute, a Color Attribute / UV Map node's layer
+            if key not in TEXT_PROPS or not hasattr(node, key):
+                raise BridgeCommandError("invalid_param", f"{param}: text {key!r} is not one of {TEXT_PROPS} on "
+                                         f"{node.bl_idname}", param="nodes")
+            if not isinstance(value, str) or len(value) > 63:
+                raise BridgeCommandError("invalid_param", f"{param}: {key} is a name (up to 63 characters)",
+                                         param="nodes")
+            setattr(node, key, value)
         if spec.get("object") is not None:
             if not hasattr(node, "object"):
                 raise BridgeCommandError("invalid_param", f"{param}: {node.bl_idname} takes no object", param="nodes")
@@ -731,6 +789,8 @@ ACTIONS = {
         "copy_from": ("name", None), "assign": (("replace", "append", "none"), "replace"),
         "interface": ("list", None), "clear": ("bool", False), "remove": ("names", None), "nodes": ("list", None),
         "links": ("list", None), "unlink": ("list", None)}),
+    "mark_asset": (mark_asset, {"kind": (tuple(ASSET_KINDS), "MATERIAL"), "name": ("name", REQUIRED),
+                                "description": ("path_expr", None), "tags": ("list", None), "clear": ("bool", False)}),
     "set_property": (set_property, {
         "target": (PROPERTY_TARGETS, "object"), "name": ("name", None), "path": ("path_expr", REQUIRED),
         "value": ("any", REQUIRED), "degrees": ("bool", False), "frame": ("int", None),

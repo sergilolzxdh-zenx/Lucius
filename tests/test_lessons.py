@@ -1075,3 +1075,69 @@ def test_bake_texture_writes_maps_a_node_can_load(tmp_path):
         with pytest.raises(Exception, match="has not been made"):
             ex("edit_nodes", material="Baked", nodes=[{"name": "M", "type": "ShaderNodeTexImage",
                                                         "image": "textures/nope.png"}])
+
+
+def test_vertex_paint_attributes_strokes_and_dirt(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="monkey", name="Suzanne", size=2, location=[1, 0, 0])
+        ex("add_modifier", object="Suzanne", type="SUBSURF", props={"levels": 2})
+        ex("apply_modifier", object="Suzanne", modifier="Subsurf")
+        dirt = ex("dirty_vertex_colors", object="Suzanne", normalize=False)
+        assert dirt["attribute"] == "Attribute"
+        made = ex("color_attribute", object="Suzanne", name="Eyes", color="#FFFFFF")
+        assert made["attributes"] == ["Attribute", "Eyes"] and made["domain"] == "CORNER"
+        painted = ex("vertex_paint", object="Suzanne", color="#FF0000", radius=0.2, strokes=[
+            {"points": [[1.45, -0.8, 0.22], [1.5, -0.78, 0.25]]}, {"points": [[0.55, -0.8, 0.22]]}])
+        assert 0 < painted["painted_verts"] < painted["total_verts"] / 5
+        with pytest.raises(Exception, match="don't reach"):
+            ex("vertex_paint", object="Suzanne", color="#00FF00", strokes=[{"points": [[9, 9, 9]], "radius": 0.1}])
+        ex("select_elements", object="Suzanne", axis="z", min=0.8, element="FACE")
+        top = ex("vertex_paint", object="Suzanne", attribute="Eyes", color=[0, 0.5, 0], selected=True)
+        assert top["painted_verts"] > 20
+        assert ex("vertex_paint", object="Suzanne", color="#0000FF", fill=True, strength=0.3,
+                  blend="MULTIPLY")["painted_verts"] == top["total_verts"]
+        ex("edit_nodes", material="Painted", object="Suzanne", clear=True, nodes=[
+            {"name": "Paint", "type": "ShaderNodeAttribute", "text": {"attribute_name": "Eyes"}},
+            {"name": "BSDF", "type": "ShaderNodeBsdfPrincipled"}, {"name": "Out", "type": "ShaderNodeOutputMaterial"}],
+            links=[{"from": "Paint", "output": "Color", "to": "BSDF", "input": "Base Color"},
+                   {"from": "BSDF", "to": "Out", "input": "Surface"}])
+        with pytest.raises(Exception, match="text"):
+            ex("edit_nodes", material="Painted", nodes=[{"name": "Paint", "text": {"filepath": "/etc/passwd"}}])
+        assert ex("color_attribute", object="Suzanne", name="Attribute", remove=True)["attributes"] == ["Eyes"]
+
+
+def test_studio_hdri_world_assets_and_locks(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=True)
+        ex("edit_nodes", tree="world", clear=True, nodes=[
+            {"name": "HDRI", "type": "ShaderNodeTexEnvironment", "image": "studio:interior"},
+            {"name": "Background", "type": "ShaderNodeBackground", "inputs": {"Strength": 1.0}},
+            {"name": "Output", "type": "ShaderNodeOutputWorld"}],
+            links=[{"from": "HDRI", "output": "Color", "to": "Background", "input": "Color"},
+                   {"from": "Background", "to": "Output", "input": "Surface"}])
+        with pytest.raises(Exception, match="studio:"):
+            ex("edit_nodes", tree="world", nodes=[{"name": "HDRI", "image": "studio:../../etc"}])
+        ex("add_primitive", kind="uv_sphere", name="Ball")
+        ex("edit_nodes", material="Gold", object="Ball", clear=True, nodes=[
+            {"name": "Surface", "type": "ShaderNodeBsdfPrincipled",
+             "inputs": {"Metallic": 1.0, "Roughness": 0.1, "Base Color": "#D4AF37"}},
+            {"name": "Output", "type": "ShaderNodeOutputMaterial"}],
+            links=[{"from": "Surface", "to": "Output", "input": "Surface"}])
+        marked = ex("mark_asset", name="Gold", tags=["metal"], description="polished gold")
+        assert marked["asset"] and marked["tags"] == ["metal"] and "Gold" in marked["assets"]
+        assert ex("mark_asset", name="Gold", clear=True)["asset"] is False
+        ex("set_property", name="Camera", path="lock_location", value=[True, True, True])
+        ex("set_property", target="data", name="Camera", path="passepartout_alpha", value=1.0)
