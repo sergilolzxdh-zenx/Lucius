@@ -308,6 +308,35 @@ def add_camera(p):
             "rotation": list(obj.rotation_euler), "dof": data.dof.use_dof}
 
 
+def light_link(p):
+    """Object properties > Shading > Light Linking: the light (or a glowing object) lights only the ``receivers``
+    and, with ``blockers``, only those cast its shadows -- several lighting set-ups side by side in one scene.
+    ``clear`` lets it light everything again."""
+    light = _obj(p["light"])
+    link = light.light_linking
+    if p["clear"]:
+        link.receiver_collection = None
+        link.blocker_collection = None
+        return {"light": light.name, "receivers": "all"}
+    result = {"light": light.name}
+    for key, names, suffix in (("receiver_collection", p["receivers"], "receivers"),
+                               ("blocker_collection", p["blockers"], "blockers")):
+        if names is None:
+            continue
+        objects = [_obj(n) for n in names]
+        name = f"{light.name} {suffix}"
+        collection = bpy.data.collections.get(name) or bpy.data.collections.new(name)
+        for obj in list(collection.objects):
+            collection.objects.unlink(obj)
+        for obj in objects:
+            collection.objects.link(obj)   # a link: the objects stay where they are in the outliner
+        setattr(link, key, collection)
+        result[suffix] = [o.name for o in objects]
+    if len(result) == 1:
+        raise BridgeCommandError("invalid_param", "give receivers and/or blockers (or clear)", param="receivers")
+    return result
+
+
 def set_world(p):
     """World properties: a plain colour, or a physical sky (sun and atmosphere, a stand-in for an outdoor HDRI)
     that lights the scene from every direction."""
@@ -825,6 +854,8 @@ ACTIONS = {
         "name": ("name", None), "location": ("vec3", None), "rotation": ("vec3", None), "look_at": ("vec3", None),
         "lens": ("float", None), "active": ("bool", True), "dof_distance": ("float", None), "fstop": ("float", None),
         "focus_object": ("name", None), "dof": ("bool", None)}),
+    "light_link": (light_link, {"light": ("name", REQUIRED), "receivers": ("names", None), "blockers": ("names", None),
+                                "clear": ("bool", False)}),
     "set_world": (set_world, {"color": COLOR, "strength": ("float", 1.0), "sky": ("bool", False),
                               "sun_elevation_deg": ("float", 35.0), "sun_rotation_deg": ("float", 0.0)}),
     "set_render": (set_render, {

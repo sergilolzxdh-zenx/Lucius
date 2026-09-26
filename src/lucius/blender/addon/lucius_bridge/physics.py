@@ -1,4 +1,4 @@
-"""Physics: fluid simulations the tutorial way -- Quick Liquid, the flows' and domain's settings (set_property on
+"""Physics: cloth / soft body caches baked over the timeline, and fluid simulations the tutorial way -- Quick Liquid, the flows' and domain's settings (set_property on
 ``modifiers["Fluid"]...``), and baking the result into a cache inside the allowed save folders."""
 
 import os
@@ -111,8 +111,48 @@ def bake_fluid(p):
             settings.resolution_max, "cache_files": files, "seconds": round(time.time() - started, 1)}
 
 
+def _point_caches():
+    for obj in bpy.context.scene.objects:
+        for modifier in obj.modifiers:
+            if modifier.type in ("CLOTH", "SOFT_BODY"):
+                yield obj, modifier, modifier.point_cache
+        for system in getattr(obj, "particle_systems", []):
+            yield obj, system, system.point_cache
+
+
+def bake_physics(p):
+    """Timeline > Bake (Physics properties > Cache): the cloth, soft body and particle simulations run once over
+    the frame range and are kept (in the .blend), so every frame -- the draped cloth at the end -- plays back
+    without re-simulating. ``free`` throws the bake away (after changing a setting)."""
+    _leave_edit_mode()
+    scene = bpy.context.scene
+    caches = list(_point_caches())
+    if not caches:
+        raise BridgeCommandError("invalid_param", "nothing to bake: add a CLOTH / SOFT_BODY modifier or particles")
+    if p["frame_end"] <= p["frame_start"] or p["frame_end"] - p["frame_start"] > 2000:
+        raise BridgeCommandError("invalid_param", "frame_end after frame_start (2000 frames at most)",
+                                 param="frame_end")
+    started = time.time()
+    with bpy.context.temp_override(scene=scene):
+        _op_result(bpy.ops.ptcache.free_bake_all(), "free_bake_all")
+    if p["free"]:
+        return {"freed": [obj.name for obj, _owner, _cache in caches]}
+    for _obj_, _owner, cache in caches:
+        cache.frame_start, cache.frame_end = p["frame_start"], p["frame_end"]
+    scene.frame_start, scene.frame_end = min(scene.frame_start, p["frame_start"]), max(scene.frame_end,
+                                                                                         p["frame_end"])
+    with bpy.context.temp_override(scene=scene):
+        _op_result(bpy.ops.ptcache.bake_all(bake=True), "bake_all")
+    scene.frame_set(p["show_frame"] if p["show_frame"] is not None else p["frame_end"])
+    return {"baked": sorted({obj.name for obj, _owner, cache in caches if cache.is_baked}),
+            "frames": [p["frame_start"], p["frame_end"]], "frame": scene.frame_current,
+            "seconds": round(time.time() - started, 1)}
+
+
 ACTIONS = {
     "quick_liquid": (quick_liquid, {"objects": ("names", REQUIRED), "domain": ("name", None)}),
     "bake_fluid": (bake_fluid, {"domain": ("name", REQUIRED), "resolution": ("int", None),
                                 "frame_start": ("int", 1), "frame_end": ("int", 50)}),
+    "bake_physics": (bake_physics, {"frame_start": ("int", 1), "frame_end": ("int", 60), "show_frame": ("int", None),
+                                    "free": ("bool", False)}),
 }

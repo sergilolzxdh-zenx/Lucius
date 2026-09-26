@@ -212,6 +212,14 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "dirty_vertex_colors": ("Vertex Paint > Paint > Dirty Vertex Colors", "object, attribute, blur_strength, "
                             "blur_iterations, clean_angle_deg, dirt_angle_deg, dirt_only, normalize (off spreads the "
                             "darkness over the whole object): darkens the crevices of the colour attribute"),
+    "bake_physics": ("Physics properties > Cache > Bake All Dynamics", "frame_start, frame_end, show_frame (the "
+                     "frame to stop on, default the end), free: runs the cloth / soft body / particle simulations "
+                     "(add_modifier CLOTH on the cloth, COLLISION on what it lands on; settings through set_property "
+                     "modifiers[\"Cloth\"].settings.quality or .collision_settings.use_self_collision) and keeps "
+                     "the result"),
+    "light_link": ("Object properties > Shading > Light Linking", "light, receivers [objects it lights], "
+                   "blockers [objects that cast its shadows], clear: a light (or emissive object) that lights only "
+                   "some objects -- separate lighting set-ups in one scene"),
     "mark_asset": ("Outliner > right click > Mark as Asset", "kind MATERIAL|OBJECT|NODE_GROUP|WORLD|COLLECTION, "
                    "name, description, tags, clear: puts it in the asset library (Asset Browser) so other files "
                    "can drag it in"),
@@ -230,7 +238,7 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "[names], nodes [{name, type (ShaderNodeTexNoise, ShaderNodeValToRGB, ShaderNodeMath, "
                    "ShaderNodeMix, ShaderNodeMapping, ShaderNodeTexCoord, ShaderNodeEmission, ShaderNodeMixShader, "
                    "ShaderNodeBsdfTransparent, ShaderNodeShaderToRGB, GeometryNode..., ...), inputs {socket name: "
-                   "value; Rotation_deg for degrees}, props {operation, blend_type, data_type, ...}, ramp [[pos, "
+                   "value; Rotation_deg for degrees}, props {operation, blend_type, data_type, ...; a name ending _deg takes degrees, e.g. sun_elevation_deg}, ramp [[pos, "
                    "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file, textures/<name>.png made by bake_texture, or studio:interior|studio|city|"
                    "courtyard|forest|night|sunrise|sunset -- the HDRIs Blender ships, for an Environment Texture), "
                    "non_color (data maps), projection FLAT|BOX, text {attribute_name | layer_name | uv_map: "

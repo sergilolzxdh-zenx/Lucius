@@ -166,7 +166,18 @@ def _rna_value(owner, attr, value, param, index=None, degrees=False):
 
 
 # ------------------------------------------------------------------ node trees
+# Names tutorials (and older Blenders) use for nodes that were merged or renamed.
+NODE_ALIASES = {"ShaderNodeBsdfGlossy": "ShaderNodeBsdfAnisotropic", "ShaderNodeBsdfVelvet": "ShaderNodeBsdfSheen",
+                "ShaderNodeMixRGB": "ShaderNodeMix", "ShaderNodeSeparateRGB": "ShaderNodeSeparateColor",
+                "ShaderNodeCombineRGB": "ShaderNodeCombineColor"}
+
+
 def _node_type(name):
+    if isinstance(name, str) and getattr(bpy.types, name, None) is None and name in NODE_ALIASES:
+        name = NODE_ALIASES[name]
+    if name == "ShaderNodeTexMusgrave":
+        raise BridgeCommandError("invalid_param", "the Musgrave texture was folded into ShaderNodeTexNoise "
+                                 "(props normalize false, the noise_type choice)", param="nodes")
     if not isinstance(name, str) or not (name.startswith(PREFIXES) or name in EXTRA_NODES) \
             or any(b in name for b in BLOCKED):
         raise BridgeCommandError("invalid_param", f"node type {name!r} is not allowed (ShaderNode..., "
@@ -446,7 +457,7 @@ def edit_nodes(p):
             if name:
                 node.name = str(name)[:63]
             made.append(node.name)
-        elif spec.get("type") and node.bl_idname != spec["type"]:
+        elif spec.get("type") and node.bl_idname != _node_type(spec["type"]):
             raise BridgeCommandError("invalid_param", f"{param}: {name!r} is a {node.bl_idname}", param="nodes")
         if spec.get("location") is not None:
             loc = spec["location"]
@@ -459,7 +470,9 @@ def edit_nodes(p):
         if spec.get("mute") is not None:
             node.mute = bool(spec["mute"])
         for key, value in (spec.get("props") or {}).items():
-            setattr(node, key, _rna_value(node, key, value, f"{param}.props.{key}"))
+            degrees = isinstance(key, str) and key.endswith("_deg")   # sun_elevation_deg: 30
+            attr = key[:-4] if degrees else key
+            setattr(node, attr, _rna_value(node, attr, value, f"{param}.props.{key}", degrees=degrees))
         if "ramp" in spec or "ramp_interpolation" in spec:
             _ramp(node, spec.get("ramp"), spec.get("ramp_interpolation"), f"{param}.ramp")
         if spec.get("image") is not None:

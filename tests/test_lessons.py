@@ -1141,3 +1141,53 @@ def test_studio_hdri_world_assets_and_locks(tmp_path):
         assert ex("mark_asset", name="Gold", clear=True)["asset"] is False
         ex("set_property", name="Camera", path="lock_location", value=[True, True, True])
         ex("set_property", target="data", name="Camera", path="passepartout_alpha", value=1.0)
+
+
+def test_cloth_drapes_over_a_collider_when_baked(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        with pytest.raises(Exception, match="nothing to bake"):
+            ex("bake_physics")
+        ex("add_primitive", kind="ico_sphere", name="Ball", radius=1, location=[0, 0, 1])
+        ex("add_modifier", object="Ball", type="COLLISION")
+        ex("add_primitive", kind="plane", name="Cloth", size=4, location=[0, 0, 3])
+        ex("subdivide", object="Cloth", cuts=20)
+        ex("add_modifier", object="Cloth", type="CLOTH")
+        ex("set_property", name="Cloth", path='modifiers["Cloth"].collision_settings.use_self_collision', value=True)
+        baked = ex("bake_physics", frame_start=1, frame_end=40)
+        assert baked["baked"] == ["Cloth"] and baked["frame"] == 40
+        cloth = next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Cloth")
+        assert cloth["dimensions"][2] > 0.8   # no longer a flat sheet: it hangs over the ball
+        assert ex("bake_physics", free=True)["freed"] == ["Cloth"]
+
+
+def test_light_linking_and_node_aliases(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cube", name="Lit")
+        ex("add_primitive", kind="cube", name="Dark", location=[4, 0, 0])
+        ex("add_light", type="SUN", name="Sun", power=5)
+        linked = ex("light_link", light="Sun", receivers=["Lit"], blockers=["Lit"])
+        assert linked["receivers"] == ["Lit"] and linked["blockers"] == ["Lit"]
+        assert ex("light_link", light="Sun", clear=True)["receivers"] == "all"
+        with pytest.raises(Exception, match="receivers"):
+            ex("light_link", light="Sun")
+        made = ex("edit_nodes", material="Old", object="Lit", clear=True, nodes=[
+            {"name": "Shine", "type": "ShaderNodeBsdfGlossy", "inputs": {"Roughness": 0.1}},
+            {"name": "Out", "type": "ShaderNodeOutputMaterial"}], links=[{"from": "Shine", "to": "Out",
+                                                                           "input": "Surface"}])
+        assert "Shine" in made["made"]
+        with pytest.raises(Exception, match="Musgrave"):
+            ex("edit_nodes", material="Old", nodes=[{"name": "M", "type": "ShaderNodeTexMusgrave"}])
