@@ -164,7 +164,24 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                           "[location|rotation|scale|influence|shape|other] and axes (the object's keys, its data's, shape keys' and materials') (optional: only those curves), start/end "
                           "frames (optional), interpolation CONSTANT (blocking: poses pop) | BEZIER | LINEAR, handle "
                           "AUTO_CLAMPED | VECTOR (no slowing down: take-off, landing, free fall), ease_in / ease_out "
-                          "(0..100 % of the gap to the neighbouring key, flat handles: a gentle arrival / departure)"),
+                          "(0..100 % of the gap to the neighbouring key, flat handles: a gentle arrival / departure); "
+                          "interpolation SINE|QUAD|CUBIC|QUART|QUINT|EXPO|CIRC|BACK|BOUNCE|ELASTIC with easing "
+                          "AUTO|EASE_IN|EASE_OUT|EASE_IN_OUT (T > Easing); left / right [frames, value] drag a key's "
+                          "handles by hand (flat = slow there, steep = fast)"),
+    "new_action": ("Dope Sheet > Action Editor > New", "object, name: a new named action becomes the active one "
+                   "(the next keyframes go into it); the previous one is kept for the NLA"),
+    "push_down": ("NLA editor > Push Down", "object, action (default the active one), track name, frame (where "
+                  "the strip starts), blend REPLACE|COMBINE|ADD|SUBTRACT|MULTIPLY: the action becomes a strip on a "
+                  "new track above the others"),
+    "nla_strip": ("NLA editor: a strip and its track", "object, strip (its name: the action's), frame (move it), "
+                  "track (index to move it to, 0 = bottom), blend REPLACE (the upper track wins) | COMBINE | ADD "
+                  "(layered on those below), influence, repeat, scale (playback speed), mute (the track's "
+                  "checkbox), solo (the star)"),
+    "fcurve_modifier": ("graph editor > Modifiers tab / Channel > Extrapolation", "object, type NOISE (props "
+                        "strength, scale, phase, offset, depth) | CYCLES (the keyed motion repeats: props "
+                        "mode_before/mode_after REPEAT|REPEAT_OFFSET|MIRROR, cycles_before/cycles_after 0 = "
+                        "forever) | STEPPED (props frame_step: stop-motion) | LIMITS | GENERATOR, bones, channels "
+                        "[location|rotation|scale|...], axes, remove"),
     "add_particles": ("Particle properties > + (Emitter)", "object (the emitter mesh), name, count, frame_start, "
                       "frame_end, lifetime, lifetime_random 0..1, emit_from FACE|VERT|VOLUME, normal_velocity, "
                       "velocity [x,y,z] (object-aligned, e.g. [0,0,2] rises), random_velocity, gravity 0..1 (Field "

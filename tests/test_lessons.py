@@ -1191,3 +1191,75 @@ def test_light_linking_and_node_aliases(tmp_path):
         assert "Shine" in made["made"]
         with pytest.raises(Exception, match="Musgrave"):
             ex("edit_nodes", material="Old", nodes=[{"name": "M", "type": "ShaderNodeTexMusgrave"}])
+
+
+def test_graph_editor_easing_handles_and_fcurve_modifiers(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def y_at(frame):
+            ex("set_frames", current=frame)
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Mover")["location"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cube", name="Mover")
+        for frame, y in ((1, 0), (100, 15), (200, 0)):
+            ex("insert_keyframe", object="Mover", frame=frame, location=[0, y, 0])
+        ex("set_interpolation", object="Mover", channels=["location"], axes="y", end=99, interpolation="LINEAR")
+        assert abs(y_at(50)[1] - 15 * 49 / 99) < 0.05          # uniform speed
+        ex("set_interpolation", object="Mover", channels=["location"], axes="y", start=100,
+           interpolation="SINE", easing="EASE_IN_OUT")
+        ex("set_interpolation", object="Mover", channels=["location"], axes="y", start=1, end=1, right=[70, 0])
+        assert y_at(30)[1] < 15 * 29 / 99 - 1                    # the flat handle: a slow start
+        ex("fcurve_modifier", object="Mover", type="NOISE", channels=["location"], axes="x",
+           props={"strength": 5.0, "scale": 4.0})
+        assert abs(y_at(30)[0]) > 0.01                           # jitters in X though X was never keyed
+        ex("fcurve_modifier", object="Mover", type="CYCLES", channels=["location"], axes="y")
+        assert abs(y_at(301)[1] - y_at(101)[1]) < 0.05          # the move repeats every 200 frames
+        assert ex("fcurve_modifier", object="Mover", type="NOISE", channels=["location"], axes="x",
+                  remove=True)["removed"]
+
+
+def test_actions_push_down_and_nla_blending(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(cmd, **args):
+            return bridge.execute(cmd, args, timeout=600)["result"]
+
+        def at(frame):
+            ex("set_frames", current=frame)
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Monkey")
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("set_frames", start=1, end=100)
+        ex("add_primitive", kind="monkey", name="Monkey")
+        rest = {"rotation": [0, 0, 0], "scale": [1, 1, 1]}
+        ex("new_action", object="Monkey", name="UpDown")
+        for frame, z in ((1, 0), (50, 5), (100, 0)):
+            ex("insert_keyframe", object="Monkey", frame=frame, location=[0, 0, z], **rest)
+        ex("new_action", object="Monkey", name="RotateZ")
+        for frame, angle in ((1, 0), (50, 3.14159), (100, 0)):
+            ex("insert_keyframe", object="Monkey", frame=frame, location=[0, 0, 0], rotation=[0, 0, angle],
+               scale=[1, 1, 1])
+        ex("push_down", object="Monkey", action="UpDown")
+        pushed = ex("push_down", object="Monkey", action="RotateZ")
+        assert pushed["tracks"] == ["UpDown", "RotateZ"]
+        mid = at(50)
+        assert abs(mid["location"][2]) < 1e-3 and abs(mid["rotation_euler"][2] - 3.14159) < 1e-3  # upper replaces
+        ex("nla_strip", object="Monkey", strip="RotateZ", mute=True)
+        assert abs(at(50)["location"][2] - 5) < 1e-3
+        ex("nla_strip", object="Monkey", strip="RotateZ", mute=False, blend="COMBINE")
+        both = at(50)
+        assert abs(both["location"][2] - 5) < 1e-3 and abs(both["rotation_euler"][2] - 3.14159) < 1e-3
+        with pytest.raises(Exception, match="no room"):
+            ex("nla_strip", object="Monkey", strip="RotateZ", track=0, frame=20)
+        moved = ex("nla_strip", object="Monkey", strip="RotateZ", track=0, frame=101)
+        assert moved["track"] == "UpDown" and moved["frames"][0] == 101
+        with pytest.raises(Exception, match="exists already"):
+            ex("new_action", object="Monkey", name="UpDown")

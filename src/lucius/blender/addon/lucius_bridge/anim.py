@@ -15,6 +15,10 @@ from .protocol import BridgeCommandError
 from .scene import _engine_id, _look_at
 
 INTERPOLATIONS = ("BEZIER", "LINEAR", "CONSTANT")
+# Graph editor > T > Easing (by strength): the shapes Blender computes between two keys.
+EASINGS = ("SINE", "QUAD", "CUBIC", "QUART", "QUINT", "EXPO", "CIRC", "BACK", "BOUNCE", "ELASTIC")
+EASE_MODES = ("AUTO", "EASE_IN", "EASE_OUT", "EASE_IN_OUT")
+FMODIFIERS = ("NOISE", "CYCLES", "STEPPED", "LIMITS", "GENERATOR")
 HANDLES = ("AUTO_CLAMPED", "AUTO", "VECTOR", "ALIGNED", "FREE")
 AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
 AXES = ("x", "y", "z", "xy", "xz", "yz", "xyz")
@@ -281,8 +285,9 @@ def set_interpolation(p):
     the gap to the neighbouring key (what an ease add-on such as Graph Pilot applies)."""
     _leave_edit_mode()
     obj = _obj(p["object"])
-    if p["interpolation"] is None and p["handle"] is None and p["ease_in"] is None and p["ease_out"] is None:
-        raise BridgeCommandError("invalid_param", "give an interpolation, a handle type or an ease", param="interpolation")
+    if all(p[k] is None for k in ("interpolation", "handle", "ease_in", "ease_out", "left", "right", "easing")):
+        raise BridgeCommandError("invalid_param", "give an interpolation, a handle type, an ease or handles",
+                                 param="interpolation")
     for key in ("ease_in", "ease_out"):
         if p[key] is not None and not 0 <= p[key] <= 100:
             raise BridgeCommandError("invalid_param", f"{key} is a percentage 0..100", param=key)
@@ -295,6 +300,17 @@ def set_interpolation(p):
             changed += 1
             if p["interpolation"] is not None:
                 point.interpolation = p["interpolation"]
+            if p["easing"] is not None:
+                point.easing = p["easing"]
+            if p["left"] is not None or p["right"] is not None:
+                # a handle dragged by hand: [frames, value] from its key -- flat = slow there, steep = fast
+                point.interpolation = "BEZIER"
+                point.handle_left_type = point.handle_right_type = "FREE"
+                x, y = point.co.x, point.co.y
+                if p["left"] is not None:
+                    point.handle_left = (x - abs(p["left"][0]), y + p["left"][1])
+                if p["right"] is not None:
+                    point.handle_right = (x + abs(p["right"][0]), y + p["right"][1])
             if p["handle"] is not None:
                 point.handle_left_type = point.handle_right_type = p["handle"]
             if p["ease_in"] is not None or p["ease_out"] is not None:
@@ -309,6 +325,140 @@ def set_interpolation(p):
     if not changed:
         raise BridgeCommandError("invalid_param", "no keyframes in that frame range", param="start")
     return {"object": obj.name, "keys": changed}
+
+
+NLA_BLENDS = ("REPLACE", "COMBINE", "ADD", "SUBTRACT", "MULTIPLY")
+
+
+def new_action(p):
+    """Dope sheet > Action Editor > New: a fresh, named action becomes the object's active one, so the next
+    keyframes go into it. The action it replaces is kept (a fake user), ready to be pushed down later."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    anim = obj.animation_data or obj.animation_data_create()
+    if anim.action is not None:
+        anim.action.use_fake_user = True
+    if p["name"] in bpy.data.actions:
+        raise BridgeCommandError("invalid_param", f"an action {p['name']!r} exists already", param="name")
+    action = bpy.data.actions.new(p["name"])
+    action.use_fake_user = True   # saved with the file even when nothing uses it (the shield icon)
+    anim.action = action
+    return {"object": obj.name, "action": action.name}
+
+
+def _action(name):
+    action = bpy.data.actions.get(name)
+    if action is None:
+        raise BridgeCommandError("invalid_param", f"no action {name!r}", param="action")
+    return action
+
+
+def push_down(p):
+    """NLA editor: Push Down -- the action goes into a new track above the others as a strip (a clip), and stops
+    being the object's active action. ``frame`` places the strip (default: where its keys start)."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    anim = obj.animation_data or obj.animation_data_create()
+    action = _action(p["action"]) if p["action"] else anim.action
+    if action is None:
+        raise BridgeCommandError("invalid_param", f"{obj.name} has no active action to push down", param="action")
+    if anim.action == action:
+        anim.action = None
+    track = anim.nla_tracks.new()
+    track.name = p["track"] or action.name
+    start = p["frame"] if p["frame"] is not None else int(action.frame_range[0])
+    strip = track.strips.new(action.name, start, action)
+    strip.blend_type = p["blend"]
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "track": track.name, "strip": strip.name,
+            "frames": [strip.frame_start, strip.frame_end], "tracks": [t.name for t in anim.nla_tracks]}
+
+
+def _strip(obj, name):
+    anim = obj.animation_data
+    for track in (anim.nla_tracks if anim else []):
+        for strip in track.strips:
+            if strip.name == name:
+                return track, strip
+    raise BridgeCommandError("invalid_param", f"{obj.name} has no NLA strip {name!r}", param="strip")
+
+
+def nla_strip(p):
+    """NLA editor: a strip's settings in the sidebar (N) -- blending (Replace: the upper track wins; Combine /
+    Add: layered on the tracks below), influence, repeat, playback scale -- moving it in time (G) or to another
+    track (``track``: its index, 0 = the bottom), and the track's mute checkbox and solo star."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    track, strip = _strip(obj, p["strip"])
+    anim = obj.animation_data
+    if p["track"] is not None and not 0 <= p["track"] < len(anim.nla_tracks):
+        raise BridgeCommandError("invalid_param", f"track 0..{len(anim.nla_tracks) - 1}", param="track")
+    if p["track"] is not None and anim.nla_tracks[p["track"]] != track:
+        # strips can't jump tracks through the API: a twin is made on the new track and the old one removed
+        target = anim.nla_tracks[p["track"]]
+        start = p["frame"] if p["frame"] is not None else strip.frame_start
+        try:
+            twin = target.strips.new(strip.name + "~", int(start), strip.action)
+        except RuntimeError as exc:
+            raise BridgeCommandError("invalid_param", f"track {p['track']} has no room at frame {int(start)} "
+                                     "(another strip is there): give a frame after it", param="frame") from exc
+        for key in ("blend_type", "influence", "use_animated_influence", "repeat", "scale", "extrapolation",
+                    "mute", "blend_in", "blend_out"):
+            setattr(twin, key, getattr(strip, key))
+        track.strips.remove(strip)
+        twin.name = twin.name[:-1]
+        track, strip = target, twin
+    elif p["frame"] is not None:
+        length = strip.frame_end - strip.frame_start
+        if p["frame"] > strip.frame_start:
+            strip.frame_end = p["frame"] + length
+            strip.frame_start = p["frame"]
+        else:
+            strip.frame_start = p["frame"]
+            strip.frame_end = p["frame"] + length
+    if p["blend"] is not None:
+        strip.blend_type = p["blend"]
+    if p["influence"] is not None:
+        strip.use_animated_influence = False
+        strip.influence = max(0.0, min(1.0, p["influence"]))
+    if p["repeat"] is not None:
+        strip.repeat = max(0.1, min(1000.0, p["repeat"]))
+    if p["scale"] is not None:
+        strip.scale = max(0.01, min(100.0, p["scale"]))
+    if p["mute"] is not None:
+        track.mute = p["mute"]
+    if p["solo"] is not None:
+        track.is_solo = p["solo"]
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "strip": strip.name, "track": track.name, "blend": strip.blend_type,
+            "frames": [strip.frame_start, strip.frame_end], "muted": track.mute, "solo": track.is_solo}
+
+
+def fcurve_modifier(p):
+    """Graph editor > the Modifiers tab of a curve: Noise (a jitter on top of the motion: strength, scale, phase,
+    depth), Cycles (the keyed motion repeats before / after its keys -- Channel > Extrapolation > Make Cyclic),
+    Stepped (the curve held in steps of some frames, stop-motion look), Limits or Generator. ``remove`` takes that
+    kind off again."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    curves = _select_curves(obj, p["bones"], p["channels"], p["axes"])
+    props = p["props"] or {}
+    done = []
+    for curve in curves:
+        for modifier in [m for m in curve.modifiers if m.type == p["type"]]:
+            curve.modifiers.remove(modifier)
+        if p["remove"]:
+            done.append(f"{curve.data_path}[{curve.array_index}]")
+            continue
+        modifier = curve.modifiers.new(p["type"])
+        for key, value in props.items():
+            from .nodes import _rna_value
+
+            setattr(modifier, key, _rna_value(modifier, key, value, f"props.{key}"))
+        done.append(f"{curve.data_path}[{curve.array_index}]")
+        curve.update()
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "type": p["type"], "curves": done, "removed": p["remove"]}
 
 
 def retime_keys(p):
@@ -359,7 +509,10 @@ def retime_keys(p):
 def _moves(block):
     """Keyframes or drivers on a datablock (an object, its data or shape keys, a material's nodes)."""
     anim = getattr(block, "animation_data", None) if block is not None else None
-    return anim is not None and (bool(_fcurves(block)) or len(anim.drivers) > 0)
+    if anim is None:
+        return False
+    playing_strips = any(not track.mute and any(not strip.mute for strip in track.strips) for track in anim.nla_tracks)
+    return bool(_fcurves(block)) or len(anim.drivers) > 0 or playing_strips
 
 
 def animation_summary():
@@ -401,8 +554,19 @@ ACTIONS = {
                                             "samples": ("int", None), "percentage": ("int", 100)}),
     "set_interpolation": (set_interpolation, {
         "object": OBJ, "bones": ("names", None), "channels": ("names", None), "axes": (AXES, "xyz"),
-        "start": ("float", None), "end": ("float", None), "interpolation": (INTERPOLATIONS, None),
-        "handle": (HANDLES, None), "ease_in": ("float", None), "ease_out": ("float", None)}),
+        "start": ("float", None), "end": ("float", None), "interpolation": (INTERPOLATIONS + EASINGS, None),
+        "handle": (HANDLES, None), "ease_in": ("float", None), "ease_out": ("float", None),
+        "easing": (EASE_MODES, None), "left": ("vec2", None), "right": ("vec2", None)}),
+    "new_action": (new_action, {"object": OBJ, "name": ("name", REQUIRED)}),
+    "push_down": (push_down, {"object": OBJ, "action": ("name", None), "track": ("name", None),
+                              "frame": ("int", None), "blend": (NLA_BLENDS, "REPLACE")}),
+    "nla_strip": (nla_strip, {"object": OBJ, "strip": ("name", REQUIRED), "frame": ("int", None),
+                              "track": ("int", None), "blend": (NLA_BLENDS, None), "influence": ("float", None),
+                              "repeat": ("float", None), "scale": ("float", None), "mute": ("bool", None),
+                              "solo": ("bool", None)}),
+    "fcurve_modifier": (fcurve_modifier, {
+        "object": OBJ, "type": (FMODIFIERS, REQUIRED), "bones": ("names", None), "channels": ("names", None),
+        "axes": (AXES, "xyz"), "props": ("dict", None), "remove": ("bool", False)}),
     "retime_keys": (retime_keys, {
         "object": OBJ, "bones": ("names", None), "channels": ("names", None), "axes": (AXES, "xyz"),
         "start": ("float", None), "end": ("float", None), "scale": ("float", 1.0), "pivot": ("float", None),
