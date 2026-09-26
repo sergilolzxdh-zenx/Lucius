@@ -1,18 +1,100 @@
 {
  "title": "Lighting",
- "summary": "Two lights: a warm point light (3200 K) at the back for a soft rim, and a spot light high near the camera aimed at the donuts, with a soft cone.",
+ "summary": "The four light types on one light: point (all directions, power 400), sun (from infinitely far, parallel shadows, strength 1), spot (one direction: a cone that lights just the plate) and area (a window). Then the scene's lights: a warm point light at the back (3200 K, a bigger radius for softer shadows, higher up, lowered to a detail), an area light behind the donuts that is tried and deleted, and the main light: a spot near the camera but very high, aimed at the donuts, with its cone size and blend set for a pool of light; a dark world.",
  "objects": [
   {
    "name": "Luz calida",
-   "description": "warm back light"
+   "description": "warm point light at the back"
   },
   {
    "name": "Foco",
-   "description": "main spot light"
+   "description": "spot light high in front, aimed at the donuts"
   }
  ],
- "expected_result": "A dark scene with a pool of warm light on the plate and donuts, and a warm glow from behind.",
+ "expected_result": "A dark scene with a soft-edged pool of light on the plate and donuts from above the camera, and a warm glow from behind.",
  "steps": [
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Demo",
+    "location": [
+     0,
+     0,
+     6
+    ],
+    "power": 400
+   },
+   "note": "Shift+A > Light > Point: light from one point in every direction; power 400",
+   "video_time": "105:10"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Demo",
+    "type": "SUN",
+    "power": 1.0,
+    "rotation_deg": [
+     30,
+     0,
+     20
+    ]
+   },
+   "note": "type Sun, strength 1: from the sky, parallel shadows",
+   "video_time": "105:38"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Demo",
+    "type": "SPOT",
+    "power": 2000,
+    "location": [
+     0,
+     -4,
+     9
+    ],
+    "look_at": [
+     0,
+     0,
+     0.3
+    ],
+    "spot_size": 30
+   },
+   "note": "type Spot: one direction; R to aim it: only the plate is lit",
+   "video_time": "106:04"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Demo",
+    "type": "AREA",
+    "power": 800,
+    "size": 4,
+    "location": [
+     6,
+     0,
+     4
+    ],
+    "look_at": [
+     0,
+     0,
+     0.5
+    ]
+   },
+   "note": "type Area: light from a surface, like a window, only on one side",
+   "video_time": "106:20"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Demo"
+    ]
+   },
+   "note": "now the real lights",
+   "video_time": "106:50"
+  },
   {
    "action": "add_light",
    "args": {
@@ -20,15 +102,55 @@
     "name": "Luz calida",
     "location": [
      1.5,
-     9.0,
+     9,
      5.5
     ],
-    "power": 600,
-    "temperature": 3200,
-    "size": 1.5
+    "power": 5000,
+    "size": 1.5,
+    "temperature": 3200
    },
-   "note": "a point light at the back, higher, bigger radius (soft shadows), warm 3200 K, power lowered: only a detail",
+   "note": "a point light at the back of the scene, higher up, power 5000, bigger radius for a softer shadow, 3200 K: orange",
    "video_time": "106:54"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Luz calida",
+    "power": 600
+   },
+   "note": "lowered: only a warm detail in the background, not the main light",
+   "video_time": "107:50"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Area",
+    "location": [
+     -2,
+     8,
+     7
+    ],
+    "look_at": [
+     0,
+     0,
+     0.8
+    ],
+    "size": 6,
+    "power": 3000
+   },
+   "note": "the main light as an area light: behind the donuts (back half of the scene, the side away from the camera), big, aimed at the donuts",
+   "video_time": "109:10"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Area"
+    ]
+   },
+   "note": "valid, but a bit dull: deleted",
+   "video_time": "110:53"
   },
   {
    "action": "add_light",
@@ -36,12 +158,12 @@
     "type": "SPOT",
     "name": "Foco",
     "location": [
-     0.0,
-     -9.0,
-     13.0
+     0,
+     -9,
+     13
     ],
     "look_at": [
-     0.0,
+     0,
      0.3,
      0.8
     ],
@@ -50,7 +172,7 @@
     "spot_blend": 0.4,
     "temperature": 4500
    },
-   "note": "the main light: a spot near the camera but very high, aimed at the donuts, a soft-edged cone, a bit warm",
+   "note": "a spot near the camera but very high, aimed at the donuts (Shift+T), power up, cone size and blend: a pool of light",
    "video_time": "110:53"
   },
   {
@@ -59,8 +181,8 @@
     "color": "#0D0D0D",
     "strength": 1.0
    },
-   "note": "the default dark world: the spot does the lighting",
-   "video_time": null
+   "note": "the background stays dark so the pool of light reads",
+   "video_time": "111:30"
   }
  ]
 }

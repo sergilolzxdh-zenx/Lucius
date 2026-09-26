@@ -1,21 +1,21 @@
 {
  "title": "Donut and croissant",
- "summary": "A low-poly croissant: an 8-vertex ring mirrored on X, extruded, scaled and rotated into a curved horn, filled, flattened, subdivided and smoothed. Two donuts: a fat torus with a clouds Displace for irregularity, duplicated, stretched, displaced the other way and leaned on the first.",
+ "summary": "A low-poly croissant from an 8-sided circle with a mirror modifier: extrude, scale and rotate segments from a fat middle to thin curved horns, with pinched grooves between the rolls, the arms drooped with proportional editing, flattened, subdivided and smoothed. A fat torus donut with a Clouds displacement; a stretched duplicate with the opposite displacement resting on it, sagging over the edge.",
  "objects": [
   {
    "name": "Croissant",
-   "description": "croissant"
+   "description": "segmented crescent croissant, fat in the middle"
   },
   {
    "name": "Donut",
-   "description": "donut"
+   "description": "fat, slightly uneven donut"
   },
   {
    "name": "Donut2",
-   "description": "second donut, leaning on the first"
+   "description": "second donut leaning on the first, sagging"
   }
  ],
- "expected_result": "A smooth crescent croissant with segment ridges, and two lumpy donuts, one leaning on the other.",
+ "expected_result": "A fat crescent croissant with clear rolls whose horns curve round and droop to the table, and two uneven donuts, one resting on the other.",
  "steps": [
   {
    "action": "add_primitive",
@@ -23,14 +23,14 @@
     "kind": "circle",
     "name": "Croissant",
     "vertices": 8,
-    "radius": 0.8,
+    "radius": 1.0,
     "location": [
      5.5,
      -4,
-     0.8
+     1.0
     ]
    },
-   "note": "a circle with 8 vertices",
+   "note": "Shift+A > Circle, 8 vertices",
    "video_time": "58:23"
   },
   {
@@ -38,7 +38,7 @@
    "args": {
     "object": "Croissant"
    },
-   "note": "edit mode",
+   "note": "edit mode, everything",
    "video_time": "58:40"
   },
   {
@@ -58,7 +58,7 @@
     "axis": "x",
     "angle_deg": 22.5
    },
-   "note": "R X: an edge lies flat at the bottom",
+   "note": "view -X, R: one edge lies flat at the bottom",
    "video_time": "58:56"
   },
   {
@@ -66,6 +66,7 @@
    "args": {
     "object": "Croissant",
     "type": "MIRROR",
+    "name": "Mirror",
     "props": {
      "use_axis": [
       true,
@@ -75,7 +76,7 @@
      "use_clip": true
     }
    },
-   "note": "Mirror on X (clipping on): model one half, the other is mirrored",
+   "note": "Mirror on X: model the right half, the left appears by itself",
    "video_time": "60:43"
   },
   {
@@ -83,12 +84,12 @@
    "args": {
     "object": "Croissant",
     "offset": [
-     0.42,
-     -0.0,
-     -0.03
+     0.55,
+     0.0,
+     0
     ]
    },
-   "note": "E: a segment",
+   "note": "top view: E along the arm",
    "video_time": "62:43"
   },
   {
@@ -96,25 +97,25 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     0.93,
-     0.93,
-     0.93
+     1.0,
+     1.0,
+     1.0
     ]
    },
    "note": "S",
-   "video_time": "62:43"
+   "video_time": "62:50"
   },
   {
    "action": "extrude",
    "args": {
     "object": "Croissant",
     "offset": [
-     0.05,
-     -0.0,
+     0.06,
+     0.0,
      0
     ]
    },
-   "note": "E and S, kept close: the groove between segments",
+   "note": "E a little and S smaller, kept close: the groove",
    "video_time": "63:05"
   },
   {
@@ -122,9 +123,9 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     0.82,
-     0.82,
-     0.82
+     0.8,
+     0.8,
+     0.8
     ]
    },
    "note": "",
@@ -135,12 +136,12 @@
    "args": {
     "object": "Croissant",
     "offset": [
-     0.05,
-     -0.0,
+     0.06,
+     0.0,
      0
     ]
    },
-   "note": "",
+   "note": "E a little and back up: the next roll starts",
    "video_time": "63:10"
   },
   {
@@ -148,12 +149,12 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     1.1,
-     1.1,
-     1.1
+     1.18,
+     1.18,
+     1.18
     ]
    },
-   "note": "the next segment starts",
+   "note": "",
    "video_time": "63:10"
   },
   {
@@ -161,286 +162,22 @@
    "args": {
     "object": "Croissant",
     "axis": "z",
-    "angle_deg": -20
+    "angle_deg": -22
    },
-   "note": "R: the horn curves back",
-   "video_time": "63:10"
+   "note": "R: the horn curves round",
+   "video_time": "63:15"
   },
   {
    "action": "extrude",
    "args": {
     "object": "Croissant",
     "offset": [
-     0.3571,
-     -0.13,
-     -0.07
-    ]
-   },
-   "note": "E: a segment",
-   "video_time": "62:43"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.9,
-     0.9,
-     0.9
-    ]
-   },
-   "note": "S",
-   "video_time": "62:43"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.047,
-     -0.0171,
+     0.5563,
+     -0.2248,
      0
     ]
    },
-   "note": "E and S, kept close: the groove between segments",
-   "video_time": "63:05"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.82,
-     0.82,
-     0.82
-    ]
-   },
-   "note": "",
-   "video_time": "63:05"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.047,
-     -0.0171,
-     0
-    ]
-   },
-   "note": "",
-   "video_time": "63:10"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     1.1,
-     1.1,
-     1.1
-    ]
-   },
-   "note": "the next segment starts",
-   "video_time": "63:10"
-  },
-  {
-   "action": "rotate_selection",
-   "args": {
-    "object": "Croissant",
-    "axis": "z",
-    "angle_deg": -20
-   },
-   "note": "R: the horn curves back",
-   "video_time": "63:10"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.2605,
-     -0.2185,
-     -0.08
-    ]
-   },
-   "note": "E: a segment",
-   "video_time": "62:43"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.88,
-     0.88,
-     0.88
-    ]
-   },
-   "note": "S",
-   "video_time": "62:43"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.0383,
-     -0.0321,
-     0
-    ]
-   },
-   "note": "E and S, kept close: the groove between segments",
-   "video_time": "63:05"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.82,
-     0.82,
-     0.82
-    ]
-   },
-   "note": "",
-   "video_time": "63:05"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.0383,
-     -0.0321,
-     0
-    ]
-   },
-   "note": "",
-   "video_time": "63:10"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     1.1,
-     1.1,
-     1.1
-    ]
-   },
-   "note": "the next segment starts",
-   "video_time": "63:10"
-  },
-  {
-   "action": "rotate_selection",
-   "args": {
-    "object": "Croissant",
-    "axis": "z",
-    "angle_deg": -20
-   },
-   "note": "R: the horn curves back",
-   "video_time": "63:10"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.15,
-     -0.2598,
-     -0.08
-    ]
-   },
-   "note": "E: a segment",
-   "video_time": "62:43"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.85,
-     0.85,
-     0.85
-    ]
-   },
-   "note": "S",
-   "video_time": "62:43"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.025,
-     -0.0433,
-     0
-    ]
-   },
-   "note": "E and S, kept close: the groove between segments",
-   "video_time": "63:05"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     0.82,
-     0.82,
-     0.82
-    ]
-   },
-   "note": "",
-   "video_time": "63:05"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.025,
-     -0.0433,
-     0
-    ]
-   },
-   "note": "",
-   "video_time": "63:10"
-  },
-  {
-   "action": "scale_selection",
-   "args": {
-    "object": "Croissant",
-    "factor": [
-     1.1,
-     1.1,
-     1.1
-    ]
-   },
-   "note": "the next segment starts",
-   "video_time": "63:10"
-  },
-  {
-   "action": "rotate_selection",
-   "args": {
-    "object": "Croissant",
-    "axis": "z",
-    "angle_deg": -20
-   },
-   "note": "R: the horn curves back",
-   "video_time": "63:10"
-  },
-  {
-   "action": "extrude",
-   "args": {
-    "object": "Croissant",
-    "offset": [
-     0.0451,
-     -0.2561,
-     -0.08
-    ]
-   },
-   "note": "E: a segment",
+   "note": "E: the next segment",
    "video_time": "62:43"
   },
   {
@@ -454,19 +191,19 @@
     ]
    },
    "note": "S",
-   "video_time": "62:43"
+   "video_time": "62:50"
   },
   {
    "action": "extrude",
    "args": {
     "object": "Croissant",
     "offset": [
-     0.0087,
-     -0.0492,
+     0.0556,
+     -0.0225,
      0
     ]
    },
-   "note": "E and S, kept close: the groove between segments",
+   "note": "E a little and S smaller, kept close: the groove",
    "video_time": "63:05"
   },
   {
@@ -474,9 +211,9 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     0.82,
-     0.82,
-     0.82
+     0.8,
+     0.8,
+     0.8
     ]
    },
    "note": "",
@@ -487,12 +224,12 @@
    "args": {
     "object": "Croissant",
     "offset": [
-     0.0087,
-     -0.0492,
+     0.0556,
+     -0.0225,
      0
     ]
    },
-   "note": "",
+   "note": "E a little and back up: the next roll starts",
    "video_time": "63:10"
   },
   {
@@ -500,12 +237,12 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     1.1,
-     1.1,
-     1.1
+     1.18,
+     1.18,
+     1.18
     ]
    },
-   "note": "the next segment starts",
+   "note": "",
    "video_time": "63:10"
   },
   {
@@ -513,9 +250,74 @@
    "args": {
     "object": "Croissant",
     "axis": "z",
-    "angle_deg": -20
+    "angle_deg": -32
    },
-   "note": "R: the horn curves back",
+   "note": "R: the horn curves round",
+   "video_time": "63:15"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0.2939,
+     -0.4045,
+     0
+    ]
+   },
+   "note": "E: the next segment",
+   "video_time": "62:43"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Croissant",
+    "factor": [
+     0.7249999999999999,
+     0.7249999999999999,
+     0.7249999999999999
+    ]
+   },
+   "note": "S",
+   "video_time": "62:50"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0.0353,
+     -0.0485,
+     0
+    ]
+   },
+   "note": "E a little and S smaller, kept close: the groove",
+   "video_time": "63:05"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Croissant",
+    "factor": [
+     0.8,
+     0.8,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": "63:05"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0.0353,
+     -0.0485,
+     0
+    ]
+   },
+   "note": "E a little and back up: the next roll starts",
    "video_time": "63:10"
   },
   {
@@ -523,12 +325,48 @@
    "args": {
     "object": "Croissant",
     "factor": [
-     0.45,
-     0.45,
-     0.45
+     1.18,
+     1.18,
+     1.18
     ]
    },
-   "note": "the tip small",
+   "note": "",
+   "video_time": "63:10"
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Croissant",
+    "axis": "z",
+    "angle_deg": -34
+   },
+   "note": "R: the horn curves round",
+   "video_time": "63:15"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0.0119,
+     -0.3398,
+     0
+    ]
+   },
+   "note": "E: the tip",
+   "video_time": "63:40"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Croissant",
+    "factor": [
+     0.5,
+     0.5,
+     0.5
+    ]
+   },
+   "note": "S small: the point",
    "video_time": "63:40"
   },
   {
@@ -538,6 +376,36 @@
    },
    "note": "F: close the end",
    "video_time": "64:03"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Croissant",
+    "element": "VERT",
+    "min": [
+     1.2,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the far end of the arm",
+   "video_time": "64:20"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0,
+     0,
+     -0.75
+    ],
+    "proportional": 1.7,
+    "falloff": "SMOOTH"
+   },
+   "note": "G Z down with proportional editing (O), a big circle: the arm droops to the table",
+   "video_time": "64:32"
   },
   {
    "action": "select_all",
@@ -554,32 +422,54 @@
     "factor": [
      1,
      1,
-     0.72
+     0.8
     ],
     "pivot": "bbox_center"
    },
-   "note": "S Z: flatter",
+   "note": "S Z: flatter, it was too round",
    "video_time": "64:54"
   },
   {
-   "action": "transform_object",
+   "action": "select_box",
    "args": {
     "object": "Croissant",
-    "location": [
-     0,
-     0,
-     -0.2
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.2
     ],
-    "relative": true
+    "max": [
+     0.6,
+     null,
+     null
+    ],
+    "space": "local"
    },
-   "note": "back down onto the ground",
-   "video_time": "64:32"
+   "note": "the top of the middle roll",
+   "video_time": "70:45"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Croissant",
+    "offset": [
+     0,
+     0,
+     0.18
+    ],
+    "proportional": 0.9,
+    "falloff": "SMOOTH"
+   },
+   "note": "G Z up with proportional editing: rounder on top",
+   "video_time": "70:50"
   },
   {
    "action": "add_modifier",
    "args": {
     "object": "Croissant",
     "type": "SUBSURF",
+    "name": "Subdivision",
     "props": {
      "levels": 2,
      "render_levels": 2
@@ -598,22 +488,31 @@
    "video_time": "66:38"
   },
   {
+   "action": "set_mode",
+   "args": {
+    "object": "Croissant",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": "69:30"
+  },
+  {
    "action": "add_primitive",
    "args": {
     "kind": "torus",
     "name": "Donut",
     "major_radius": 1.0,
-    "minor_radius": 0.5,
+    "minor_radius": 0.55,
     "major_segments": 64,
     "minor_segments": 32,
     "location": [
      -5.5,
      -4,
-     0.5
+     0.55
     ]
    },
-   "note": "a torus: minor radius up (a fat donut, small hole), 64 x 32 segments",
-   "video_time": "73:20"
+   "note": "Shift+A > Torus; F9: minor radius up (small hole, a proper donut), 64 x 32 segments",
+   "video_time": "73:18"
   },
   {
    "action": "shade",
@@ -629,13 +528,14 @@
    "args": {
     "object": "Donut",
     "type": "DISPLACE",
+    "name": "Displace",
     "props": {
      "strength": 0.1,
      "texture": "CLOUDS",
      "texture_scale": 1.0
     }
    },
-   "note": "Displace with a new Clouds texture at scale 1: a lumpy, real donut",
+   "note": "Displace with a new texture set to Clouds, scale 1, gentle strength: a real, uneven donut",
    "video_time": "75:22"
   },
   {
@@ -644,26 +544,21 @@
     "object": "Donut",
     "new_name": "Donut2",
     "offset": [
-     2.3,
+     2.4,
      0,
-     0.3
-    ],
-    "rotation_deg": [
-     0,
-     -18,
      0
     ]
    },
    "note": "Shift+D along X: a second donut",
-   "video_time": "77:29"
+   "video_time": "77:10"
   },
   {
    "action": "select_all",
    "args": {
     "object": "Donut2"
    },
-   "note": "",
-   "video_time": "77:40"
+   "note": "edit mode, A",
+   "video_time": "77:29"
   },
   {
    "action": "scale_selection",
@@ -671,11 +566,20 @@
     "object": "Donut2",
     "factor": [
      1,
-     1.12,
+     1.1,
      1
     ]
    },
-   "note": "S Y: stretched, so it is not the same donut",
+   "note": "S Y: a little longer, so it is not the same donut",
+   "video_time": "77:35"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Donut2",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
    "video_time": "77:40"
   },
   {
@@ -685,21 +589,86 @@
     "modifier": "Displace"
    },
    "note": "",
-   "video_time": "77:50"
+   "video_time": "77:45"
   },
   {
    "action": "add_modifier",
    "args": {
     "object": "Donut2",
     "type": "DISPLACE",
+    "name": "Displace",
     "props": {
-     "strength": -0.15,
+     "strength": -0.12,
      "texture": "CLOUDS",
      "texture_scale": 1.0
     }
    },
-   "note": "the displace the other way: -0.15",
-   "video_time": "79:00"
+   "note": "the displace strength the other way, for variety",
+   "video_time": "77:50"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Donut2",
+    "location": [
+     -2.95,
+     -4,
+     0.9
+    ],
+    "rotation_deg": [
+     0,
+     20,
+     0
+    ]
+   },
+   "note": "view -X: R and G: tilted, one edge on the table, the other resting on the first donut",
+   "video_time": "77:56"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Donut2",
+    "element": "VERT",
+    "min": [
+     null,
+     1.0,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "2: an edge loop on one side of the ring",
+   "video_time": "78:40"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Donut2",
+    "element": "VERT",
+    "max": [
+     null,
+     -1.0,
+     null
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "and the loop on the other side",
+   "video_time": "78:45"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Donut2",
+    "offset": [
+     0,
+     0,
+     -0.2
+    ],
+    "proportional": 1.0,
+    "falloff": "SMOOTH"
+   },
+   "note": "G with proportional editing: the sides sag, heavy and greasy",
+   "video_time": "78:49"
   },
   {
    "action": "set_mode",
@@ -707,8 +676,8 @@
     "object": "Donut2",
     "mode": "OBJECT"
    },
-   "note": "",
-   "video_time": null
+   "note": "Tab",
+   "video_time": "79:00"
   }
  ]
 }

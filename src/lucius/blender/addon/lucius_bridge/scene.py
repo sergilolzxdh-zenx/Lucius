@@ -118,7 +118,8 @@ def _pattern(material, bsdf, p):
     """A procedural colour pattern on Base Color: brick (a check tablecloth: square bricks, coloured mortar
     lines), checker or noise, over the object's own coordinates."""
     tree = material.node_tree
-    kind = {"brick": "ShaderNodeTexBrick", "checker": "ShaderNodeTexChecker", "noise": "ShaderNodeTexNoise"}[p["pattern"]]
+    kind = {"brick": "ShaderNodeTexBrick", "checker": "ShaderNodeTexChecker", "noise": "ShaderNodeTexNoise",
+            "dots": "ShaderNodeTexVoronoi"}[p["pattern"]]
     coords = _node(tree, "ShaderNodeTexCoord", "LuciusPatternCoords")
     texture = _node(tree, kind, "LuciusPattern")
     tree.links.new(coords.outputs["Object"], texture.inputs["Vector"])
@@ -141,6 +142,20 @@ def _pattern(material, bsdf, p):
         texture.inputs["Color1"].default_value = base
         texture.inputs["Color2"].default_value = second
         output = texture.outputs["Color"]
+    elif p["pattern"] == "dots":
+        # Polka dots / spots: round spots where a point is close to its Voronoi cell's centre.
+        texture.feature = "F1"
+        texture.inputs["Randomness"].default_value = 0.7   # evenly spread spots, not clumped
+        threshold = _node(tree, "ShaderNodeMath", "LuciusDotsThreshold")
+        threshold.operation = "LESS_THAN"
+        threshold.inputs[1].default_value = p["dot_size"]
+        tree.links.new(texture.outputs["Distance"], threshold.inputs[0])
+        mix = _node(tree, "ShaderNodeMix", "LuciusPatternMix")
+        mix.data_type = "RGBA"
+        tree.links.new(threshold.outputs[0], mix.inputs["Factor"])
+        mix.inputs["A"].default_value = base
+        mix.inputs["B"].default_value = second
+        output = mix.outputs["Result"]
     else:
         ramp = _node(tree, "ShaderNodeMix", "LuciusPatternMix")
         ramp.data_type = "RGBA"
@@ -325,6 +340,54 @@ def scale_scene(p):
         scaled.append(obj.name)
     bpy.context.view_layer.update()
     return {"scaled": scaled, "factor": factor}
+
+
+def drop_object(p):
+    """Let an object fall straight down until it rests on what is below it (G Z by eye in a tutorial):
+    the top surfaces of the other objects (with their modifiers) and, with ``floor``, the ground at z=0.
+    An object sunk into another comes up to rest on it."""
+    from mathutils.bvhtree import BVHTree
+
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    names = set(p["onto"] or [])
+    trees = []
+    for other in bpy.context.scene.objects:
+        if other == obj or other.type != "MESH" or other.hide_get() or other.hide_render:
+            continue
+        if names and other.name not in names:
+            continue
+        evaluated = other.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        world = [evaluated.matrix_world @ v.co for v in mesh.vertices]
+        polygons = [tuple(poly.vertices) for poly in mesh.polygons]
+        evaluated.to_mesh_clear()
+        if polygons:
+            trees.append(BVHTree.FromPolygons(world, polygons))
+    evaluated = obj.evaluated_get(depsgraph)
+    mesh = evaluated.to_mesh()
+    points = [evaluated.matrix_world @ v.co for v in mesh.vertices]
+    evaluated.to_mesh_clear()
+    if not points:
+        raise BridgeCommandError("invalid_param", f"{obj.name} has no geometry to drop", param="object")
+    top = max(pt.z for pt in points) + 1000.0
+    shift = None
+    step = max(1, len(points) // 4000)   # enough points to find the contact
+    for pt in points[::step]:
+        ground = 0.0 if p["floor"] else None
+        for tree in trees:
+            hit = tree.ray_cast(Vector((pt.x, pt.y, top)), Vector((0.0, 0.0, -1.0)))
+            if hit[0] is not None and (ground is None or hit[0].z > ground):
+                ground = hit[0].z
+        if ground is not None:
+            gap = pt.z - ground
+            shift = gap if shift is None else min(shift, gap)
+    if shift is None:
+        raise BridgeCommandError("invalid_param", "nothing below the object to rest on", param="onto")
+    obj.location.z -= shift - p["gap"]
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "moved_z": round(-(shift - p["gap"]), 5), "z": round(obj.location.z, 5)}
 
 
 # -- rendering -----------------------------------------------------------------------------------
@@ -538,7 +601,8 @@ ACTIONS = {
         "emission_strength": ("float", None), "transmission": ("float", None), "subsurface": ("float", None),
         "coat": ("float", None), "ior": ("float", None),
         "assign": (("replace", "append", "selected_faces"), "replace"),
-        "pattern": (("brick", "checker", "noise"), None), "pattern_color": COLOR, "line_color": COLOR,
+        "pattern": (("brick", "checker", "noise", "dots"), None), "pattern_color": COLOR, "line_color": COLOR,
+        "dot_size": ("float", 0.3),
         "pattern_scale": ("float", None), "mortar_size": ("float", 0.02), "brick_width": ("float", 0.5),
         "row_height": ("float", 0.5), "bump": (("magic", "noise", "voronoi"), None), "bump_scale": ("float", 200.0),
         "bump_distortion": ("float", 15.0), "bump_strength": ("float", 0.3)}),
@@ -557,6 +621,8 @@ ACTIONS = {
         "samples": ("int", 64), "width": ("int", 1280), "height": ("int", 720), "denoise": ("bool", True),
         "view_transform": (("Standard", "AgX", "Filmic", "Khronos PBR Neutral"), None)}),
     "scale_scene": (scale_scene, {"factor": ("float", REQUIRED), "pivot": ("vec3", [0.0, 0.0, 0.0])}),
+    "drop_object": (drop_object, {"object": OBJ, "onto": ("names", None), "floor": ("bool", True),
+                                  "gap": ("float", 0.0)}),
     "render_image": (render_image, {
         "path": ("path", REQUIRED), "camera": (("scene", "auto"), "auto"), "view": (tuple(VIEW_DIRECTIONS), "three_quarter"),
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),

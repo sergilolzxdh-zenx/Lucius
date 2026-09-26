@@ -1,0 +1,756 @@
+{
+ "title": "Wooden chair",
+ "summary": "A wooden dining chair: bevelled seat, four square legs (one leg mirrored on X and Y), taller back legs carrying a top rail and three slats (array), low stretchers, a wood material with a noise grain.",
+ "objects": [
+  {
+   "name": "Seat",
+   "description": "seat"
+  },
+  {
+   "name": "FrontLegs",
+   "description": "front legs (mirrored)"
+  },
+  {
+   "name": "BackLegs",
+   "description": "back legs (mirrored)"
+  },
+  {
+   "name": "TopRail",
+   "description": "top rail of the back"
+  },
+  {
+   "name": "Slats",
+   "description": "three back slats (array)"
+  },
+  {
+   "name": "Stretchers",
+   "description": "low rails"
+  }
+ ],
+ "expected_result": "A wooden chair with a slatted back standing on the floor.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Seat",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.45
+    ]
+   },
+   "note": "Seat: a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Seat",
+    "dimensions": [
+     0.46,
+     0.44,
+     0.04
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Seat",
+    "scale": true
+   },
+   "note": "Ctrl+A scale",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Seat"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Seat",
+    "offset": 0.008,
+    "segments": 3
+   },
+   "note": "Ctrl+B: soft edges",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Seat",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "FrontLegs",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a leg",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "FrontLegs",
+    "dimensions": [
+     0.04,
+     0.04,
+     0.43
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "FrontLegs",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "FrontLegs"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "FrontLegs",
+    "offset": [
+     0.2,
+     -0.18,
+     0.215
+    ]
+   },
+   "note": "G: to the front right corner, the origin stays in the middle",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "FrontLegs",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     0.01
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the foot",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "FrontLegs",
+    "factor": [
+     0.75,
+     0.75,
+     1
+    ]
+   },
+   "note": "S: a slight taper",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "FrontLegs",
+    "type": "MIRROR",
+    "name": "Mirror",
+    "props": {
+     "use_axis": [
+      true,
+      false,
+      false
+     ]
+    }
+   },
+   "note": "Mirror on X: the other front leg",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "BackLegs",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a back leg, taller: it carries the back",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "BackLegs",
+    "dimensions": [
+     0.04,
+     0.04,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "BackLegs",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "BackLegs"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "BackLegs",
+    "offset": [
+     0.2,
+     0.18,
+     0.475
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "BackLegs",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.9
+    ],
+    "space": "local"
+   },
+   "note": "the part above the seat",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "BackLegs",
+    "offset": [
+     0,
+     0.05,
+     0
+    ]
+   },
+   "note": "G Y: the back leans back a little",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "BackLegs",
+    "type": "MIRROR",
+    "name": "Mirror",
+    "props": {
+     "use_axis": [
+      true,
+      false,
+      false
+     ]
+    }
+   },
+   "note": "Mirror on X",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "TopRail",
+    "size": 1,
+    "location": [
+     0,
+     0.225,
+     0.88
+    ]
+   },
+   "note": "TopRail: a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "TopRail",
+    "dimensions": [
+     0.44,
+     0.03,
+     0.09
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "TopRail",
+    "scale": true
+   },
+   "note": "Ctrl+A scale",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "TopRail"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "TopRail",
+    "offset": 0.006,
+    "segments": 3
+   },
+   "note": "Ctrl+B: soft edges",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "TopRail",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Slats",
+    "size": 1,
+    "location": [
+     -0.1,
+     0.215,
+     0.64
+    ]
+   },
+   "note": "Slats: a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Slats",
+    "dimensions": [
+     0.035,
+     0.02,
+     0.34
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Slats",
+    "scale": true
+   },
+   "note": "Ctrl+A scale",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Slats"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Slats",
+    "offset": 0.004,
+    "segments": 3
+   },
+   "note": "Ctrl+B: soft edges",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Slats",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Slats",
+    "rotation_deg": [
+     -5,
+     0,
+     0
+    ]
+   },
+   "note": "lean with the back",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "TopRail",
+    "rotation_deg": [
+     -5,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Slats",
+    "type": "ARRAY",
+    "name": "Array",
+    "props": {
+     "count": 3,
+     "relative_offset_displace": [
+      2.86,
+      0,
+      0
+     ]
+    }
+   },
+   "note": "Array: three slats",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Stretchers",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a stretcher between the legs",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Stretchers",
+    "dimensions": [
+     0.03,
+     0.36,
+     0.025
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Stretchers",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Stretchers"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Stretchers",
+    "offset": [
+     0.2,
+     0,
+     0.15
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Stretchers",
+    "type": "MIRROR",
+    "name": "Mirror",
+    "props": {
+     "use_axis": [
+      true,
+      false,
+      false
+     ]
+    }
+   },
+   "note": "Mirror on X: both sides",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Seat",
+    "name": "Madera",
+    "base_color": "#9A6232",
+    "pattern": "noise",
+    "pattern_color": "#6E4020",
+    "pattern_scale": 18,
+    "roughness": 0.5,
+    "bump": "noise",
+    "bump_scale": 60,
+    "bump_strength": 0.08
+   },
+   "note": "wood: warm brown with a darker noise grain",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "FrontLegs",
+    "name": "Madera"
+   },
+   "note": "the same wood",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "BackLegs",
+    "name": "Madera"
+   },
+   "note": "the same wood",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TopRail",
+    "name": "Madera"
+   },
+   "note": "the same wood",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Slats",
+    "name": "Madera"
+   },
+   "note": "the same wood",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Stretchers",
+    "name": "Madera"
+   },
+   "note": "the same wood",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 8.0,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#3A3D44",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     1.6,
+     -2.0,
+     2.2
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "power": 55.0,
+    "size": 2.0,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -1.6,
+     1.8,
+     2.0
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "power": 70.0,
+    "size": 1.2,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -2.2,
+     -1.2,
+     0.8
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "power": 25.0,
+    "size": 2.0
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.4,
+     -2.0,
+     1.35
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "silla",
+  "chair",
+  "wooden chair",
+  "dining chair"
+ ]
+}

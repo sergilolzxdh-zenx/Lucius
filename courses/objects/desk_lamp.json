@@ -1,0 +1,508 @@
+{
+ "title": "Desk lamp",
+ "summary": "An articulated desk lamp: a bevelled round base, two arms joined by spheres, a cone shade made hollow (the bottom face removed, Solidify for thickness) aimed down, a glowing bulb and a warm light inside that throws a pool of light on the floor.",
+ "objects": [
+  {
+   "name": "Base",
+   "description": "base"
+  },
+  {
+   "name": "Arm1",
+   "description": "arm1"
+  },
+  {
+   "name": "Joint",
+   "description": "joint"
+  },
+  {
+   "name": "Arm2",
+   "description": "arm2"
+  },
+  {
+   "name": "Shade",
+   "description": "shade"
+  },
+  {
+   "name": "Bulb",
+   "description": "bulb"
+  }
+ ],
+ "expected_result": "A desk lamp lighting a warm pool on the floor.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Base",
+    "radius": 0.09,
+    "depth": 0.025,
+    "vertices": 48,
+    "location": [
+     0,
+     0,
+     0.0125
+    ]
+   },
+   "note": "base",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Base"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Base",
+    "offset": 0.006,
+    "segments": 3
+   },
+   "note": "rounded edge",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Base",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Base",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Arm1",
+    "radius": 0.009,
+    "depth": 0.32,
+    "vertices": 16,
+    "location": [
+     0,
+     0.0494,
+     0.1772
+    ],
+    "rotation_deg": [
+     -18,
+     0,
+     0
+    ]
+   },
+   "note": "lower arm",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Joint",
+    "radius": 0.018,
+    "vertices": 24,
+    "location": [
+     0,
+     0.0989,
+     0.3293
+    ]
+   },
+   "note": "the elbow",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Arm2",
+    "radius": 0.008,
+    "depth": 0.253,
+    "vertices": 16,
+    "location": [
+     0,
+     -0.024,
+     0.3595
+    ],
+    "rotation_deg": [
+     76.23,
+     0,
+     0
+    ]
+   },
+   "note": "upper arm, reaching forward",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Shade",
+    "radius": 0.085,
+    "radius2": 0.03,
+    "depth": 0.12,
+    "vertices": 48,
+    "location": [
+     0,
+     -0.1769,
+     0.3396
+    ],
+    "rotation_deg": [
+     -35,
+     0,
+     0
+    ]
+   },
+   "note": "the shade: a cone",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Shade",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     -0.05
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the wide bottom",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Shade",
+    "what": "FACES"
+   },
+   "note": "X faces: open at the bottom",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Shade",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shade",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Shade",
+    "type": "SOLIDIFY",
+    "name": "Solidify",
+    "props": {
+     "thickness": 0.003
+    }
+   },
+   "note": "Solidify: a thin wall",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Bulb",
+    "radius": 0.022,
+    "vertices": 24,
+    "location": [
+     0,
+     -0.1919,
+     0.3146
+    ]
+   },
+   "note": "the bulb",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Bulb",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Arm1",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Arm2",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Joint",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Shade",
+    "name": "Rojo",
+    "base_color": "#B3261E",
+    "metallic": 0.4,
+    "roughness": 0.35
+   },
+   "note": "matte red metal",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Base",
+    "name": "Rojo"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Arm1",
+    "name": "Acero",
+    "base_color": "#B8BCC2",
+    "metallic": 1.0,
+    "roughness": 0.3
+   },
+   "note": "brushed steel",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Arm2",
+    "name": "Acero"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Joint",
+    "name": "Acero"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bulb",
+    "name": "Bombilla",
+    "base_color": "#FFF2D0",
+    "emission_color": "#FFD9A0",
+    "emission_strength": 12
+   },
+   "note": "a glowing bulb",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SPOT",
+    "name": "Luz lampara",
+    "location": [
+     0,
+     -0.1919,
+     0.3296
+    ],
+    "look_at": [
+     0,
+     -0.3469,
+     0
+    ],
+    "power": 18,
+    "spot_size": 80,
+    "spot_blend": 0.6,
+    "temperature": 3000,
+    "size": 0.02
+   },
+   "note": "a warm light in the shade, aimed down",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 4.8,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#23252B",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     0.96,
+     -1.2,
+     1.32
+    ],
+    "look_at": [
+     0,
+     0,
+     0.22
+    ],
+    "power": 6.93,
+    "size": 1.2,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -0.96,
+     1.08,
+     1.2
+    ],
+    "look_at": [
+     0,
+     0,
+     0.22
+    ],
+    "power": 8.82,
+    "size": 0.72,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -1.32,
+     -0.72,
+     0.48
+    ],
+    "look_at": [
+     0,
+     0,
+     0.22
+    ],
+    "power": 3.15,
+    "size": 1.2
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.2,
+     -0.96,
+     0.76
+    ],
+    "look_at": [
+     0,
+     0,
+     0.22
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "lampara",
+  "lamp",
+  "desk lamp",
+  "flexo",
+  "lampara de escritorio"
+ ]
+}

@@ -72,75 +72,83 @@
  "lessons": [
   {
    "chapter": 4,
-   "title": "Navigating the interface (Interfaz)",
-   "recipe": "04_interface.json",
-   "score": 10.0,
+   "title": "Interfaz",
+   "recipe": "04_interface_moving_objects_and_edit_mode.json",
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/04.jpg",
-   "teacher": "gemini lesson loop",
-   "note": "Learned by the Gemini lesson loop: default scene, a subdivided and transformed cube, primitives, edit-mode selections, ending with the circle the mug starts from."
+   "frame_at": "31:30",
+   "note": "Every operation the tutor shows that changes the scene: modifier from the properties panel, axis-locked G/R/S and resets, delete all, cube and Suzanne, edit-mode face move/scale, Suzanne's ears stretched with proportional editing (checked in a separate render), filled circle as the mug base. Viewport navigation itself is not a scene change."
   },
   {
    "chapter": 5,
    "title": "Modelar la taza y el plato",
-   "recipe": "05_mug_plate.json",
-   "score": 7.0,
+   "recipe": "05_mug_and_plate.json",
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/05.jpg",
    "frame_at": "53:40",
-   "note": "Mug from the circle: extrude, inset, hollow, rim and base bevels, loop cuts, handle bridged between two face patches, subsurf. Plate: circle filled, insets for the dish and rim, underside extruded, foot."
+   "note": "Rebuilt the tutor's way: D handle by extruding a 2x2 patch and rotating 45 degrees four times, deleting the end and a lower patch (X > Faces) and bridging; plate insets stepped into a rim, slope and well with support loops, thickness extruded down and in, foot ring, bevelled rim. Close-ups match 48:00-49:00 (mug) and 53:40-55:20 (plate); small differences in handle cross-section and rim curvature."
   },
   {
    "chapter": 6,
    "title": "Modelar donut y croissant",
-   "recipe": "06_donut_croissant.json",
-   "score": 8.0,
+   "recipe": "06_donut_and_croissant.json",
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/06.jpg",
    "frame_at": "1:07:00",
-   "note": "Croissant: circle profile mirrored, extruded in grooved segments along a curve, tips closed; donut: torus with cloud displacement; a second donut duplicated and tilted."
+   "note": "Croissant the tutor's way (8-gon, mirror, E/S/R segments with pinched grooves, fat middle, drooping horns via proportional editing, flattened, top rounded) matches 1:07:00; fat Clouds-displaced donuts, the stretched duplicate tilted and resting on the first with sagging sides like 1:18:30. Not reproduced: the extra Ctrl+R support loops that sharpen the grooves."
   },
   {
    "chapter": 7,
    "title": "Sistema de partículas",
-   "recipe": "07_particles_composition.json",
-   "score": 8.0,
+   "recipe": "07_particles_and_composition.json",
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/07.jpg",
-   "frame_at": "1:25:40",
-   "note": "Sugar crystal scattered over both donuts with a hair particle system; everything placed as in the tutor's composition."
+   "frame_at": "1:25:00",
+   "note": "Particle system the tutor's way (Suzanne first, then the sugar cube: hair, render as object, 5000, random scale) on both donuts; layout matches the top view at 1:25:00 (plate centre with donuts, croissant back-left, mug back-right, mug a little bigger); drop_object replaces the by-eye G Z so nothing passes through the plate or floor."
   },
   {
    "chapter": 8,
    "title": "Materiales",
    "recipe": "08_materials.json",
-   "score": 8.0,
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/08.jpg",
-   "frame_at": "1:44:40",
-   "note": "Porcelain, donut dough (subsurface), glassy sugar, croissant, tablecloth with a brick pattern and a fabric bump."
+   "frame_at": "1:43:00",
+   "note": "Metal demo (gold, bronze, silver) then the tutor's materials with his stated values: porcelain shared by mug and plate, golden oily donut dough shared, glossy half-transparent sugar, toasted rough croissant, SSS 0.5, tablecloth brick check (freq 1, 0.5/0.5, white/white, blue mortar) with magic bump 200/15. Looks match 1:34:45-1:44:30; sugar a little more visible than the tutor's at this point."
   },
   {
    "chapter": 9,
    "title": "Iluminación",
    "recipe": "09_lighting.json",
-   "score": 8.0,
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/09.jpg",
    "frame_at": "1:51:00",
-   "note": "Spot from the front-top gives the pool of light on the plate, warm point light behind as rim, black world."
+   "note": "All four light types demonstrated on one light (point 400, sun 1, spot aimed at the plate, area as a window); warm 3200 K point at the back with a bigger radius lowered to a detail; the tried-and-deleted area light; the high spot near the camera with cone and blend; dark world. The lit render matches the tutor's dark, warm pool of light at 1:51:00."
   },
   {
    "chapter": 10,
    "title": "Cámara",
    "recipe": "10_camera.json",
-   "score": 8.0,
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/10.jpg",
    "frame_at": "1:56:50",
-   "note": "Camera front/above; scene scaled x0.05 to real size; lights lowered to keep the look; depth of field on the donut at f/1; square 1080."
+   "note": "Camera framed like the tutor's (front, high, plate centred, croissant back-left, mug back-right); scene scaled x0.05 to real size (plate 30 cm); lights lowered to keep the look (the tutor's own numbers 10/100 W assume his exact scale and Eevee); DOF on the donut at f/1; square 1080 with a little more zoom. Not reproduced: viewport-only settings (camera clipping demo, passepartout, lock camera to view)."
   },
   {
    "chapter": 11,
    "title": "Renderizado",
    "recipe": "11_render.json",
-   "score": 8.0,
+   "score": 9.0,
+   "teacher": "claude-code",
    "frame": "frames/11.jpg",
    "frame_at": "2:10:20",
-   "note": "Final Cycles render: key area panel front-left at 4500 K, rim light raised, bigger sugar, glossier croissant, blue cloth with small white squares turned on Z, f/2.8, Standard view."
+   "note": "Final Cycles render (256 samples + denoise, Standard) after the Eevee setup step; key area panel front-left 4500 K, rim raised, brighter glossier croissant, bigger sugar, blue cloth with small white squares turned 7 degrees, f/2.8. Matches the tutor's final at 2:10:20 in layout, materials and light; the croissant is a little more orange."
   }
  ]
 }

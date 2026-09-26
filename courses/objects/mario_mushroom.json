@@ -1,0 +1,691 @@
+{
+ "title": "Mario mushroom",
+ "summary": "A cartoon mushroom made from a reference picture: a UV sphere cut in half for the cap, its rim extruded in and up so it tucks under, subdivided and smooth, with big pale spots painted on by a dots material pattern; a short, slightly barrel-shaped cream stem with rounded edges; two black oval eyes with white highlights.",
+ "objects": [
+  {
+   "name": "Cap",
+   "description": "cap"
+  },
+  {
+   "name": "Stem",
+   "description": "stem"
+  },
+  {
+   "name": "Eye",
+   "description": "eye"
+  },
+  {
+   "name": "Eye2",
+   "description": "eye2"
+  }
+ ],
+ "expected_result": "A red-capped mushroom with big pale spots and a cute face on its stem.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Stem",
+    "radius": 0.52,
+    "depth": 0.66,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.33
+    ]
+   },
+   "note": "the stem",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Stem",
+    "axis": "z",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "Ctrl+R: a loop in the middle",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Stem",
+    "element": "EDGE",
+    "min": [
+     null,
+     null,
+     -0.02
+    ],
+    "max": [
+     null,
+     null,
+     0.02
+    ],
+    "space": "local",
+    "sharp_deg": 0,
+    "boundary": false
+   },
+   "note": "the middle loop",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Stem",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     -0.02
+    ],
+    "max": [
+     null,
+     null,
+     0.02
+    ],
+    "space": "local"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Stem",
+    "factor": [
+     1.07,
+     1.07,
+     1
+    ]
+   },
+   "note": "S: a little barrel",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Stem",
+    "element": "EDGE",
+    "space": "local",
+    "sharp_deg": 40
+   },
+   "note": "top and bottom edges",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Stem",
+    "offset": 0.09,
+    "segments": 4
+   },
+   "note": "Ctrl+B: soft rounded ends",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Stem",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Stem",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Stem",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 1,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Cap",
+    "radius": 1.0,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.62
+    ]
+   },
+   "note": "the cap: a UV sphere",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cap",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     -0.01
+    ],
+    "space": "local"
+   },
+   "note": "the lower half",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Cap",
+    "what": "VERTS"
+   },
+   "note": "X: delete it, a dome is left",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Cap"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Cap",
+    "factor": [
+     1,
+     1,
+     0.95
+    ],
+    "pivot": "bbox_center"
+   },
+   "note": "S Z: a lower dome",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cap",
+    "element": "EDGE",
+    "space": "local",
+    "boundary": true
+   },
+   "note": "the open rim",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Cap",
+    "offset": [
+     0,
+     0,
+     -0.08
+    ]
+   },
+   "note": "E: the rim curls in underneath",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Cap",
+    "factor": [
+     0.88,
+     0.88,
+     1
+    ]
+   },
+   "note": "S in",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Cap",
+    "offset": [
+     0,
+     0,
+     0.1
+    ]
+   },
+   "note": "E",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Cap",
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "S in: the underside",
+   "video_time": null
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Cap"
+   },
+   "note": "F: close it",
+   "video_time": null
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Cap"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Cap",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cap",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Cap",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Eye",
+    "radius": 0.07,
+    "vertices": 24,
+    "location": [
+     -0.14,
+     -0.535,
+     0.36
+    ]
+   },
+   "note": "an eye: a squashed sphere",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Eye"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Eye",
+    "factor": [
+     0.85,
+     0.45,
+     1.7
+    ]
+   },
+   "note": "tall and flat",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Eye",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Eye",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Eye",
+    "name": "Ojos",
+    "base_color": "#0B0B0B",
+    "roughness": 0.15
+   },
+   "note": "glossy black",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "EyeShine",
+    "radius": 0.02,
+    "vertices": 12,
+    "location": [
+     -0.125,
+     -0.575,
+     0.41
+    ]
+   },
+   "note": "a highlight",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "EyeShine",
+    "name": "Brillo",
+    "base_color": "#FFFFFF",
+    "emission_color": "#FFFFFF",
+    "emission_strength": 1.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Eye2",
+    "radius": 0.07,
+    "vertices": 24,
+    "location": [
+     0.14,
+     -0.535,
+     0.36
+    ]
+   },
+   "note": "an eye: a squashed sphere",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Eye2"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Eye2",
+    "factor": [
+     0.85,
+     0.45,
+     1.7
+    ]
+   },
+   "note": "tall and flat",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Eye2",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Eye2",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Eye2",
+    "name": "Ojos",
+    "base_color": "#0B0B0B",
+    "roughness": 0.15
+   },
+   "note": "glossy black",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Eye2Shine",
+    "radius": 0.02,
+    "vertices": 12,
+    "location": [
+     0.15500000000000003,
+     -0.575,
+     0.41
+    ]
+   },
+   "note": "a highlight",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Eye2Shine",
+    "name": "Brillo",
+    "base_color": "#FFFFFF",
+    "emission_color": "#FFFFFF",
+    "emission_strength": 1.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Cap",
+    "name": "Rojo seta",
+    "base_color": "#D8232A",
+    "roughness": 0.35,
+    "pattern": "dots",
+    "pattern_color": "#A6DCE6",
+    "pattern_scale": 1.8,
+    "dot_size": 0.33
+   },
+   "note": "shiny red with big pale spots: a dots pattern (Voronoi cells thresholded into circles)",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Stem",
+    "name": "Tallo",
+    "base_color": "#EFCB86",
+    "roughness": 0.6,
+    "subsurface": 0.2
+   },
+   "note": "cream stem",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 16.0,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#3E7A34",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#F0CF7A",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     3.2,
+     -4.0,
+     4.4
+    ],
+    "look_at": [
+     0,
+     0,
+     0.7
+    ],
+    "power": 220.0,
+    "size": 4.0,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -3.2,
+     3.6,
+     4.0
+    ],
+    "look_at": [
+     0,
+     0,
+     0.7
+    ],
+    "power": 280.0,
+    "size": 2.4,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -4.4,
+     -2.4,
+     1.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.7
+    ],
+    "power": 100.0,
+    "size": 4.0
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.0,
+     -4.0,
+     1.9
+    ],
+    "look_at": [
+     0,
+     0,
+     0.7
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "seta",
+  "mushroom",
+  "champinon",
+  "hongo",
+  "mario mushroom",
+  "seta de mario"
+ ]
+}

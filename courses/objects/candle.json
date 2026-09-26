@@ -1,0 +1,534 @@
+{
+ "title": "Candle",
+ "summary": "A lit candle on a holder: the holder made the plate's way (a filled circle with insets pushed down, the edge extruded for thickness), a cylinder candle whose top is inset and dipped (melted wax), a thin wick, an emissive teardrop flame and a warm point light at the flame.",
+ "objects": [
+  {
+   "name": "Holder",
+   "description": "holder"
+  },
+  {
+   "name": "Candle",
+   "description": "candle"
+  },
+  {
+   "name": "Wick",
+   "description": "wick"
+  },
+  {
+   "name": "Flame",
+   "description": "flame"
+  }
+ ],
+ "expected_result": "A cream candle burning on a small brass holder, lighting the floor warmly.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Holder",
+    "radius": 0.07,
+    "vertices": 48,
+    "fill": true,
+    "location": [
+     0,
+     0,
+     0.012
+    ]
+   },
+   "note": "the holder: a filled circle",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Holder"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Holder",
+    "thickness": 0.012
+   },
+   "note": "I: the rim",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Holder",
+    "offset": [
+     0,
+     0,
+     -0.006
+    ]
+   },
+   "note": "down: a dish",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Holder",
+    "element": "EDGE",
+    "space": "local",
+    "boundary": true
+   },
+   "note": "the outer edge",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Holder",
+    "offset": [
+     0,
+     0,
+     -0.012
+    ]
+   },
+   "note": "E down: thickness",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Holder",
+    "factor": [
+     0.85,
+     0.85,
+     1
+    ]
+   },
+   "note": "S in",
+   "video_time": null
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Holder"
+   },
+   "note": "F",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Holder",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Holder",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Holder",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Candle",
+    "radius": 0.028,
+    "depth": 0.14,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.076
+    ]
+   },
+   "note": "the candle",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Candle",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.069
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Candle",
+    "thickness": 0.004
+   },
+   "note": "I: a wax rim",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Candle",
+    "offset": [
+     0,
+     0,
+     -0.006
+    ]
+   },
+   "note": "E down: the melted dip",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Candle",
+    "element": "EDGE",
+    "min": [
+     null,
+     null,
+     0.069
+    ],
+    "space": "local",
+    "sharp_deg": 30
+   },
+   "note": "the top rim loop",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Candle",
+    "offset": 0.002,
+    "segments": 2
+   },
+   "note": "rounded rim",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Candle",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Candle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Wick",
+    "radius": 0.0012,
+    "depth": 0.014,
+    "vertices": 8,
+    "location": [
+     0,
+     0,
+     0.145
+    ]
+   },
+   "note": "the wick",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Flame",
+    "radius": 0.01,
+    "vertices": 16,
+    "location": [
+     0,
+     0,
+     0.162
+    ]
+   },
+   "note": "the flame",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Flame",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.004
+    ],
+    "space": "local"
+   },
+   "note": "the top of the flame",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Flame",
+    "offset": [
+     0,
+     0,
+     0.014
+    ],
+    "proportional": 0.014
+   },
+   "note": "G Z with proportional editing: a teardrop",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Flame",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Flame",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Holder",
+    "name": "Laton",
+    "base_color": "#B08D3C",
+    "metallic": 1.0,
+    "roughness": 0.3
+   },
+   "note": "brass",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Candle",
+    "name": "Cera",
+    "base_color": "#F1E6CF",
+    "roughness": 0.5,
+    "subsurface": 0.6
+   },
+   "note": "cream wax, soft",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Wick",
+    "name": "Mecha",
+    "base_color": "#1A1512",
+    "roughness": 0.9
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Flame",
+    "name": "Llama",
+    "base_color": "#FFB347",
+    "emission_color": "#FF9A2E",
+    "emission_strength": 40
+   },
+   "note": "a glowing flame",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Luz vela",
+    "location": [
+     0,
+     0,
+     0.17
+    ],
+    "power": 2.5,
+    "temperature": 1900,
+    "size": 0.01
+   },
+   "note": "warm light at the flame",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 2.4,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#1C1D22",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     0.48,
+     -0.6,
+     0.66
+    ],
+    "look_at": [
+     0,
+     0,
+     0.08
+    ],
+    "power": 1.24,
+    "size": 0.6,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -0.48,
+     0.54,
+     0.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.08
+    ],
+    "power": 1.57,
+    "size": 0.36,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -0.66,
+     -0.36,
+     0.24
+    ],
+    "look_at": [
+     0,
+     0,
+     0.08
+    ],
+    "power": 0.56,
+    "size": 0.6
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.42,
+     -0.6,
+     0.29
+    ],
+    "look_at": [
+     0,
+     0,
+     0.08
+    ],
+    "lens": 60,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "vela",
+  "candle",
+  "candela"
+ ]
+}

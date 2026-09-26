@@ -48,9 +48,12 @@ def load_recipe(path: str | Path) -> Recipe:
             raise ValidationError(f"step {i} needs an action and an args object")
         steps.append(RecipeStep(action=str(item["action"]), args=args, note=str(item.get("note") or ""),
                                 video_time=item.get("video_time")))
+    source = dict(data.get("source") or {})
+    if data.get("aliases"):
+        source["aliases"] = [str(a) for a in data["aliases"]]   # other names for what it makes ("espada")
     return Recipe(title=str(data.get("title") or Path(path).stem), summary=str(data.get("summary") or ""),
                   objects=list(data.get("objects") or []), steps=steps,
-                  expected_result=str(data.get("expected_result") or ""), source=dict(data.get("source") or {}))
+                  expected_result=str(data.get("expected_result") or ""), source=source)
 
 
 @dataclass
@@ -155,7 +158,8 @@ class Teacher:
                                                           for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=part.task_text)
         project.data.update(sheet="sheet.png", recipe_steps=len(recipe.steps), actions=sorted(recipe.actions_used()),
-                            final_render=result.renders[0].name if result.renders else None, note=note)
+                            final_render=result.renders[0].name if result.renders else None, note=note,
+                            frame_at=_clock(t))
         if run.ok and score is not None:
             result.skill_id = self.learner.store_skill(recipe, part, video, True, score, chapter - 1, project,
                                                        judge=f"{self.name}: renders compared with the tutorial")
@@ -177,6 +181,53 @@ class Teacher:
         project.save()
         return result
 
+    def store_object(self, task: str, recipe: Recipe, score: float, project_id: str) -> str:
+        """Keep a taught object (the teacher built it and judged the renders): a skill Lucius can rebuild
+        without a model (``lucius make`` recalls it by name or alias) and that planners adapt."""
+        from lucius.ids import new_id
+        from lucius.lessons.runner import record_run
+        from lucius.skills.schema import ActionTemplate, SkillDefinition, SkillExample, SkillPhase
+        from lucius.timeutil import now
+
+        library = self.app.library
+        skill_id = f"object_{_slug(recipe.title or task)}"
+        aliases = [str(a) for a in recipe.source.get("aliases") or []]
+        definition = SkillDefinition(
+            skill_id=skill_id, name=recipe.title or task, purpose=f"{task}: {recipe.summary}".strip(),
+            categories=["made_recipe", "taught_object"],
+            triggers=sorted(set(words(" ".join([task, recipe.title, *aliases])))), applicable_contexts=["recipe"],
+            phases=[SkillPhase(name="primary_form", description=recipe.summary, actions=[
+                ActionTemplate(action_type=s.action, description=s.note, args=s.args, object_ref=None)
+                for s in recipe.steps])],
+            source_class="human_correction" if self.name not in ("", "teacher") else "user_demo",
+            notes=[f"taught for the task '{task}' by {self.name}", f"project {project_id}",
+                   f"digest {recipe_digest(recipe)}", *(f"alias {a}" for a in aliases)])
+        if library.exists(skill_id):
+            library.new_version(skill_id, definition, change_note=f"taught again for '{task}'", created_by=self.name)
+            if library.get(skill_id).status.value == "disabled":
+                library.set_disabled(skill_id, False)
+        else:
+            library.create(definition, created_by=self.name, change_note=f"taught for '{task}'")
+        skill = library.get(skill_id)
+        library.add_example(SkillExample(
+            id=new_id("example"), skill_id=skill_id, skill_version=skill.current_version, role="demonstration",
+            source_class="user_demo", evidence_weight=0.8, instance_signature=f"task:{project_id}",
+            summary={"task": task, "project": project_id, "teacher": self.name}, created_at=now()))
+        success = score >= 6.0
+        run_id = record_run(self.app.db, task_text=task, mode="validation", status="success" if success else "failure",
+                            environment="blender_headless", metrics={"visual_score": score, "project": project_id},
+                            arm="teacher")
+        library.record_use(skill_id, success=success, run_id=run_id, instance_signature=f"task:{project_id}",
+                           objective=True, environment="blender_headless", role="validation",
+                           source_class="agent_success",
+                           detail={"visual_score": score, "judge": f"{self.name}: renders compared with the request",
+                                   "project": project_id})
+        try:
+            self.app.retriever.refresh()
+        except Exception:  # indexing is best effort
+            pass
+        return skill_id
+
     # -- course packs ------------------------------------------------------------------------------------
     def install_course(self, folder: str | Path, *, redo: bool = False,
                        on_progress: Callable[[str], None] | None = None) -> list[dict[str, Any]]:
@@ -190,6 +241,8 @@ class Teacher:
         """
         folder = Path(folder)
         course = json.loads((folder / "course.json").read_text())
+        if course.get("kind") == "objects":
+            return self._install_objects(folder, course, redo=redo, on_progress=on_progress)
         video_id = str(course["video_id"])
         info = self.app.config.data_dir / "downloads" / f"{video_id}.info.json"
         if not info.exists():
@@ -228,6 +281,122 @@ class Teacher:
             self.name = default_name
         return results
 
+    def _install_objects(self, folder: Path, course: dict[str, Any], *, redo: bool,
+                         on_progress: Callable[[str], None] | None) -> list[dict[str, Any]]:
+        """An objects pack: things a teacher made (not tutorial chapters), each built from scratch and kept."""
+        default_name, results = self.name, []
+        try:
+            for lesson in course.get("lessons") or []:
+                recipe = load_recipe(folder / lesson["recipe"])
+                skill_id = f"object_{_slug(recipe.title or lesson['task'])}"
+                if not redo and self.app.library.exists(skill_id) and any(
+                        n == f"digest {recipe_digest(recipe)}" for n in self.app.library.get(skill_id).definition.notes):
+                    results.append({"task": lesson["task"], "status": "already learned", "skill_id": skill_id})
+                    continue
+                if on_progress:
+                    on_progress(f"{lesson['task']} ({len(recipe.steps)} steps)")
+                self.name = str(lesson.get("teacher") or course.get("teacher") or default_name)
+                refs = [folder / r for r in lesson.get("references") or []]
+                result = self.teach_task(recipe, lesson["task"], references=refs, score=float(lesson["score"]),
+                                         note=str(lesson.get("note") or ""))
+                results.append({"task": lesson["task"], "status": result.status, "score": lesson["score"],
+                                "project_id": result.project_id, "skill_id": result.skill_id, "error": result.error,
+                                "sheet": str(result.sheet) if result.sheet else None})
+        finally:
+            self.name = default_name
+        return results
+
+    def export_objects(self, skill_ids: list[str], dest: str | Path) -> Path:
+        """Write taught objects as an objects pack: each recipe, its score and its references."""
+        dest = Path(dest)
+        (dest / "renders").mkdir(parents=True, exist_ok=True)
+        lessons = []
+        for skill_id in skill_ids:
+            skill = self.app.library.get(skill_id)
+            notes = skill.definition.notes
+            project_id = next(n.split(" ", 1)[1] for n in notes if n.startswith("project "))
+            project = self.projects.get(project_id)
+            recipe = json.loads(project.path("recipe.json").read_text())
+            recipe = {k: recipe[k] for k in ("title", "summary", "objects", "expected_result", "steps") if k in recipe}
+            aliases = [n.split(" ", 1)[1] for n in notes if n.startswith("alias ")]
+            if aliases:
+                recipe["aliases"] = aliases
+            name = f"{_slug(recipe.get('title') or skill_id)}.json"
+            (dest / name).write_text(json.dumps(recipe, indent=1, ensure_ascii=False) + "\n")
+            lesson: dict[str, Any] = {"task": project.data.get("task") or skill.definition.name, "recipe": name,
+                                      "score": project.data.get("score"), "teacher": project.data.get("teacher"),
+                                      "note": project.data.get("note") or ""}
+            refs = []
+            for ref in project.data.get("references") or []:
+                target = dest / "references" / f"{_slug(skill_id)}_{ref}"
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(project.path(ref), target)
+                refs.append(target.relative_to(dest).as_posix())
+            if refs:
+                lesson["references"] = refs
+            if project.data.get("final_render") and project.path(project.data["final_render"]).exists():
+                from PIL import Image
+
+                Image.open(project.path(project.data["final_render"])).convert("RGB").save(
+                    dest / "renders" / f"{_slug(skill_id)}.jpg", quality=88)
+                lesson["render"] = f"renders/{_slug(skill_id)}.jpg"
+            lessons.append(lesson)
+        course = {"kind": "objects", "teacher": self.name,
+                  "about": "Objects taught to Lucius beyond the tutorials, with the techniques it learned. Replay with "
+                           f"`lucius teach course {dest.as_posix()}`; then `lucius make \"a sword\"` rebuilds one "
+                           "without a model.", "lessons": lessons}
+        (dest / "course.json").write_text(json.dumps(course, indent=1, ensure_ascii=False) + "\n")
+        return dest
+
+    def export_course(self, video_id: str, dest: str | Path) -> Path:
+        """Write the chapters kept for a tutorial as a course pack (see ``install_course``): the recipes, the
+        scores and teachers, each chapter's tutorial frame, the final render and the overview."""
+        from PIL import Image
+
+        video = self.video(video_id)
+        dest = Path(dest)
+        (dest / "frames").mkdir(parents=True, exist_ok=True)
+        chapters = self.learner._state(video).get("chapters", {})
+        lessons = []
+        last_render = None
+        for key, entry in sorted(chapters.items(), key=lambda item: int(item[0].split("-")[0])):
+            project = self.projects.get(str(entry["project_id"]))
+            source = project.data.get("source") or {}
+            chapter = int(source.get("chapter_index", 0)) + 1
+            recipe = json.loads(project.path("recipe.json").read_text())
+            recipe = {k: recipe[k] for k in ("title", "summary", "objects", "expected_result", "steps") if k in recipe}
+            name = f"{chapter:02d}_{_slug(recipe.get('title') or entry.get('chapter') or key)}.json"
+            (dest / name).write_text(json.dumps(recipe, indent=1, ensure_ascii=False) + "\n")
+            lesson: dict[str, Any] = {"chapter": chapter, "title": entry.get("chapter"), "recipe": name,
+                                      "score": entry.get("score"), "teacher": entry.get("teacher") or self.name}
+            frame = project.path("tutorial_frame.png")
+            if frame.exists():
+                Image.open(frame).convert("RGB").save(dest / "frames" / f"{chapter:02d}.jpg", quality=88)
+                lesson["frame"] = f"frames/{chapter:02d}.jpg"
+            if project.data.get("frame_at"):
+                lesson["frame_at"] = project.data["frame_at"]
+            lesson["note"] = project.data.get("note") or ""
+            lessons.append(lesson)
+            if project.data.get("final_render") and project.path(project.data["final_render"]).exists():
+                last_render = project.path(project.data["final_render"])
+        info = json.loads(Path(video.info_path).read_text())
+        course = {"video_id": video.video_id, "url": video.url, "title": video.title,
+                  "duration": info.get("duration") or video.duration, "language": video.language,
+                  "channel": info.get("channel"),
+                  "chapters": [{"title": c.get("title"), "start_time": c.get("start_time"), "end_time": c.get("end_time")}
+                               for c in info.get("chapters") or []],
+                  "teacher": self.name,
+                  "about": f"What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene "
+                           f"of the one before. Replay with `lucius teach course {dest.as_posix()}` (no API needed).",
+                  "lessons": lessons}
+        (dest / "course.json").write_text(json.dumps(course, indent=1, ensure_ascii=False) + "\n")
+        if last_render is not None:
+            Image.open(last_render).convert("RGB").save(dest / "final.jpg", quality=90)
+        overview = self.learner.overview(video)
+        if overview is not None:
+            Image.open(overview).convert("RGB").save(dest / "overview.jpg", quality=85)
+        return dest
+
     def teach_task(self, recipe: Recipe, task: str, *, references: list[str | Path] | None = None,
                    score: float | None = None, note: str = "") -> TeachResult:
         project = self.projects.create("task", task, task=task, teacher=self.name)
@@ -247,10 +416,7 @@ class Teacher:
         project.data.update(sheet="sheet.png", recipe_steps=len(recipe.steps), actions=sorted(recipe.actions_used()),
                             final_render=result.renders[0].name if result.renders else None, note=note)
         if run.ok and score is not None:
-            from lucius.lessons.maker import Maker, MakeResult
-
-            made = MakeResult(project_id=project.id, status="made", score=score)
-            result.skill_id = Maker(self.app)._store_skill(task, recipe, made, project.id)
+            result.skill_id = self.store_object(task, recipe, score, project.id)
             result.status = "made" if score >= 6.0 else "rough"
             project.data.update(status=result.status, score=score, skill_id=result.skill_id, blend="scene.blend")
         else:
@@ -302,6 +468,29 @@ class Teacher:
 
     def _uses_camera(self, video: DownloadedVideo) -> bool:
         return any(entry.get("uses_camera") for entry in self.learner._state(video).get("chapters", {}).values())
+
+
+STOPWORDS = {"make", "build", "model", "create", "draw", "render", "with", "and", "the", "for", "from", "like",
+             "this", "that", "image", "reference", "please", "some", "one", "una", "uno", "unos", "unas", "con",
+             "del", "las", "los", "que", "para", "haz", "hazme", "crea", "creame", "modela", "dibuja", "como",
+             "esta", "este", "imagen", "referencia", "por", "favor", "pon", "hacer", "quiero", "want", "can", "you"}
+
+
+def words(text: str) -> list[str]:
+    """The content words of a request, lower case and without accents ("Una ESPADA" -> ["espada"])."""
+    import re
+    import unicodedata
+
+    plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    return [w for w in re.findall(r"[a-z]{3,}", plain) if w not in STOPWORDS]
+
+
+def _slug(text: str) -> str:
+    import re
+    import unicodedata
+
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")[:40] or "chapter"
 
 
 def recipe_digest(recipe: Recipe) -> str:

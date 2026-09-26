@@ -15,6 +15,8 @@ import re
 from typing import Any
 
 # action -> (Blender equivalent, arguments). Units: metres, degrees, colours "#RRGGBB".
+PROPORTIONAL = (", proportional (O: radius in metres; nearby vertices follow, fading out), falloff "
+                "SMOOTH|SPHERE|ROOT|SHARP|LINEAR|CONSTANT")
 ACTION_DOCS: dict[str, tuple[str, str]] = {
     "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey, "
                       "name, location [x,y,z], rotation_deg [x,y,z], size (cube/plane edge, default 2), radius, "
@@ -44,9 +46,10 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
               "(bevels the selected edges)"),
     "loop_cut_axis": ("Ctrl+R", "object, axis: x|y|z (cuts perpendicular to it), positions [0..1 of the object's "
                       "extent along the axis], e.g. [0.25, 0.5, 0.75] = three cuts"),
-    "translate_selection": ("G in edit mode", "object, offset [x,y,z]"),
-    "scale_selection": ("S in edit mode", "object, factor [x,y,z], pivot: median|bbox_center"),
-    "rotate_selection": ("R in edit mode", "object, axis: x|y|z, angle_deg, pivot: median|bbox_center|origin"),
+    "translate_selection": ("G in edit mode", "object, offset [x,y,z]" + PROPORTIONAL),
+    "scale_selection": ("S in edit mode", "object, factor [x,y,z], pivot: median|bbox_center" + PROPORTIONAL),
+    "rotate_selection": ("R in edit mode", "object, axis: x|y|z, angle_deg, pivot: median|bbox_center|origin"
+                         + PROPORTIONAL),
     "taper_selection": ("proportional scaling along an axis", "object, along: x|y|z, affect: x|y|z|xy|xz|yz, "
                         "amount (0..1, how much the far end shrinks), start (0..1), reverse"),
     "delete_elements": ("X in edit mode", "object, what: VERTS|EDGES|FACES|ONLY_FACES (ONLY_FACES keeps the rim "
@@ -75,9 +78,10 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "object, name, base_color \"#RRGGBB\", roughness 0..1, metallic 0..1, alpha, emission_color, "
                      "emission_strength, transmission 0..1 (glass), subsurface 0..1 (soft food, skin), coat 0..1, "
                      "ior, assign: replace (only material) | append | selected_faces (faces selected in edit mode get "
-                     "it). Patterns on the colour: pattern brick|checker|noise, pattern_color (second colour), "
+                     "it). Patterns on the colour: pattern brick|checker|noise|dots, pattern_color (second colour), "
                      "line_color (brick mortar), pattern_scale, mortar_size (0..0.125), brick_width, row_height "
-                     "(0.5 and 0.5: square tiles, a check tablecloth). Relief: bump magic|noise|voronoi, "
+                     "(0.5 and 0.5: square tiles, a check tablecloth), dot_size (dots: 0..0.5 of a cell; round "
+                     "spots of pattern_color, e.g. a mushroom cap). Relief: bump magic|noise|voronoi, "
                      "bump_scale, bump_distortion, bump_strength (a fabric: magic, 200, 15). The same name on "
                      "another object shares the material (Ctrl+L)."),
     "add_light": ("Shift+A > Light (an existing light's name changes only the values given)",
@@ -93,6 +97,9 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "height (pixels), denoise, view_transform Standard|AgX|Filmic"),
     "scale_scene": ("A, then S", "factor, pivot [x,y,z]: every object scaled about the pivot (bring a scene to "
                     "real-world size; lights then need less power)"),
+    "drop_object": ("G Z by eye until it rests on the surface", "object, onto [names] (default: everything), "
+                    "floor (true: the ground at z=0 counts), gap (metres): the object falls straight down onto the "
+                    "top surfaces below it, or comes up out of one it sank into"),
     "set_world": ("World properties", "color \"#RRGGBB\", strength"),
     "add_scatter": ("Particle system (hair, render as object)", "object (surface), instance (object copied over "
                     "it, hidden itself), name (the same name again changes that system), count, scale (size of "

@@ -1,0 +1,639 @@
+{
+ "title": "Sword",
+ "summary": "A longsword at real size (about 1.15 m): a blade with a diamond cross-section and a pointed tip, a guard with upswept ends, a leather-wrapped grip and a round pommel; steel, gold and leather; a studio shot.",
+ "objects": [
+  {
+   "name": "Blade",
+   "description": "steel blade, sharp edges, pointed tip"
+  },
+  {
+   "name": "Guard",
+   "description": "gold cross-guard with upswept ends"
+  },
+  {
+   "name": "Grip",
+   "description": "leather grip"
+  },
+  {
+   "name": "Wrap",
+   "description": "leather wrap rings (array)"
+  },
+  {
+   "name": "Pommel",
+   "description": "gold pommel"
+  }
+ ],
+ "expected_result": "An upright sword: long steel blade tapering to a point with bright sharp edges, a gold guard, a dark leather grip and a round gold pommel.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Blade",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.51
+    ]
+   },
+   "note": "the blade starts as a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Blade",
+    "dimensions": [
+     0.05,
+     0.008,
+     0.78
+    ]
+   },
+   "note": "5 cm wide, 8 mm thick, 78 cm long",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Blade",
+    "scale": true
+   },
+   "note": "Ctrl+A scale, so edit-mode sizes are in metres",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Blade",
+    "axis": "x",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "a cut down the middle: the ridge of the blade",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Blade",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.38
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top faces",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Blade",
+    "offset": [
+     0,
+     0,
+     0.11
+    ]
+   },
+   "note": "E up for the tip",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Blade",
+    "factor": [
+     0.04,
+     0.4,
+     1
+    ]
+   },
+   "note": "S X to a point",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Blade",
+    "element": "VERT",
+    "min": [
+     0.02,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the right edge",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Blade",
+    "element": "VERT",
+    "max": [
+     -0.02,
+     null,
+     null
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "and the left edge",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Blade",
+    "factor": [
+     1,
+     0.12,
+     1
+    ]
+   },
+   "note": "S Y: thin edges, thick ridge (a diamond cross-section)",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Blade",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.0008,
+     "segments": 2,
+     "limit_method": "ANGLE"
+    }
+   },
+   "note": "tiny bevels catch the light on the edges",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Guard",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.105
+    ]
+   },
+   "note": "the guard",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Guard",
+    "dimensions": [
+     0.22,
+     0.04,
+     0.03
+    ]
+   },
+   "note": "22 cm across",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Guard",
+    "scale": true
+   },
+   "note": "apply scale",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Guard",
+    "axis": "x",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "cuts to shape it",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Guard",
+    "element": "FACE",
+    "min": [
+     0.1,
+     null,
+     null
+    ],
+    "space": "local",
+    "facing": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "the right end",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Guard",
+    "offset": [
+     0.03,
+     0,
+     0.018
+    ]
+   },
+   "note": "extrude out and up",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Guard",
+    "factor": [
+     1,
+     0.7,
+     0.7
+    ]
+   },
+   "note": "a thinner tip",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Guard",
+    "element": "FACE",
+    "max": [
+     -0.1,
+     null,
+     null
+    ],
+    "space": "local",
+    "facing": [
+     -1,
+     0,
+     0
+    ]
+   },
+   "note": "the left end",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Guard",
+    "offset": [
+     -0.03,
+     0,
+     0.018
+    ]
+   },
+   "note": "the same on the other side",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Guard",
+    "factor": [
+     1,
+     0.7,
+     0.7
+    ]
+   },
+   "note": "a thinner tip",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Guard",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.004,
+     "segments": 3
+    }
+   },
+   "note": "rounded edges",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Guard",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 1,
+     "render_levels": 2
+    }
+   },
+   "note": "smooth",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Guard",
+    "smooth": true
+   },
+   "note": "shade smooth",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Grip",
+    "radius": 0.016,
+    "depth": 0.18,
+    "vertices": 16,
+    "location": [
+     0,
+     0,
+     0.0
+    ]
+   },
+   "note": "the grip",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Grip",
+    "smooth": true
+   },
+   "note": "shade smooth",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "Wrap",
+    "major_radius": 0.0165,
+    "minor_radius": 0.0036,
+    "major_segments": 24,
+    "minor_segments": 8,
+    "location": [
+     0,
+     0,
+     -0.082
+    ]
+   },
+   "note": "one ring of the leather wrap",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Wrap",
+    "type": "ARRAY",
+    "name": "Array",
+    "props": {
+     "count": 23,
+     "relative_offset_displace": [
+      0,
+      0,
+      1
+     ]
+    }
+   },
+   "note": "array up the grip",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Wrap",
+    "smooth": true
+   },
+   "note": "shade smooth",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Pommel",
+    "radius": 0.028,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     -0.112
+    ]
+   },
+   "note": "the pommel",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Pommel",
+    "dimensions": [
+     0.056,
+     0.042,
+     0.05
+    ]
+   },
+   "note": "a little flattened",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Pommel",
+    "smooth": true
+   },
+   "note": "shade smooth",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Blade",
+    "name": "Acero",
+    "base_color": "#C9CED6",
+    "metallic": 1.0,
+    "roughness": 0.22
+   },
+   "note": "polished steel",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Guard",
+    "name": "Oro",
+    "base_color": "#C9A24A",
+    "metallic": 1.0,
+    "roughness": 0.3
+   },
+   "note": "gold",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Pommel",
+    "name": "Oro"
+   },
+   "note": "the same gold",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Grip",
+    "name": "Cuero",
+    "base_color": "#3A2414",
+    "roughness": 0.75
+   },
+   "note": "dark leather",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Wrap",
+    "name": "Cuero"
+   },
+   "note": "the same leather",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#2B2D33",
+    "strength": 1.0
+   },
+   "note": "a grey studio: metal reflects its surroundings",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     0.8,
+     -1.0,
+     1.0
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "power": 60,
+    "size": 1.0,
+    "temperature": 5500
+   },
+   "note": "big soft key light front-right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -0.7,
+     0.9,
+     1.1
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "power": 80,
+    "size": 0.6,
+    "temperature": 7000
+   },
+   "note": "cool rim light from behind-left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -1.0,
+     -0.8,
+     0.3
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "power": 15,
+    "size": 1.5
+   },
+   "note": "soft fill",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.4,
+     -1.85,
+     0.5
+    ],
+    "look_at": [
+     0,
+     0,
+     0.43
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "the shot, a little from the right",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 720,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "a portrait frame, Cycles with denoise, Standard view",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "espada",
+  "longsword",
+  "spada",
+  "arming sword"
+ ]
+}

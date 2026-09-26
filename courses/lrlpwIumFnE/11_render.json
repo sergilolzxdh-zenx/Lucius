@@ -1,6 +1,6 @@
 {
  "title": "Render",
- "summary": "The final shot: the main spot becomes a big square area panel from the front-left of the camera (4500 K) with the warm back light raised; Cycles with denoise and the Standard view; a brighter, glossier croissant, bigger sugar crystals, a blue tablecloth with small white squares turned slightly on Z, and a softer depth of field (f/2.8).",
+ "summary": "The final shot: Eevee set up first (128 samples, Standard view), then the main spot becomes a big square area panel from the front-left of the camera (4500 K) with the warm back light raised; a brighter, glossier croissant, bigger sugar crystals, a blue tablecloth with small white squares turned slightly on Z, a softer depth of field (f/2.8), and the final render in Cycles with denoise.",
  "objects": [
   {
    "name": "Foco",
@@ -13,6 +13,18 @@
  ],
  "expected_result": "A finished square render: plate with sugared donuts in focus, croissant back left and white mug back right softly blurred, on a blue tablecloth with a white square pattern, soft light from the front-left and a warm rim from behind.",
  "steps": [
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "BLENDER_EEVEE",
+    "samples": 128,
+    "width": 1080,
+    "height": 1080,
+    "view_transform": "Standard"
+   },
+   "note": "first the Eevee setup the tutor recommends for most computers: render samples 128, shadows and ray tracing on, Color Management view Standard (what an sRGB image really looks like), output JPEG 90",
+   "video_time": "123:49"
+  },
   {
    "action": "add_light",
    "args": {
@@ -49,11 +61,11 @@
    "args": {
     "object": "Croissant",
     "name": "Croissant",
-    "base_color": "#CD8A43",
-    "roughness": 0.45,
+    "base_color": "#B97937",
+    "roughness": 0.5,
     "subsurface": 0.5
    },
-   "note": "the croissant came out dark: its colour a bit lighter, and less roughness for a little shine",
+   "note": "the croissant came out dark: a little more light in its colour, less roughness for a little shine",
    "video_time": "127:06"
   },
   {
@@ -134,13 +146,13 @@
    "action": "set_render",
    "args": {
     "engine": "CYCLES",
-    "samples": 128,
+    "samples": 256,
     "width": 1080,
     "height": 1080,
     "denoise": true,
     "view_transform": "Standard"
    },
-   "note": "Cycles, render samples (the tutor uses 500; with denoise 128 is clean), denoise on, Color Management view Standard (what an exported sRGB image really looks like, not AgX)",
+   "note": "then Cycles: much better light (the tutor renders 500 samples; 256 with denoise is clean), denoise on, view Standard",
    "video_time": "130:11"
   }
  ]

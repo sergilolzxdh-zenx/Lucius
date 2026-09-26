@@ -227,7 +227,8 @@ command again, and the notes are cached, so a run stopped by the model's daily q
 it stopped.
 
 The actions a recipe can use: mesh primitives with sizes, box selection of faces, edges or vertices
-(Alt+click loops), extrude, inset, bevel, loop cuts, rotate/scale/move a selection, delete faces,
+(Alt+click loops), extrude, inset, bevel, loop cuts, rotate/scale/move a selection (with proportional
+editing), delete faces, dropping an object onto what is below it,
 bridge edge loops, fill, subdivide, separate, duplicate, modifiers (subdivision, mirror, solidify,
 bevel, array, boolean, displace…), shade smooth, Principled BSDF materials, lights, camera, world
 colour and particle scattering (sprinkles). There is no sculpting, curves, texture images or node
@@ -247,6 +248,7 @@ lucius teach frames --video lrlpwIumFnE --start 1:52:50 --end 1:58:20      # the
 lucius teach chapter my_camera.json --video lrlpwIumFnE --chapter 10 --frame-at 1:56:50   # trial build
 lucius teach chapter my_camera.json --video lrlpwIumFnE --chapter 10 --frame-at 1:56:50 --score 8 --teacher me
 lucius teach task sword.json --task "a sword" --reference sword.jpg --score 7            # something new
+lucius teach pack --video lrlpwIumFnE --out courses/lrlpwIumFnE   # the kept chapters as a course pack
 ```
 
 A recipe file is `{"title", "summary", "objects", "expected_result", "steps": [{"action", "args",
@@ -277,27 +279,28 @@ lucius skills remove made_a_sword_54a31d lesson_lrlpwiumfne_06   # or just some
 ```
 
 **The Spanish beginner course, learned (2026-09-26).** [`courses/lrlpwIumFnE`](courses/lrlpwIumFnE)
-("LA GUÍA DEFINITIVA DE BLENDER", the breakfast scene). The first chapters were learned by the Gemini
-lesson loop until its free daily quotas ran out; the rest were taught by Claude Code from the
-narration and the preview frames, checking each render against the tutor's:
+("LA GUÍA DEFINITIVA DE BLENDER", the breakfast scene). The skills from the free-tier Gemini runs were
+removed and every chapter was taught again from scratch by Claude Code, from the narration and the
+tutorial's frames, rebuilding and comparing close-up renders with the tutor's until each matched:
 
-| Chapter | What Lucius builds | Score | Teacher |
-|---|---|---|---|
-| 4. Interface | default scene, transforms, primitives, edit mode; ends with the mug's base | 10 | Gemini |
-| 5. Mug and plate | hollow mug with rim, bevels and a bridged handle; plate with dish, rim and foot | 7 | Claude Code |
-| 6. Donut and croissant | segmented, mirrored croissant; displaced donuts, one duplicated and tilted | 8 | Claude Code |
-| 7. Particles | sugar crystals scattered on both donuts; the tutor's composition | 8 | Claude Code |
-| 8. Materials | porcelain, dough with subsurface, glassy sugar, tablecloth pattern with a weave bump | 8 | Claude Code |
-| 9. Lighting | spot pool on the plate, warm rim light, black world | 8 | Claude Code |
-| 10. Camera | shot framed like the tutor's; scene scaled to real size; depth of field on the donut | 8 | Claude Code |
-| 11. Render | key panel, Cycles, denoise, Standard view, blue patterned cloth: the final image | 8 | Claude Code |
+| Chapter | What Lucius builds (the tutor's way) | Score |
+|---|---|---|
+| 4. Interface | a modifier from the properties panel, axis-locked move/rotate/scale and resets, delete all, a cube and Suzanne edited in edit mode, her ears stretched with proportional editing, the filled circle the mug starts from | 9 |
+| 5. Mug and plate | hollow mug with a rounded rim and a lip under the base; a D handle made by extruding a 2x2 patch and rotating 45 degrees four times, then bridging; plate with a broad rim, a sloped well and a foot ring | 9 |
+| 6. Donut and croissant | mirrored low-poly croissant with pinched rolls, fat middle and drooping horns; fat, uneven donuts, the second tilted and sagging on the first | 9 |
+| 7. Particles | sugar crystals as a hair particle system on both donuts; the composition, each object dropped onto the plate or the table | 9 |
+| 8. Materials | gold, bronze and silver shown on the mug; porcelain, donut dough and croissant with subsurface, glassy sugar, the tablecloth's brick check with a fabric bump | 9 |
+| 9. Lighting | the four light types; a warm point light at the back and a high spot making a pool of light | 9 |
+| 10. Camera | the shot framed like the tutor's; the scene scaled to real size; depth of field on the donut | 9 |
+| 11. Render | Eevee setup, then Cycles with denoise: key panel, blue patterned cloth, bigger sugar, f/2.8 | 9 |
 
 ![Lucius' final render of the course](courses/lrlpwIumFnE/final.jpg)
 
 [`overview.jpg`](courses/lrlpwIumFnE/overview.jpg) has each chapter's tutorial frame next to what
 Lucius built. The scores are the teacher's judgement from those comparisons, not measurements.
 
-What the Gemini runs taught about the approach:
+None is a 10: small differences remain (the handle's cross-section, the croissant's extra support loops,
+viewport-only steps such as camera clipping). What the Gemini runs taught about the approach:
 
 * Recipes written by a small model fail on details (a typo in an argument name, a selection box
   that misses the geometry). Corrections that see the error, the object's local bounds and what the
@@ -309,8 +312,11 @@ What the Gemini runs taught about the approach:
   **Projects** is the correction.
 * The lessons found real differences from Blender, now fixed: extrude kept or removed a lone face's
   original differently, inset did nothing on a lone face, an extruded rim scaled the wrong loop,
-  hair instances were scaled by the hair length, and a light or camera changed by name lost the
-  values the step did not give.
+  hair instances were scaled by the hair length, a light or camera changed by name lost the values
+  the step did not give, and Shade Smooth given in edit mode was lost on Tab (every smooth object
+  was really flat-shaded). Teaching them added proportional editing (O) to moving, scaling and
+  rotating a selection, `drop_object` (rest an object on what is below it), and modifiers changed by
+  name instead of duplicated.
 
 ## Make something new, or from a reference image
 
@@ -323,9 +329,26 @@ Or in the control center (`lucius serve`, then http://127.0.0.1:8765/ → **Proj
 to make, optionally drop reference images (a photo, a drawing, a screenshot), press **Make it**, and
 the result appears with its pictures. Open it and press **Good** or **Bad**.
 
-`lucius make` needs a model provider (Gemini by default) to plan and judge. Without one, a teacher
-writes the recipe from the learned techniques and builds it with `lucius teach task` (above) --
-that is how Claude Code makes things for you in a chat.
+**Without a model** (no API key, or `--offline`), `lucius make` rebuilds the object a teacher taught
+it that the request names -- in English or Spanish, by name or alias -- and saves it as a project:
+
+```bash
+lucius teach course courses/objects       # the objects below (about 10 minutes)
+lucius make "hazme una espada"            # -> rebuilds the taught sword, no API
+lucius make "a desk lamp" --offline
+```
+
+![Objects taught beyond the course](courses/objects/gallery.jpg)
+
+[`courses/objects`](courses/objects): a sword, a wooden chair, a café table, a desk lamp, a wine
+bottle, a low-poly tree, a house, a candle, a toy rocket and a mushroom made from a reference picture
+(the red-and-spotted one in a tutorial thumbnail), each built only with techniques from the course
+(extrude and scale in steps, insets, loop cuts, bevels, mirror/array/solidify/subdivision/displace
+modifiers, separating faces, proportional editing, materials with patterns, lights, camera) and
+judged 9/10 by the teacher from its renders. New things, or changes to these ("a red chair"), need a
+planner: a model provider, or a teacher writing the recipe with `lucius teach task` -- that is how
+Claude Code makes things for you in a chat. With a model, the planner is given the closest taught
+object as its starting point.
 
 The maker plans a recipe **only with the techniques Lucius has learned** (actions used by lesson
 recipes it passed) plus basic object handling, and uses the learned recipes as worked examples. A

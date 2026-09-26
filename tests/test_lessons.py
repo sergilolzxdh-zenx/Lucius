@@ -472,3 +472,82 @@ def test_a_course_pack_is_replayed_on_another_machine(tmp_path, headless_blender
         assert app.library.exists("lesson_vid456_02")
     finally:
         app.close()
+
+
+def test_shade_smooth_sticks_when_given_in_edit_mode(headless_blender):
+    def ex(action, **args):
+        return headless_blender.execute(action, args, timeout=120)["result"]
+
+    ex("reset_scene", keep_camera_light=False)
+    ex("add_primitive", kind="cylinder", name="Can", vertices=12)
+    ex("select_all", object="Can")
+    ex("extrude", object="Can", offset=[0, 0, 1])      # leaves the object in edit mode
+    ex("shade", object="Can", smooth=True)
+    ex("set_mode", object="Can", mode="OBJECT")
+    can = next(o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == "Can")
+    assert can["mesh"]["smooth_faces"] == can["mesh"]["faces"]
+
+
+def test_proportional_editing_drop_and_modifier_updates(tmp_path):
+    """O (proportional editing) makes neighbours follow a moved vertex; drop_object rests an object on what is below;
+    a modifier added again by name changes instead of stacking; the dots pattern exists."""
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender() as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=300)["result"]
+
+        def obj(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="plane", name="Sheet", size=2)
+        ex("select_all", object="Sheet")
+        ex("subdivide", object="Sheet", cuts=9)
+        ex("select_box", object="Sheet", element="VERT", min=[-0.05, -0.05, None], max=[0.05, 0.05, None], space="local")
+        moved = ex("translate_selection", object="Sheet", offset=[0, 0, 1.0], proportional=0.6)
+        assert moved["moved"] == 1 and moved["followed"] > 4
+        sheet = obj("Sheet")
+        assert sheet["dimensions"][2] == pytest.approx(1.0, abs=1e-3)          # the corners stayed on the ground
+        ex("set_mode", object="Sheet", mode="OBJECT")
+
+        ex("add_primitive", kind="cube", name="Box", size=1, location=[0, 0, 0.5])
+        ex("add_primitive", kind="cube", name="Crate", size=0.4, location=[0.1, 0, 5])
+        assert ex("drop_object", object="Crate", onto=["Box"])["z"] == pytest.approx(1.2, abs=1e-3)
+        ex("add_primitive", kind="cube", name="Sunk", size=0.4, location=[3, 0, -0.1])
+        assert ex("drop_object", object="Sunk")["z"] == pytest.approx(0.2, abs=1e-3)   # comes up onto the floor
+
+        ex("add_modifier", object="Box", type="BEVEL", name="Bevel", props={"width": 0.05})
+        ex("add_modifier", object="Box", type="BEVEL", name="Bevel", props={"width": 0.1, "segments": 3})
+        assert [m["name"] for m in obj("Box")["modifiers"]] == ["Bevel"]
+        made = ex("set_material", object="Box", name="Spots", base_color=[0.8, 0.05, 0.05], pattern="dots",
+                  pattern_color=[0.8, 0.9, 0.9], pattern_scale=2.0, dot_size=0.3)
+        assert made["set"]["pattern"] == "dots"
+
+
+def test_taught_objects_are_rebuilt_without_a_model(tmp_path, headless_blender):
+    from lucius.errors import ValidationError
+    from lucius.lessons import Maker
+    from lucius.lessons.teacher import Teacher, load_recipe, words
+
+    assert words("Hazme una ESPADA bonita, por favor") == ["espada", "bonita"]
+    path = tmp_path / "stool.json"
+    path.write_text(json.dumps({"title": "Stool", "aliases": ["taburete"], "steps": [
+        {"action": "add_primitive", "args": {"kind": "cylinder", "name": "Seat", "radius": 0.2, "depth": 0.05,
+                                             "location": [0, 0, 0.5]}},
+        {"action": "add_primitive", "args": {"kind": "cylinder", "name": "Leg", "radius": 0.03, "depth": 0.5,
+                                             "location": [0, 0, 0.25]}}]}))
+    app = Lucius(data_dir=tmp_path / "data", background_processing=False)
+    try:
+        teacher = Teacher(app, name="someone", render_samples=2)
+        taught = teacher.teach_task(load_recipe(path), "a stool", score=9)
+        assert taught.skill_id == "object_stool" and app.library.get("object_stool").status.value == "validated"
+        maker = Maker(app, render_samples=2)
+        assert maker.recall("un taburete alto")["skill_id"] == "object_stool"
+        result = maker.make("un taburete alto", offline=True)
+        assert result.status == "rebuilt" and result.skill_id == "object_stool" and result.final_render
+        with pytest.raises(ValidationError, match="learned objects: Stool"):
+            maker.make("a spaceship", offline=True)
+    finally:
+        app.close()

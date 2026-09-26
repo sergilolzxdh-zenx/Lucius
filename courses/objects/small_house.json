@@ -1,0 +1,626 @@
+{
+ "title": "Small house",
+ "summary": "A small house: a box for the walls, a loop cut across the top whose ridge edge is pulled up into a gable roof, loop cuts that make a door and two windows which are inset and pushed in, a chimney, a roof material on the roof faces, white walls, a wooden door, glowing windows.",
+ "objects": [
+  {
+   "name": "House",
+   "description": "walls and roof"
+  },
+  {
+   "name": "Chimney",
+   "description": "chimney"
+  }
+ ],
+ "expected_result": "A little white house with a red gable roof, a door, two windows and a chimney.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "House",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     1.25
+    ]
+   },
+   "note": "House: a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "House",
+    "dimensions": [
+     4.0,
+     3.0,
+     2.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "House",
+    "scale": true
+   },
+   "note": "Ctrl+A scale",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "House",
+    "name": "Paredes",
+    "base_color": "#F2EEE6",
+    "roughness": 0.8
+   },
+   "note": "white walls: the first material, used by every face",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "House",
+    "axis": "y",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "Ctrl+R across the width: a ridge line",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "House",
+    "element": "EDGE",
+    "min": [
+     null,
+     -0.01,
+     1.24
+    ],
+    "max": [
+     null,
+     0.01,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the ridge edge on top",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "House",
+    "offset": [
+     0,
+     0,
+     1.3
+    ]
+   },
+   "note": "G Z: pull it up into a gable roof",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "House",
+    "axis": "x",
+    "positions": [
+     0.12,
+     0.28,
+     0.42,
+     0.58,
+     0.72,
+     0.88
+    ]
+   },
+   "note": "Ctrl+R: vertical loops for the door and windows",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "House",
+    "axis": "z",
+    "positions": [
+     0.3,
+     0.5,
+     0.62
+    ]
+   },
+   "note": "Ctrl+R: horizontal loops at the door top and window sill and lintel",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "House",
+    "element": "FACE",
+    "min": [
+     -0.35,
+     null,
+     null
+    ],
+    "max": [
+     0.35,
+     null,
+     0.0
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "the door: the two middle front faces at the bottom",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "House",
+    "thickness": 0.06
+   },
+   "note": "I: a frame",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "House",
+    "offset": [
+     0,
+     0.08,
+     0
+    ]
+   },
+   "note": "E in: the door sits back",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "House",
+    "name": "Puerta",
+    "base_color": "#7A4A26",
+    "roughness": 0.6,
+    "assign": "selected_faces"
+   },
+   "note": "a wooden door",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "House",
+    "element": "FACE",
+    "min": [
+     -1.3,
+     null,
+     0.0
+    ],
+    "max": [
+     -0.9,
+     null,
+     0.3
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     -1,
+     0
+    ]
+   },
+   "note": "the left window",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "House",
+    "element": "FACE",
+    "min": [
+     0.9,
+     null,
+     0.0
+    ],
+    "max": [
+     1.3,
+     null,
+     0.3
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "extend": true
+   },
+   "note": "and the right window",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "House",
+    "thickness": 0.05
+   },
+   "note": "I: window frames",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "House",
+    "offset": [
+     0,
+     0.06,
+     0
+    ]
+   },
+   "note": "E in",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "House",
+    "name": "Ventana",
+    "base_color": "#FFE3A3",
+    "emission_color": "#FFC870",
+    "emission_strength": 3,
+    "roughness": 0.2,
+    "assign": "selected_faces"
+   },
+   "note": "warm light inside",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "House",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     1.2
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.5
+   },
+   "note": "the roof faces",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "House",
+    "name": "Tejado",
+    "base_color": "#A8322A",
+    "roughness": 0.7,
+    "assign": "selected_faces"
+   },
+   "note": "red roof tiles",
+   "video_time": null
+  },
+  {
+   "action": "separate_selection",
+   "args": {
+    "object": "House",
+    "new_name": "Roof",
+    "duplicate": true
+   },
+   "note": "Shift+D, P: a copy of the roof faces as their own object (like the donut icing)",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Roof"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Roof",
+    "factor": [
+     1.12,
+     1.18,
+     1.0
+    ],
+    "pivot": "bbox_center"
+   },
+   "note": "S: bigger than the walls: the eaves overhang",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Roof",
+    "offset": [
+     0,
+     0,
+     0.02
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Roof",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Roof",
+    "type": "SOLIDIFY",
+    "name": "Solidify",
+    "props": {
+     "thickness": 0.14,
+     "offset": 1.0
+    }
+   },
+   "note": "Solidify: a thick roof",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Roof",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.02,
+     "segments": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "House",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Chimney",
+    "size": 1,
+    "location": [
+     1.2,
+     0.55,
+     3.75
+    ]
+   },
+   "note": "Chimney: a cube",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Chimney",
+    "dimensions": [
+     0.45,
+     0.45,
+     1.3
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Chimney",
+    "scale": true
+   },
+   "note": "Ctrl+A scale",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Chimney"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Chimney",
+    "offset": 0.02,
+    "segments": 3
+   },
+   "note": "Ctrl+B: soft edges",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Chimney",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Chimney",
+    "name": "Ladrillo",
+    "base_color": "#8C3B2E",
+    "roughness": 0.85
+   },
+   "note": "brick red",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 48.0,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#A9B99A",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#8FB4D8",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     9.6,
+     -12.0,
+     13.2
+    ],
+    "look_at": [
+     0,
+     0,
+     1.7
+    ],
+    "power": 1980.0,
+    "size": 12.0,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -9.6,
+     10.8,
+     12.0
+    ],
+    "look_at": [
+     0,
+     0,
+     1.7
+    ],
+    "power": 2520.0,
+    "size": 7.2,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -13.2,
+     -7.2,
+     4.8
+    ],
+    "look_at": [
+     0,
+     0,
+     1.7
+    ],
+    "power": 900.0,
+    "size": 12.0
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     6.6,
+     -12.0,
+     4.7
+    ],
+    "look_at": [
+     0,
+     0,
+     1.7
+    ],
+    "lens": 45,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "casa",
+  "house",
+  "home",
+  "casita",
+  "cabin"
+ ]
+}

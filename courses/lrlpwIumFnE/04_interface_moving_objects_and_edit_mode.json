@@ -1,0 +1,358 @@
+{
+ "title": "Interface: moving objects and edit mode",
+ "summary": "The default scene: an effect from the properties panel (subdivision) changes the cube's geometry; the cube is moved, rotated and scaled along single axes and reset (Alt+G, Alt+R); everything is deleted (A, X); a cube and Suzanne are added (Shift+A); in edit mode a face of the cube is moved and scaled, and Suzanne's ears are stretched with proportional editing; finally the scene is cleared and a circle is added and filled (F) as the base of the mug.",
+ "objects": [
+  {
+   "name": "Circle",
+   "description": "a filled circle at the origin, radius 1 m: the base of the mug"
+  }
+ ],
+ "expected_result": "An empty scene with one filled circle (one face, 32 vertices) at the origin.",
+ "steps": [
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Cube",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "properties panel: an effect (modifier) changes the geometry: the cube rounds into a sphere",
+   "video_time": "12:22"
+  },
+  {
+   "action": "remove_modifier",
+   "args": {
+    "object": "Cube",
+    "modifier": "Subdivision"
+   },
+   "note": "back to the plain cube",
+   "video_time": "12:40"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "location": [
+     0,
+     3,
+     0
+    ],
+    "relative": true
+   },
+   "note": "G then Y: move only along the green axis",
+   "video_time": "17:35"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "location": [
+     0,
+     0,
+     1.5
+    ],
+    "relative": true
+   },
+   "note": "G then Z: up",
+   "video_time": "18:00"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "rotation_deg": [
+     0,
+     0,
+     45
+    ],
+    "relative": true
+   },
+   "note": "R then Z: turn it so a face points at the centre",
+   "video_time": "19:19"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "scale": [
+     1.6,
+     1,
+     1
+    ],
+    "relative": true
+   },
+   "note": "S then X: stretch along X",
+   "video_time": "19:46"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "Alt+G, Alt+R (and Alt+S): back to the origin, unrotated; the cube is 2 x 2 x 2 m (N panel, Item)",
+   "video_time": "20:09"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube",
+     "Camera",
+     "Light"
+    ]
+   },
+   "note": "tradition: A selects everything, X deletes the default cube, camera and light",
+   "video_time": "23:04"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Cube",
+    "location": [
+     2,
+     -1,
+     1
+    ]
+   },
+   "note": "Shift+A > Mesh > Cube",
+   "video_time": "25:12"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Suzanne",
+    "location": [
+     -2,
+     2,
+     1
+    ]
+   },
+   "note": "Shift+A > Mesh > Monkey: Suzanne, Blender's mascot",
+   "video_time": "25:20"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cube",
+    "mode": "EDIT"
+   },
+   "note": "Tab: edit mode, where vertices (1), edges (2) and faces (3) can be selected",
+   "video_time": "26:34"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Cube",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.9
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "face mode (3): the top face",
+   "video_time": "28:19"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Cube",
+    "offset": [
+     0,
+     0,
+     0.5
+    ]
+   },
+   "note": "G moves only that face",
+   "video_time": "28:25"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Cube",
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "S scales only that face",
+   "video_time": "28:30"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Cube",
+    "mode": "OBJECT"
+   },
+   "note": "Tab back to object mode",
+   "video_time": "28:40"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Suzanne",
+    "mode": "EDIT"
+   },
+   "note": "edit mode on Suzanne, vertex mode, X-ray on so the back is selected too",
+   "video_time": "28:48"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Suzanne",
+    "element": "VERT",
+    "max": [
+     -1.1,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the tip of the left ear, front and back",
+   "video_time": "29:38"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Suzanne",
+    "offset": [
+     -0.6,
+     0,
+     0.5
+    ],
+    "proportional": 0.9,
+    "falloff": "SMOOTH"
+   },
+   "note": "proportional editing (O), a big circle of influence: G pulls the whole ear longer",
+   "video_time": "29:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Suzanne",
+    "element": "VERT",
+    "min": [
+     1.1,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the tip of the right ear",
+   "video_time": "30:00"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Suzanne",
+    "offset": [
+     0.6,
+     0,
+     0.5
+    ],
+    "proportional": 0.9,
+    "falloff": "SMOOTH"
+   },
+   "note": "Suzanne with her big ears",
+   "video_time": "30:03"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Suzanne",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": "30:05"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube",
+     "Suzanne"
+    ]
+   },
+   "note": "clear the scene before the first model",
+   "video_time": "30:10"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Circle",
+    "vertices": 32,
+    "radius": 1.0,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+A > Circle: only the outer edge, no face",
+   "video_time": "31:10"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Circle",
+    "mode": "EDIT"
+   },
+   "note": "edit mode, edge mode",
+   "video_time": "31:19"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Circle"
+   },
+   "note": "A: every edge",
+   "video_time": "31:40"
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Circle"
+   },
+   "note": "F (fill): the first face, the base of the mug",
+   "video_time": "31:47"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Circle",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": "31:55"
+  }
+ ]
+}

@@ -7,6 +7,7 @@ a learned skill apply to a new object instance.
 """
 
 import json
+import math
 import os
 import re
 import tempfile
@@ -444,13 +445,51 @@ def extrude(p):
             "edges" if edges else "verts"}
 
 
+FALLOFFS = {  # proportional editing falloffs, as Blender's (t = 1 at the selection .. 0 at the radius)
+    "SMOOTH": lambda t: 3 * t * t - 2 * t * t * t, "SPHERE": lambda t: math.sqrt(max(0.0, 2 * t - t * t)),
+    "ROOT": lambda t: math.sqrt(t), "SHARP": lambda t: t * t, "LINEAR": lambda t: t, "CONSTANT": lambda t: 1.0,
+}
+
+
+def _transform_selection(bm, verts, transform, p):
+    """Apply ``transform`` to the selected vertices; with ``proportional`` (O), vertices within that radius of
+    the selection follow it partly, fading with the distance (Blender's proportional editing)."""
+    followed = 0
+    if p.get("proportional"):
+        from mathutils.kdtree import KDTree
+
+        radius = p["proportional"]
+        falloff = FALLOFFS[p.get("falloff") or "SMOOTH"]
+        tree = KDTree(len(verts))
+        for i, v in enumerate(verts):
+            tree.insert(v.co, i)
+        tree.balance()
+        selected = set(verts)
+        moves = []
+        for v in bm.verts:
+            if v in selected:
+                continue
+            _co, _index, distance = tree.find(v.co)
+            if distance < radius:
+                weight = falloff(1.0 - distance / radius)
+                moves.append((v, v.co + (transform(v.co.copy()) - v.co) * weight))
+        for v, co in moves:
+            v.co = co
+        followed = len(moves)
+    for v in verts:
+        v.co = transform(v.co.copy())
+    bm.normal_update()
+    return followed
+
+
 def translate_selection(p):
     obj = _obj(p["object"])
     bm = _edit_bmesh(obj)
     verts = _selected_verts(bm)
-    bmesh.ops.translate(bm, vec=Vector(p["offset"]), verts=verts)
+    offset = Vector(p["offset"])
+    followed = _transform_selection(bm, verts, lambda co: co + offset, p)
     bmesh.update_edit_mesh(obj.data)
-    return {"object": obj.name, "moved": len(verts)}
+    return {"object": obj.name, "moved": len(verts), "followed": followed}
 
 
 def scale_selection(p):
@@ -462,9 +501,11 @@ def scale_selection(p):
     else:
         lo, hi = _local_bbox(bm)
         pivot = (lo + hi) / 2
-    bmesh.ops.scale(bm, vec=Vector(p["factor"]), space=Matrix.Translation(-pivot), verts=verts)
+    factor = p["factor"]
+    followed = _transform_selection(
+        bm, verts, lambda co: Vector([pivot[i] + (co[i] - pivot[i]) * factor[i] for i in range(3)]), p)
     bmesh.update_edit_mesh(obj.data)
-    return {"object": obj.name, "scaled": len(verts)}
+    return {"object": obj.name, "scaled": len(verts), "followed": followed}
 
 
 def taper_selection(p):
@@ -642,10 +683,9 @@ def rotate_selection(p):
     else:
         pivot = Vector()
     rotation = Matrix.Rotation(p["angle"], 3, p["axis"].upper())
-    bmesh.ops.rotate(bm, cent=pivot, matrix=rotation, verts=verts)
-    bm.normal_update()
+    followed = _transform_selection(bm, verts, lambda co: pivot + rotation @ (co - pivot), p)
     bmesh.update_edit_mesh(obj.data)
-    return {"object": obj.name, "rotated": len(verts)}
+    return {"object": obj.name, "rotated": len(verts), "followed": followed}
 
 
 def delete_elements(p):
@@ -780,7 +820,12 @@ def add_modifier(p):
         if key not in allowed:
             raise BridgeCommandError("invalid_param", f"property {key!r} not allowed for {p['type']}", param=key)
         clean[key] = _check(value, allowed[key], key)
-    modifier = obj.modifiers.new(name=p["name"] or p["type"].title(), type=p["type"])
+    name = p["name"] or p["type"].title()
+    existing = obj.modifiers.get(name)
+    if existing is not None and existing.type == p["type"]:
+        modifier = existing   # the same modifier again: its values change, as in the properties panel
+    else:
+        modifier = obj.modifiers.new(name=name, type=p["type"])
     texture_kind = clean.pop("texture", None)
     texture_scale = clean.pop("texture_scale", None)
     if texture_kind is not None:
@@ -825,8 +870,15 @@ def shade(p):
     obj = _obj(p["object"])
     if obj.type != "MESH":
         raise BridgeCommandError("not_a_mesh", f"{obj.name} is not a mesh")
-    for poly in obj.data.polygons:
-        poly.use_smooth = p["smooth"]
+    if obj.mode == "EDIT":
+        # In edit mode the edit mesh is written back on Tab: set it there, or the change is lost.
+        bm = bmesh.from_edit_mesh(obj.data)
+        for face in bm.faces:
+            face.smooth = p["smooth"]
+        bmesh.update_edit_mesh(obj.data)
+    else:
+        for poly in obj.data.polygons:
+            poly.use_smooth = p["smooth"]
     return {"object": obj.name, "smooth": p["smooth"]}
 
 
@@ -1066,7 +1118,7 @@ ACTIONS = {
     "extrude": (extrude, {"object": OBJ, "offset": ("vec3", None), "distance": ("float", None)}),
     "rotate_selection": (rotate_selection, {
         "object": OBJ, "axis": (tuple(AXES), REQUIRED), "angle": ("float", REQUIRED),
-        "pivot": (("median", "bbox_center", "origin"), "median")}),
+        "pivot": (("median", "bbox_center", "origin"), "median"), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
     "delete_elements": (delete_elements, {"object": OBJ, "what": (("VERTS", "EDGES", "FACES", "ONLY_FACES"), "FACES")}),
     "bridge_edge_loops": (bridge_edge_loops, {"object": OBJ, "cuts": ("int", 0)}),
     "fill": (fill, {"object": OBJ, "grid": ("bool", False)}),
@@ -1075,9 +1127,9 @@ ACTIONS = {
     "separate_selection": (separate_selection, {"object": OBJ, "new_name": ("name", None), "duplicate": ("bool", True)}),
     "duplicate_object": (duplicate_object, {"object": OBJ, "new_name": ("name", None), "offset": V3,
                                             "rotation": ("vec3", None), "linked": ("bool", False)}),
-    "translate_selection": (translate_selection, {"object": OBJ, "offset": ("vec3", REQUIRED)}),
+    "translate_selection": (translate_selection, {"object": OBJ, "offset": ("vec3", REQUIRED), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
     "scale_selection": (scale_selection, {
-        "object": OBJ, "factor": ("vec3", REQUIRED), "pivot": (("median", "bbox_center"), "median")}),
+        "object": OBJ, "factor": ("vec3", REQUIRED), "pivot": (("median", "bbox_center"), "median"), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
     "taper_selection": (taper_selection, {
         "object": OBJ, "along": (tuple(AXES), REQUIRED), "affect": (("x", "y", "z", "xy", "xz", "yz"), "x"),
         "amount": ("float", REQUIRED), "start": ("float", 0.0), "reverse": ("bool", False)}),

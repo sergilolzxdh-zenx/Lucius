@@ -346,9 +346,9 @@ def cmd_make(args: argparse.Namespace) -> int:
         maker = Maker(app, iterations=args.iterations)
         backend = _backend(app, args.backend) if args.backend != "headless" else None
         result = maker.make(args.task, references=args.reference or [], allow_unlearned=args.allow_unlearned,
-                            backend=backend, on_progress=_say)
+                            backend=backend, on_progress=_say, offline=args.offline)
         _print(result.to_dict())
-        return 0 if result.status == "made" else 2
+        return 0 if result.status in ("made", "rebuilt") else 2
     finally:
         app.close()
 
@@ -384,6 +384,21 @@ def cmd_teach(args: argparse.Namespace) -> int:
                     line, start = [], None
             if line and start is not None:
                 print(f"[{int(start // 60)}:{int(start % 60):02d}] {' '.join(line)}")
+            return 0
+        if args.what == "pack":
+            if not args.video or not args.out:
+                print("give --video and --out (the course folder to write)", file=sys.stderr)
+                return 2
+            _print({"course": str(teacher.export_course(args.video, args.out))})
+            return 0
+        if args.what == "objects":
+            if not args.out:
+                print("give --out (the objects pack folder to write)", file=sys.stderr)
+                return 2
+            from lucius.lessons import Maker
+
+            ids = [k["skill_id"] for k in Maker(app).known_objects()]
+            _print({"pack": str(teacher.export_objects(ids, args.out)), "objects": ids})
             return 0
         if args.what == "course":
             if not args.recipe:
@@ -586,14 +601,17 @@ def build_parser() -> argparse.ArgumentParser:
                    help="also use Blender actions no lesson has taught (the project records it)")
     s.add_argument("--backend", choices=["headless", "live", "gui"], default="headless",
                    help="headless Blender (default), your Blender through the add-on, or keyboard and mouse")
+    s.add_argument("--offline", action="store_true",
+                   help="no model: rebuild the learned object the task names (automatic when no model is set up)")
     s.set_defaults(func=cmd_make)
 
     s = sub.add_parser("teach", help="teach without a model API: build a recipe you wrote (for a tutorial chapter "
                                      "or a task), see it next to the tutorial, keep it with --score")
-    s.add_argument("what", choices=["chapter", "task", "frames", "narration", "course"],
+    s.add_argument("what", choices=["chapter", "task", "frames", "narration", "course", "pack", "objects"],
                    help="chapter/task: build RECIPE; frames: the tutorial's preview frames; narration: what the "
                         "tutor says (captions) between --start and --end; course: replay a course pack (a folder "
-                        "with course.json) so Lucius learns every chapter on this machine")
+                        "with course.json) so Lucius learns every chapter on this machine; pack: write the chapters "
+                        "kept for --video as a course pack in --out; objects: write the taught objects as a pack")
     s.add_argument("recipe", nargs="?", help="recipe JSON file (chapter, task) or course folder (course)")
     s.add_argument("--video", help="video id of a saved tutorial (e.g. lrlpwIumFnE)")
     s.add_argument("--chapter", type=int, help="1-based chapter number")
@@ -606,7 +624,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--end", help="frames/narration: to")
     s.add_argument("--every", type=float, default=10.0, help="frames: seconds between frames (the preview has one "
                                                            "every ~10 s)")
-    s.add_argument("--out", help="frames: where the picture goes")
+    s.add_argument("--out", help="frames: where the picture goes; pack: the course folder")
     s.add_argument("--teacher", default="teacher", help="who wrote and judged it (recorded with the skill)")
     s.add_argument("--note", help="what you changed or noticed")
     s.add_argument("--redo", action="store_true", help="course: build chapters already learned again")

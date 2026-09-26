@@ -1,0 +1,867 @@
+{
+ "title": "Toy rocket",
+ "summary": "A cartoon rocket: a cylinder body whose top is extruded and scaled in steps to a pointed nose (the croissant-tip technique), the bottom inset and pushed up with a cone nozzle, three fins from one fin duplicated and turned 120 degrees about the axis, a porthole of a torus rim and a glowing glass disc, red and white paint.",
+ "objects": [
+  {
+   "name": "Body",
+   "description": "body"
+  },
+  {
+   "name": "Nozzle",
+   "description": "nozzle"
+  },
+  {
+   "name": "Fin",
+   "description": "fin"
+  },
+  {
+   "name": "Porthole",
+   "description": "porthole"
+  },
+  {
+   "name": "Glass",
+   "description": "glass"
+  }
+ ],
+ "expected_result": "A red and white cartoon rocket standing on three fins.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Body",
+    "radius": 0.3,
+    "depth": 1.0,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.9
+    ]
+   },
+   "note": "the body",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.49
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.12
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.97,
+     0.97,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.14
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.88,
+     0.88,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.14
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.74,
+     0.74,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.12
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.55,
+     0.55,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.1
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.3,
+     0.3,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.06
+    ]
+   },
+   "note": "E and S: the nose narrows",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.08,
+     0.08,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     -0.49
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the bottom",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Body",
+    "factor": [
+     0.8,
+     0.8,
+     1
+    ]
+   },
+   "note": "S: narrower at the tail",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Body",
+    "thickness": 0.03
+   },
+   "note": "I",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Body",
+    "offset": [
+     0,
+     0,
+     0.05
+    ]
+   },
+   "note": "E up inside",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Body",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.28,
+     0.56,
+     0.64
+    ]
+   },
+   "note": "Ctrl+R: bands for the paint",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Body",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Body",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Body",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cone",
+    "name": "Nozzle",
+    "radius": 0.2,
+    "radius2": 0.12,
+    "depth": 0.18,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.36
+    ]
+   },
+   "note": "the nozzle",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Nozzle",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.01,
+     "segments": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Nozzle",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Fin",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a fin",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Fin",
+    "dimensions": [
+     0.4,
+     0.04,
+     0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Fin",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Fin"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Fin",
+    "offset": [
+     0.38,
+     0,
+     0.55
+    ]
+   },
+   "note": "out beside the body",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Fin",
+    "element": "VERT",
+    "min": [
+     0.5,
+     null,
+     0.7
+    ],
+    "space": "local"
+   },
+   "note": "the fin's top outer corner",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Fin",
+    "offset": [
+     0,
+     0,
+     -0.22
+    ]
+   },
+   "note": "swept back: G Z down",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Fin",
+    "element": "VERT",
+    "min": [
+     0.5,
+     null,
+     null
+    ],
+    "max": [
+     null,
+     null,
+     0.4
+    ],
+    "space": "local"
+   },
+   "note": "the bottom outer corner",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Fin",
+    "offset": [
+     0.05,
+     0,
+     -0.33
+    ]
+   },
+   "note": "the tip reaches the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Fin",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Fin",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.012,
+     "segments": 3
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Fin",
+    "new_name": "Fin2",
+    "offset": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     120
+    ]
+   },
+   "note": "Shift+D, R Z 120",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Fin",
+    "new_name": "Fin3",
+    "offset": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     240
+    ]
+   },
+   "note": "and again",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "Porthole",
+    "major_radius": 0.1,
+    "minor_radius": 0.018,
+    "major_segments": 32,
+    "minor_segments": 12,
+    "location": [
+     0,
+     -0.3,
+     1.1
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "the porthole rim",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Glass",
+    "radius": 0.09,
+    "depth": 0.02,
+    "vertices": 32,
+    "location": [
+     0,
+     -0.295,
+     1.1
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "the glass",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Porthole",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Body",
+    "name": "Blanco",
+    "base_color": "#F4F4F2",
+    "roughness": 0.3
+   },
+   "note": "glossy white paint",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Fin",
+    "name": "Rojo cohete",
+    "base_color": "#D22B26",
+    "roughness": 0.35
+   },
+   "note": "red paint",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Fin2",
+    "name": "Rojo cohete"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Fin3",
+    "name": "Rojo cohete"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Nozzle",
+    "name": "Metal",
+    "base_color": "#5A5E66",
+    "metallic": 1.0,
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Porthole",
+    "name": "Rojo cohete"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Glass",
+    "name": "Cristal",
+    "base_color": "#7FC8FF",
+    "emission_color": "#6FB8FF",
+    "emission_strength": 1.5,
+    "roughness": 0.05
+   },
+   "note": "glowing blue glass",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     -0.15
+    ],
+    "max": [
+     null,
+     null,
+     -0.04
+    ],
+    "space": "local"
+   },
+   "note": "the red band (between two loop cuts) and the nose tip",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.9
+    ],
+    "space": "local",
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Body",
+    "name": "Rojo cohete",
+    "assign": "selected_faces"
+   },
+   "note": "red paint on the band and nose",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Body",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 17.6,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#26304A",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     3.52,
+     -4.4,
+     4.84
+    ],
+    "look_at": [
+     0,
+     0,
+     0.95
+    ],
+    "power": 266.2,
+    "size": 4.4,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -3.52,
+     3.96,
+     4.4
+    ],
+    "look_at": [
+     0,
+     0,
+     0.95
+    ],
+    "power": 338.8,
+    "size": 2.64,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -4.84,
+     -2.64,
+     1.76
+    ],
+    "look_at": [
+     0,
+     0,
+     0.95
+    ],
+    "power": 121.0,
+    "size": 4.4
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     2.64,
+     -4.4,
+     1.83
+    ],
+    "look_at": [
+     0,
+     0,
+     0.95
+    ],
+    "lens": 45,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "cohete",
+  "rocket",
+  "spaceship",
+  "nave"
+ ]
+}

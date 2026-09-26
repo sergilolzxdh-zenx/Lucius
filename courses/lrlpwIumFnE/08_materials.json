@@ -1,14 +1,50 @@
 {
  "title": "Materials",
- "summary": "Principled BSDF materials: porcelain (white, roughness 0.35) shared by mug and plate, a shiny cream donut material shared by both donuts with subsurface scattering, glossy semi-transparent sugar, a rough toasted croissant with subsurface, and a picnic tablecloth plane with a brick-texture check pattern and a magic-texture bump.",
+ "summary": "Principled BSDF materials: base colour, metallic and roughness shown on the mug (gold, bronze, silver: a metal is its colour with metallic 1 and low roughness), then the real ones: white porcelain (not metallic, medium roughness) shared by the mug and the plate; creamy golden donut dough with a light oily shine, shared by both donuts; the sugar crystal white, very glossy and half transparent (alpha); a toasted, rougher croissant; subsurface scattering 0.5 on the soft foods (light enters and comes out, like an ear against a lamp); a big plane as the tablecloth with a brick texture made into a picnic check (frequency 1, square bricks, white squares, blue lines) and a Magic-texture bump (scale 200, distortion 15) for the fabric.",
  "objects": [
   {
    "name": "Mantel",
-   "description": "tablecloth"
+   "description": "tablecloth: a large plane with a white and blue check and a fabric bump"
   }
  ],
- "expected_result": "White porcelain mug and plate, golden sugared donuts, a brown croissant, on a blue and white check tablecloth.",
+ "expected_result": "White porcelain mug and plate, golden sugared donuts, a toasted croissant, all on a white tablecloth with a blue check.",
  "steps": [
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mug",
+    "name": "Porcelana",
+    "base_color": "#E8C21A",
+    "metallic": 1.0,
+    "roughness": 0.25
+   },
+   "note": "Material > New: base colour yellow, metallic 1, low roughness: a gold mug",
+   "video_time": "88:18"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mug",
+    "name": "Porcelana",
+    "base_color": "#8C4A1E",
+    "metallic": 1.0,
+    "roughness": 0.2
+   },
+   "note": "dark orange, metallic, glossy: bronze",
+   "video_time": "89:40"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Mug",
+    "name": "Porcelana",
+    "base_color": "#B0B0B0",
+    "metallic": 1.0,
+    "roughness": 0.15
+   },
+   "note": "grey: silver",
+   "video_time": "90:04"
+  },
   {
    "action": "set_material",
    "args": {
@@ -18,8 +54,8 @@
     "metallic": 0.0,
     "roughness": 0.35
    },
-   "note": "new material 'Porcelana': white, not metallic, roughness halfway (blurred reflections)",
-   "video_time": "91:23"
+   "note": "the real mug: porcelain, white (saturation 0, brightness max), not metallic, roughness in between: reflections of the lights, a little blurred",
+   "video_time": "90:57"
   },
   {
    "action": "set_material",
@@ -27,7 +63,7 @@
     "object": "Plate",
     "name": "Porcelana"
    },
-   "note": "the plate shares the porcelain",
+   "note": "the plate picks the same material from the list (shared)",
    "video_time": "91:45"
   },
   {
@@ -35,12 +71,12 @@
    "args": {
     "object": "Donut",
     "name": "Donut",
-    "base_color": "#E6B274",
-    "roughness": 0.3,
+    "base_color": "#D39C5C",
+    "roughness": 0.35,
     "metallic": 0.0,
     "subsurface": 0.5
    },
-   "note": "donut: a cream colour, shiny (it is oily), soft: subsurface 0.5",
+   "note": "the donut itself (not the crystals): a creamy golden colour, a little shine from the oil; subsurface 0.5",
    "video_time": "92:36"
   },
   {
@@ -49,7 +85,7 @@
     "object": "Donut2",
     "name": "Donut"
    },
-   "note": "the second donut: the same material (Ctrl+L)",
+   "note": "the other donut: the same material (or Ctrl+L, link materials)",
    "video_time": "94:39"
   },
   {
@@ -59,9 +95,9 @@
     "name": "Azucarillo",
     "base_color": "#FFFFFF",
     "roughness": 0.05,
-    "alpha": 0.55
+    "alpha": 0.35
    },
-   "note": "sugar crystals: white, very glossy, half transparent (alpha)",
+   "note": "the abandoned cube: 'azucarillo', white, very low roughness, alpha down: semi-transparent",
    "video_time": "93:25"
   },
   {
@@ -69,12 +105,12 @@
    "args": {
     "object": "Croissant",
     "name": "Croissant",
-    "base_color": "#B9732F",
+    "base_color": "#A8672A",
     "roughness": 0.7,
     "metallic": 0.0,
     "subsurface": 0.5
    },
-   "note": "croissant: toasted, rough, soft: subsurface 0.5",
+   "note": "a new one: more toasted than the donut, not oily (rough), subsurface 0.5",
    "video_time": "95:31"
   },
   {
@@ -89,7 +125,7 @@
      0
     ]
    },
-   "note": "Shift+A plane, scaled: the tablecloth (mantel)",
+   "note": "Shift+A > Plane, scaled: the tablecloth",
    "video_time": "99:47"
   },
   {
@@ -100,7 +136,7 @@
     "base_color": "#FFFFFF",
     "pattern": "brick",
     "pattern_color": "#FFFFFF",
-    "line_color": "#2F5BD0",
+    "line_color": "#2A56D6",
     "pattern_scale": 0.28,
     "mortar_size": 0.025,
     "brick_width": 0.5,
@@ -111,7 +147,7 @@
     "bump_strength": 0.3,
     "roughness": 0.8
    },
-   "note": "tablecloth: brick texture, frequency 1, width and height 0.5 (squares), thin vibrant blue lines, white squares; bump from a magic texture (scale 200, distortion 15): fabric",
+   "note": "Base Color > Brick Texture: frequency 1, width and height 0.5, mortar a vibrant blue, both brick colours white, mortar size for the line width; Normal > Bump, Height > Magic Texture, scale 200, distortion 15: a fabric",
    "video_time": "100:34"
   }
  ]

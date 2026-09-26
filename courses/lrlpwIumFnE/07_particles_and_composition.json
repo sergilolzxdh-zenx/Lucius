@@ -1,0 +1,227 @@
+{
+ "title": "Particles and composition",
+ "summary": "The second donut's displacement set to -0.15. A particle system scatters copies of an object over the donuts: first Suzannes (any object can be the particle), then a tiny cube as the sugar crystal, 5000 hair particles rendered as that object with random scale, on both donuts. Then the composition from the top view: the plate in the centre with the donuts on it, the mug a little bigger at the back right, the croissant turned at the back left, and everything lifted or lowered so it rests on the plate or the table instead of passing through.",
+ "objects": [
+  {
+   "name": "Sugar",
+   "description": "tiny cube: the sugar crystal copied by the particles"
+  }
+ ],
+ "expected_result": "The breakfast laid out: plate in the middle with the two sugared donuts (one leaning on the other), the croissant at the back left and the mug at the back right, all resting on the plate or the table.",
+ "steps": [
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Donut2",
+    "type": "DISPLACE",
+    "name": "Displace",
+    "props": {
+     "strength": -0.15
+    }
+   },
+   "note": "still too strong: the second donut's displace strength -0.15",
+   "video_time": "79:00"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Suzanne",
+    "location": [
+     9,
+     9,
+     1
+    ],
+    "size": 2
+   },
+   "note": "an object to scatter, to see the idea",
+   "video_time": "80:21"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut",
+    "instance": "Suzanne",
+    "name": "Azucar",
+    "count": 200,
+    "scale": 0.08,
+    "scale_random": 0.0,
+    "rotation_random": 1.0,
+    "seed": 1
+   },
+   "note": "donut > Particles > new system 'Azucar', type Hair, Render As Object: Suzanne, scale down: monkeys all over the donut",
+   "video_time": "80:44"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Sugar",
+    "size": 0.035,
+    "location": [
+     0,
+     0,
+     -3
+    ]
+   },
+   "note": "the real particle: a cube out of the way, scaled small in edit mode: a sugar crystal",
+   "video_time": "81:38"
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.0,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 1
+   },
+   "note": "the object to copy is now the cube; 5000 (careful, many particles make the computer slow); scale randomness 1, scale lowered until they look like crystals",
+   "video_time": "82:01"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Suzanne"
+    ]
+   },
+   "note": "the monkey is not needed any more",
+   "video_time": null
+  },
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Donut2",
+    "instance": "Sugar",
+    "name": "Azucar",
+    "count": 5000,
+    "scale": 1.0,
+    "scale_random": 1.0,
+    "rotation_random": 1.0,
+    "seed": 2
+   },
+   "note": "the other donut: add a particle system and pick the same 'Azucar' settings",
+   "video_time": "82:47"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Donut",
+    "location": [
+     -0.95,
+     -0.3,
+     2.0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "top view: the main thing in the centre: the donuts onto the plate",
+   "video_time": "84:30"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Donut",
+    "onto": [
+     "Plate"
+    ]
+   },
+   "note": "front view: G Z until it sits on the plate, not through it",
+   "video_time": "85:18"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Donut2",
+    "location": [
+     1.35,
+     0.2,
+     3.0
+    ],
+    "rotation_deg": [
+     0,
+     20,
+     15
+    ]
+   },
+   "note": "the second donut beside it, still leaning",
+   "video_time": "84:40"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Donut2",
+    "onto": [
+     "Plate",
+     "Donut"
+    ]
+   },
+   "note": "G Z: it rests on the first donut and the plate",
+   "video_time": "85:25"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Mug",
+    "location": [
+     2.9,
+     4.3,
+     0.0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     35
+    ],
+    "scale": [
+     1.15,
+     1.15,
+     1.15
+    ]
+   },
+   "note": "the mug at the back right, turned, a little bigger in proportion to the plate",
+   "video_time": "84:52"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Mug"
+   },
+   "note": "on the table",
+   "video_time": "85:18"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Croissant",
+    "location": [
+     -3.6,
+     3.2,
+     2.0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     30
+    ]
+   },
+   "note": "the croissant at the back left, turned",
+   "video_time": "85:05"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Croissant"
+   },
+   "note": "it was going through the floor: up onto the table",
+   "video_time": "85:18"
+  }
+ ]
+}

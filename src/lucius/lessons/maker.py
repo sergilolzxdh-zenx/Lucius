@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from lucius.errors import ProviderError, ValidationError
+from lucius.errors import ProviderError, ProviderUnavailable, ValidationError
 from lucius.lessons.catalogue import BASIC_ACTIONS, RECIPE_ACTIONS, catalogue
 from lucius.lessons.learner import PATCH_RULES, RECIPE_RULES, QuotaExhausted, _quota
 from lucius.lessons.projects import ProjectStore, contact_sheet
@@ -159,6 +159,7 @@ class Maker:
                           if e.role == "validation"), None)
             item = {"skill_id": skill.id, "title": d.name, "status": skill.status.value, "score": score,
                     "kind": "lesson" if "tutorial_recipe" in d.categories else "made",
+                    "taught": "taught_object" in d.categories,
                     "recipe": Recipe(title=d.name, summary=d.purpose, steps=steps)}
             if item["kind"] == "made":
                 item.update(self._feedback(d.notes))
@@ -207,6 +208,16 @@ class Maker:
             if used + len(block) <= limit_chars:
                 blocks.append(block)
                 used += len(block)
+        taught = sorted((r for r in techniques.recipes if r.get("taught") and overlap(r)), key=lambda r: -overlap(r))
+        if taught:
+            blocks.append("# Objects a teacher taught you (validated): start from the closest one and change what the "
+                          "task asks for")
+            for item in taught[:2]:
+                block = f"## {item['title']} (taught, judged {item['score']}/10)\n{item['recipe'].compact(120)}"
+                if used + len(block) <= limit_chars + 20000:
+                    blocks.append(block)
+                    used += len(block)
+        own = [r for r in own if not r.get("taught")]
         if own:
             blocks.append("# Your earlier attempts at similar tasks: do better than these. Keep what was right, fix "
                           "what was criticised, and use the learned techniques where these only stacked primitives")
@@ -223,6 +234,13 @@ class Maker:
         return "\n\n".join(blocks) if len(blocks) > 1 else "(no learned recipes yet)"
 
     # -- model calls ---------------------------------------------------------------------------------------
+    def _has_model(self, images: bool) -> bool:
+        try:
+            _ = self.app.providers.vlm if images else self.app.providers.llm
+        except ProviderUnavailable:
+            return False
+        return True
+
     def _call(self, purpose: str, *, system: str, prompt: str, schema: dict[str, Any],
               images: list[ImageInput] | None = None, max_tokens: int = 32000) -> dict[str, Any]:
         provider = self.app.providers.vlm if images else self.app.providers.llm
@@ -235,14 +253,73 @@ class Maker:
             raise
         return {**result.data, "_model": result.model}
 
+    # -- taught objects (no model needed) -------------------------------------------------------------------
+    def known_objects(self) -> list[dict[str, Any]]:
+        """Objects a teacher taught Lucius (validated): what it can rebuild without a model."""
+        from lucius.lessons.teacher import words
+
+        out = []
+        for skill in self.app.library.list(include_inactive=False):
+            d = skill.definition
+            if "taught_object" not in d.categories or skill.status.value not in LEARNED_STATUSES:
+                continue
+            aliases = [n.split(" ", 1)[1] for n in d.notes if n.startswith("alias ")]
+            out.append({"skill_id": skill.id, "name": d.name, "aliases": aliases,
+                        "words": set(d.triggers) | set(words(" ".join([d.name, *aliases])))})
+        return out
+
+    def recall(self, task: str) -> dict[str, Any] | None:
+        """The taught object a request names ("una espada" -> the sword), or None."""
+        from lucius.lessons.teacher import words
+
+        wanted = set(words(task))
+        best, best_hits = None, 0
+        for item in self.known_objects():
+            hits = len(wanted & item["words"])
+            if hits > best_hits:
+                best, best_hits = item, hits
+        return best
+
+    def rebuild(self, task: str, known: dict[str, Any], *, references: list[Path], say: Callable[[str], None]) -> MakeResult:
+        """Build a taught object again, without a model: its recipe, rendered and saved as a project."""
+        from lucius.lessons.recipe import RecipeStep
+        from lucius.lessons.teacher import Teacher
+
+        skill = self.app.library.get(known["skill_id"])
+        d = skill.definition
+        steps = [RecipeStep(action=a.action_type, args=a.args, note=a.description) for phase in d.phases
+                 for a in phase.actions]
+        recipe = Recipe(title=d.name, summary=d.purpose, steps=steps)
+        say(f"rebuilding the learned object '{d.name}' ({len(steps)} steps, no model needed)")
+        teacher = Teacher(self.app, name="lucius (recalled)", render_samples=self.render_samples)
+        taught = teacher.teach_task(recipe, task, references=references, note=f"recalled {skill.id}")
+        project = self.projects.get(taught.project_id)
+        status = "rebuilt" if taught.ok else "failed"
+        project.data.update(status=status, recalled=skill.id)
+        project.save()
+        result = MakeResult(project_id=taught.project_id, status=status, sheet=taught.sheet,
+                            final_render=taught.renders[0] if taught.renders else None,
+                            blend=project.path("scene.blend") if taught.ok else None, skill_id=skill.id,
+                            attempts=1, notes=[f"rebuilt the learned object '{d.name}' without a model"]
+                            + ([taught.error] if taught.error else []))
+        return result
+
     # -- make ----------------------------------------------------------------------------------------------
     def make(self, task: str, *, references: list[str | Path] | None = None, allow_unlearned: bool = False,
-             backend: Any = None, on_progress: Callable[[str], None] | None = None) -> MakeResult:
+             backend: Any = None, on_progress: Callable[[str], None] | None = None,
+             offline: bool = False) -> MakeResult:
         say = on_progress or (lambda message: log.info(message))
         refs = [Path(r) for r in references or []]
         for ref in refs:
             if not ref.is_file() or ref.suffix.lower() not in IMAGE_TYPES:
                 raise ValidationError(f"reference image {ref} must be an existing PNG, JPEG or WebP file")
+        if offline or not self._has_model(bool(refs)):
+            known = self.recall(task)
+            if known is None:
+                names = ", ".join(sorted(k["name"] for k in self.known_objects())) or "none yet"
+                raise ValidationError(f"no model is available and no learned object matches '{task}' "
+                                      f"(learned objects: {names})")
+            return self.rebuild(task, known, references=refs, say=say)
         techniques = self.techniques()
         allowed = techniques.allowed(allow_unlearned)
         project = self.projects.create("task", task, task=task, allow_unlearned=allow_unlearned,

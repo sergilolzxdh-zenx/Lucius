@@ -1,0 +1,90 @@
+{
+ "kind": "objects",
+ "teacher": "claude-code",
+ "about": "Objects taught to Lucius beyond the tutorials, with the techniques it learned. Replay with `lucius teach course courses/objects`; then `lucius make \"a sword\"` rebuilds one without a model.",
+ "lessons": [
+  {
+   "task": "a mushroom like this one",
+   "recipe": "mario_mushroom.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "From a reference picture (the Mario mushroom in a tutorial thumbnail): half UV sphere cap with the rim tucked under, subdivided; spots painted by a dots pattern (Voronoi circles) in pale cyan; bevelled barrel stem; glossy black eyes with highlights; green ground, warm background. Spot layout is procedural, not the exact placement of the reference.",
+   "references": [
+    "references/object_mario_mushroom_reference1.png"
+   ],
+   "render": "renders/object_mario_mushroom.jpg"
+  },
+  {
+   "task": "a toy rocket",
+   "recipe": "toy_rocket.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Cylinder body with the nose extruded and scaled to a point in steps, tail inset with a cone nozzle, one fin shaped by moving vertices then duplicated at 120 and 240 degrees, torus porthole with glowing glass, red band on loop-cut faces.",
+   "render": "renders/object_toy_rocket.jpg"
+  },
+  {
+   "task": "a candle",
+   "recipe": "candle.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Brass holder made the plate's way (inset dish, extruded thickness), a wax cylinder with an inset melted top and bevelled rim, a wick, a teardrop flame shaped with proportional editing, emission and a warm point light.",
+   "render": "renders/object_candle.jpg"
+  },
+  {
+   "task": "a small house",
+   "recipe": "small_house.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Box walls with a loop-cut ridge pulled up into a gable; loop cuts make a door and two windows (inset, pushed in, own materials, glowing); the roof faces separated as a copy, scaled out for eaves and solidified; chimney.",
+   "render": "renders/object_small_house.jpg"
+  },
+  {
+   "task": "a low poly tree",
+   "recipe": "low_poly_tree.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Tapered 8-sided trunk with flared roots, three Clouds-displaced icospheres as a lumpy crown in two greens, a grass mound; flat shaded low-poly look.",
+   "render": "renders/object_low_poly_tree.jpg"
+  },
+  {
+   "task": "a wine bottle",
+   "recipe": "wine_bottle.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Turned like the mug: a filled circle extruded and scaled into body, shoulder, neck and lip; open mouth and a punt; loop cuts for a label band given its own material; green transmissive glass.",
+   "render": "renders/object_wine_bottle.jpg"
+  },
+  {
+   "task": "a round cafe table",
+   "recipe": "round_cafe_table.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Bistro table: bevelled round oak top, a black column flared at both ends, four sloping feet from one foot mirrored on X and Y.",
+   "render": "renders/object_round_cafe_table.jpg"
+  },
+  {
+   "task": "a desk lamp",
+   "recipe": "desk_lamp.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Articulated desk lamp: bevelled base, two steel arms with a ball joint, an open cone shade with Solidify, glowing bulb and a warm spot throwing a pool of light on the floor. Arm proportions a little simple.",
+   "render": "renders/object_desk_lamp.jpg"
+  },
+  {
+   "task": "a wooden chair",
+   "recipe": "wooden_chair.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Slatted wooden chair built from bevelled boxes, one leg mirrored per pair, an array of slats, noise-grain wood; reads clearly as a dining chair from the three-quarter shot.",
+   "render": "renders/object_wooden_chair.jpg"
+  },
+  {
+   "task": "a sword",
+   "recipe": "sword.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "note": "Longsword at real size from the course's techniques (cube blade with a centre loop cut, extruded and scaled tip, edges scaled thin for a diamond section, bevel modifier; guard with extruded upswept ends, bevel+subsurf; array of torus rings as the grip wrap; flattened sphere pommel), metal/gold/leather materials, three-point studio light, portrait camera. Guard a little blocky.",
+   "render": "renders/object_sword.jpg"
+  }
+ ]
+}

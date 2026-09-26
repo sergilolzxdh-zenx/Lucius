@@ -1,0 +1,502 @@
+{
+ "title": "Round cafe table",
+ "summary": "A round cafe table: a bevelled round top, a column, and a foot of four legs made from one leg mirrored on X and Y; dark metal base and a light wooden top.",
+ "objects": [
+  {
+   "name": "Top",
+   "description": "round wooden top"
+  },
+  {
+   "name": "Column",
+   "description": "the column"
+  },
+  {
+   "name": "Feet",
+   "description": "four feet (mirrored)"
+  }
+ ],
+ "expected_result": "A round bistro table on four feet.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Top",
+    "radius": 0.4,
+    "depth": 0.03,
+    "vertices": 64,
+    "location": [
+     0,
+     0,
+     0.735
+    ]
+   },
+   "note": "the top: a cylinder",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Top"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Top",
+    "offset": 0.008,
+    "segments": 3
+   },
+   "note": "Ctrl+B: a rounded edge",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Top",
+    "smooth": true
+   },
+   "note": "smooth",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Top",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Column",
+    "radius": 0.03,
+    "depth": 0.68,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     0.38
+    ]
+   },
+   "note": "the column",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Column",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.33
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top of the column",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Column",
+    "factor": [
+     2.2,
+     2.2,
+     1
+    ]
+   },
+   "note": "S: flared under the top",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Column",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     -0.33
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the bottom",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Column",
+    "factor": [
+     1.6,
+     1.6,
+     1
+    ]
+   },
+   "note": "S: wider at the foot",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Column",
+    "smooth": true
+   },
+   "note": "smooth",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Column",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Feet",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "one foot",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Feet",
+    "dimensions": [
+     0.26,
+     0.04,
+     0.03
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Feet",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Feet"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Feet",
+    "offset": [
+     0.13,
+     0,
+     0.03
+    ]
+   },
+   "note": "out from the centre",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Feet",
+    "element": "VERT",
+    "min": [
+     0.2,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the outer end",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Feet",
+    "offset": [
+     0,
+     0,
+     -0.02
+    ]
+   },
+   "note": "G Z: the foot slopes down to the floor",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Feet",
+    "factor": [
+     1,
+     0.7,
+     0.7
+    ]
+   },
+   "note": "S: the end thinner",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Feet"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Feet",
+    "axis": "z",
+    "angle_deg": 45,
+    "pivot": "origin"
+   },
+   "note": "R Z 45: diagonal",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Feet",
+    "type": "MIRROR",
+    "name": "Mirror",
+    "props": {
+     "use_axis": [
+      true,
+      true,
+      false
+     ]
+    }
+   },
+   "note": "Mirror on X and Y: four feet",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Feet",
+    "type": "BEVEL",
+    "name": "Bevel",
+    "props": {
+     "width": 0.004,
+     "segments": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Top",
+    "name": "Roble",
+    "base_color": "#C8955A",
+    "pattern": "noise",
+    "pattern_color": "#A87440",
+    "pattern_scale": 14,
+    "roughness": 0.6,
+    "bump": "noise",
+    "bump_scale": 50,
+    "bump_strength": 0.05
+   },
+   "note": "light oak top",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Column",
+    "name": "Metal negro",
+    "base_color": "#1E1E20",
+    "metallic": 0.8,
+    "roughness": 0.35
+   },
+   "note": "dark painted metal",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Feet",
+    "name": "Metal negro"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 8.8,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#3A3D44",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     1.76,
+     -2.2,
+     2.42
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "power": 66.55,
+    "size": 2.2,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -1.76,
+     1.98,
+     2.2
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "power": 84.7,
+    "size": 1.32,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -2.42,
+     -1.32,
+     0.88
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "power": 30.25,
+    "size": 2.2
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.65,
+     -2.2,
+     1.61
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "lens": 50,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "mesa",
+  "table",
+  "cafe table",
+  "round table",
+  "mesa redonda"
+ ]
+}

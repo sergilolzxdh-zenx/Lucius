@@ -1,0 +1,632 @@
+{
+ "title": "Wine bottle",
+ "summary": "A wine bottle turned like the mug: a filled circle extruded into the body, then short extrusions scaled in for the shoulder and the neck, a lip, the mouth hollowed with inset and extrude; loop cuts give a band of faces for a paper label (a second material on the selected faces); green glass (transmission).",
+ "objects": [
+  {
+   "name": "Bottle",
+   "description": "glass bottle with a label"
+  }
+ ],
+ "expected_result": "A green glass wine bottle with a cream label.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Bottle",
+    "radius": 0.037,
+    "vertices": 32,
+    "fill": true,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a circle, filled: the bottom",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Bottle"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.2
+    ]
+   },
+   "note": "E: the body",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.025
+    ]
+   },
+   "note": "E and S: the shoulder starts",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     0.93,
+     0.93,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.025
+    ]
+   },
+   "note": "the shoulder",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     0.78,
+     0.78,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.02
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     0.62,
+     0.62,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.02
+    ]
+   },
+   "note": "into the neck",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     0.62,
+     0.62,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.075
+    ]
+   },
+   "note": "E: the neck",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.002
+    ]
+   },
+   "note": "the lip",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     1.18,
+     1.18,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.012
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.002
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Bottle",
+    "factor": [
+     0.85,
+     0.85,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Bottle",
+    "thickness": 0.002
+   },
+   "note": "I: the glass thickness at the mouth",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     -0.03
+    ]
+   },
+   "note": "E down: the mouth is open",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bottle",
+    "element": "FACE",
+    "max": [
+     null,
+     null,
+     0.001
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the bottom",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Bottle",
+    "thickness": 0.006
+   },
+   "note": "I: the punt under the bottle",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Bottle",
+    "offset": [
+     0,
+     0,
+     0.015
+    ]
+   },
+   "note": "pushed up inside",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Bottle",
+    "axis": "z",
+    "positions": [
+     0.05,
+     0.12,
+     0.3,
+     0.45
+    ]
+   },
+   "note": "Ctrl+R: loops that keep the body round and make the label band",
+   "video_time": null
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Bottle"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Bottle",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Bottle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Bottle",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bottle",
+    "name": "Vidrio verde",
+    "base_color": "#2F6B3A",
+    "transmission": 1.0,
+    "roughness": 0.05,
+    "ior": 1.45
+   },
+   "note": "dark green glass: transmission, smooth",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bottle",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.045
+    ],
+    "max": [
+     null,
+     null,
+     0.145
+    ],
+    "space": "local",
+    "facing": [
+     1,
+     0,
+     0
+    ],
+    "min_dot": 0.9
+   },
+   "note": "the label band on the body",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bottle",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.045
+    ],
+    "max": [
+     null,
+     null,
+     0.145
+    ],
+    "space": "local",
+    "facing": [
+     -1,
+     0,
+     0
+    ],
+    "min_dot": 0.9,
+    "extend": true
+   },
+   "note": "all the way round",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bottle",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.045
+    ],
+    "max": [
+     null,
+     null,
+     0.145
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.35,
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bottle",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.045
+    ],
+    "max": [
+     null,
+     null,
+     0.145
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.35,
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bottle",
+    "name": "Etiqueta",
+    "base_color": "#EDE3C8",
+    "roughness": 0.8,
+    "assign": "selected_faces"
+   },
+   "note": "the label: cream paper on the selected faces",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Bottle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 3.6,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#CFCFCF",
+    "roughness": 0.6
+   },
+   "note": "a neutral floor",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#3A3D44",
+    "strength": 1.0
+   },
+   "note": "a soft grey studio",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     0.72,
+     -0.9,
+     0.99
+    ],
+    "look_at": [
+     0,
+     0,
+     0.16
+    ],
+    "power": 11.14,
+    "size": 0.9,
+    "temperature": 5600
+   },
+   "note": "big soft key light, front right",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Rim",
+    "location": [
+     -0.72,
+     0.81,
+     0.9
+    ],
+    "look_at": [
+     0,
+     0,
+     0.16
+    ],
+    "power": 14.18,
+    "size": 0.54,
+    "temperature": 6500
+   },
+   "note": "rim light from behind left",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Fill",
+    "location": [
+     -0.99,
+     -0.54,
+     0.36
+    ],
+    "look_at": [
+     0,
+     0,
+     0.16
+    ],
+    "power": 5.06,
+    "size": 0.9
+   },
+   "note": "low soft fill from the left",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.54,
+     -0.9,
+     0.475
+    ],
+    "look_at": [
+     0,
+     0,
+     0.16
+    ],
+    "lens": 60,
+    "active": true
+   },
+   "note": "the shot, three-quarter from the front",
+   "video_time": null
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 96,
+    "width": 1080,
+    "height": 1080,
+    "denoise": true,
+    "view_transform": "Standard"
+   },
+   "note": "Cycles with denoise",
+   "video_time": null
+  }
+ ],
+ "aliases": [
+  "botella",
+  "bottle",
+  "wine bottle",
+  "botella de vino"
+ ]
+}

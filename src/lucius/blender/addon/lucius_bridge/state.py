@@ -166,6 +166,7 @@ def object_summary(obj):
         mesh = obj.data
         data["mesh"] = {
             "verts": len(mesh.vertices), "edges": len(mesh.edges), "faces": len(mesh.polygons),
+            "smooth_faces": sum(1 for poly in mesh.polygons if poly.use_smooth),
             "use_mirror_x": bool(mesh.use_mirror_x), "use_mirror_y": bool(mesh.use_mirror_y),
             "use_mirror_z": bool(mesh.use_mirror_z),
         }
