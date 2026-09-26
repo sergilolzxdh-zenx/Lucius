@@ -159,7 +159,7 @@ class Teacher:
                                                           for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=part.task_text)
         project.data.update(sheet="sheet.png", recipe_steps=len(recipe.steps), actions=sorted(recipe.actions_used()),
-                            final_render=result.renders[0].name if result.renders else None, note=note,
+                            final_render=_final_render(result.renders), note=note,
                             frame_at=_clock(t))
         if run.ok and score is not None:
             result.skill_id = self.learner.store_skill(recipe, part, video, True, score, chapter - 1, project,
@@ -420,7 +420,7 @@ class Teacher:
         tiles += [(r, f"Lucius ({r.stem.split('_')[-1]})") for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=f"Task: {task}")
         project.data.update(sheet="sheet.png", recipe_steps=len(recipe.steps), actions=sorted(recipe.actions_used()),
-                            final_render=result.renders[0].name if result.renders else None, note=note)
+                            final_render=_final_render(result.renders), note=note)
         if run.ok and score is not None:
             result.skill_id = self.store_object(task, recipe, score, project.id)
             result.status = "made" if score >= 6.0 else "rough"
@@ -506,6 +506,13 @@ class Teacher:
 
     def _uses_camera(self, video: DownloadedVideo) -> bool:
         return any(entry.get("uses_camera") for entry in self.learner._state(video).get("chapters", {}).values())
+
+
+def _final_render(renders: list[Path]) -> str | None:
+    """The picture that stands for a build: an animation's middle frame (its start is usually a rest pose),
+    otherwise the first view."""
+    middle = [r for r in renders if r.stem == "render_frame_middle"]
+    return (middle or renders or [None])[0].name if renders else None
 
 
 STOPWORDS = {"make", "build", "model", "create", "draw", "render", "with", "and", "the", "for", "from", "like",

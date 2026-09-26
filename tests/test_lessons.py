@@ -704,3 +704,57 @@ def test_rigging_bones_binding_constraints_and_drivers(tmp_path):
         assert Path(shot["path"]).exists()
         names = {o["name"] for o in bridge.request("scene_summary")["objects"]}
         assert not any(n.startswith("LuciusBoneShape") for n in names)   # stand-ins removed after the render
+
+
+def test_ik_fk_switch_visual_pose_interpolation_and_retiming(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        def tail(bone, frame):
+            ex("set_frames", current=frame)
+            return ex("pose_bone", armature="Rig", bone=bone)["tail"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_armature", name="Rig", bones=[
+            {"name": "thigh.L", "head": [0, 0, 2], "tail": [0, -0.05, 1]},
+            {"name": "shin.L", "tail": [0, 0, 0], "parent": "thigh.L", "connect": True},
+            {"name": "ik.L", "head": [0, 0, 0], "tail": [0, 0.3, 0], "deform": False}])
+        ex("add_constraint", object="Rig", bone="shin.L", type="IK", target="Rig", subtarget="ik.L", chain_count=2)
+        # the foot planted (IK) and lifted: the knee bends
+        ex("pose_bone", armature="Rig", bone="ik.L", location=[0, 0, 0], frame=1)
+        ex("pose_bone", armature="Rig", bone="ik.L", location=[0, -0.4, 0.8], frame=10)
+        ex("key_constraint", object="Rig", bone="shin.L", constraint="IK", influence=1, frame=10)
+        # FK matched to the IK pose (visual transform), then the switch to FK on the next frame
+        for bone in ("thigh.L", "shin.L"):
+            assert ex("pose_bone", armature="Rig", bone=bone, visual=True, frame=10)["keyed"]
+            ex("pose_bone", armature="Rig", bone=bone, visual=True, frame=11)
+        ex("key_constraint", object="Rig", bone="shin.L", constraint="IK", influence=0, frame=11)
+        ik_pose = tail("shin.L", 10)
+        assert ik_pose == pytest.approx([0, -0.4, 0.8], abs=0.02)
+        assert tail("shin.L", 11) == pytest.approx(ik_pose, abs=0.02)   # no jump at the switch
+        # FK from here: the thigh swings on its own, the IK handle no longer matters
+        ex("pose_bone", armature="Rig", bone="thigh.L", rotation=[math.radians(-60), 0, 0], frame=20)
+        ex("pose_bone", armature="Rig", bone="ik.L", location=[0, 0, 0], frame=20)
+        assert tail("shin.L", 20) != pytest.approx(tail("shin.L", 11), abs=0.05)
+        with pytest.raises(Exception, match="no constraint"):
+            ex("key_constraint", object="Rig", bone="shin.L", constraint="Nope", influence=0, frame=12)
+        # blocking: every key constant; then Bezier with vector handles in a range, and an ease
+        assert ex("set_interpolation", object="Rig", interpolation="CONSTANT")["keys"] > 10
+        assert tail("shin.L", 15) == pytest.approx(tail("shin.L", 11), abs=1e-3)   # held until the next key
+        ex("set_interpolation", object="Rig", interpolation="BEZIER", handle="AUTO_CLAMPED")
+        assert ex("set_interpolation", object="Rig", bones=["ik.L"], channels=["location"], axes="z",
+                  start=5, end=30, handle="VECTOR")["keys"] == 2
+        ex("set_interpolation", object="Rig", bones=["thigh.L"], ease_in=40, ease_out=40)
+        # timing: the thigh's keys after frame 10 moved later (overlapping action), everything scaled in time
+        moved = ex("retime_keys", object="Rig", bones=["thigh.L"], start=12, offset=4)
+        assert moved["moved"] > 0 and moved["last"] == 24
+        with pytest.raises(Exception, match="same frame"):
+            ex("retime_keys", object="Rig", bones=["thigh.L"], start=24, end=24, offset=-13)
+        with pytest.raises(Exception, match="same frame"):
+            ex("retime_keys", object="Rig", scale=0.5, pivot=1)    # frames 10 and 11 would both become 6
+        whole = ex("retime_keys", object="Rig", scale=0.8, pivot=1)
+        assert whole["first"] == 1 and whole["last"] == 19     # 24 -> 1 + 23 * 0.8 = 19.4 -> 19 (snapped)

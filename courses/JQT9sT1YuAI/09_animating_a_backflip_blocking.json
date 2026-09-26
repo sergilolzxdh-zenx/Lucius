@@ -1,0 +1,3878 @@
+{
+ "title": "Animating a Backflip: blocking",
+ "summary": "A rigged character (a pink mannequin standing in for the tutor's Mixamo model with a Rigify rig: IK legs with poles, feet that follow the IK handle or, switched to FK, the shin) animated pose to pose at 60 fps: standing, the wind-up (arms swung back, body down and forward), the take-off (arms up, body extended, on the toes), then the IK/FK switch keyed so the legs turn with the body in the air (the FK bones first keyed where the IK had them), the tuck upside down, legs reaching for the floor, the switch back to IK on the landing frame with the feet planted behind the start, the crouch, standing up. Rotations are Euler XYZ so the -360 degree flip goes the long way round. All keys constant: the blocking pass.",
+ "objects": [
+  {
+   "name": "Body",
+   "description": "the mannequin"
+  },
+  {
+   "name": "Rig",
+   "description": "its armature with the backflip keys"
+  }
+ ],
+ "expected_result": "A pink mannequin on a grey floor, keyed in poses from standing through a backflip to a crouched landing half a metre behind the start; the render pops from pose to pose (constant keys).",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Bola",
+     "Control",
+     "Bloque"
+    ]
+   },
+   "note": "a new scene for the character: the ball, its control and the block go",
+   "video_time": "20:05"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "UpperArm.L",
+    "radius": 0.055,
+    "depth": 0.3053,
+    "vertices": 16,
+    "location": [
+     0.27,
+     0.01,
+     1.35
+    ],
+    "rotation_deg": [
+     0,
+     156.516,
+     9.462
+    ]
+   },
+   "note": "UpperArm.L: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "UpperArm.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "UpperArm.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Forearm.L",
+    "radius": 0.045,
+    "depth": 0.2793,
+    "vertices": 16,
+    "location": [
+     0.38,
+     0.01,
+     1.08
+    ],
+    "rotation_deg": [
+     0,
+     158.583,
+     -11.31
+    ]
+   },
+   "note": "Forearm.L: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Forearm.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Forearm.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Thigh.L",
+    "radius": 0.085,
+    "depth": 0.4206,
+    "vertices": 16,
+    "location": [
+     0.12,
+     -0.005,
+     0.72
+    ],
+    "rotation_deg": [
+     0,
+     176.952,
+     -26.565
+    ]
+   },
+   "note": "Thigh.L: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Thigh.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Thigh.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Shin.L",
+    "radius": 0.06,
+    "depth": 0.4202,
+    "vertices": 16,
+    "location": [
+     0.135,
+     -0.005,
+     0.3
+    ],
+    "rotation_deg": [
+     0,
+     178.071,
+     45.0
+    ]
+   },
+   "note": "Shin.L: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shin.L",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shin.L",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jshoulder.L",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     0.21,
+     0,
+     1.49
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jelbow.L",
+    "radius": 0.055,
+    "vertices": 16,
+    "location": [
+     0.33,
+     0.02,
+     1.21
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jwrist.L",
+    "radius": 0.05,
+    "vertices": 16,
+    "location": [
+     0.43,
+     0,
+     0.95
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jknee.L",
+    "radius": 0.075,
+    "vertices": 16,
+    "location": [
+     0.13,
+     -0.01,
+     0.51
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jankle.L",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     0.14,
+     0,
+     0.09
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hand.L",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     0.46,
+     -0.01,
+     0.86
+    ]
+   },
+   "note": "a hand",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Hand.L",
+    "dimensions": [
+     0.07,
+     0.1,
+     0.17
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Foot.L",
+    "radius": 0.08,
+    "vertices": 16,
+    "location": [
+     0.14,
+     -0.07,
+     0.05
+    ]
+   },
+   "note": "a foot",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Foot.L",
+    "dimensions": [
+     0.11,
+     0.26,
+     0.09
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "UpperArm.R",
+    "radius": 0.055,
+    "depth": 0.3053,
+    "vertices": 16,
+    "location": [
+     -0.27,
+     0.01,
+     1.35
+    ],
+    "rotation_deg": [
+     0,
+     156.516,
+     170.538
+    ]
+   },
+   "note": "UpperArm.R: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "UpperArm.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "UpperArm.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Forearm.R",
+    "radius": 0.045,
+    "depth": 0.2793,
+    "vertices": 16,
+    "location": [
+     -0.38,
+     0.01,
+     1.08
+    ],
+    "rotation_deg": [
+     0,
+     158.583,
+     -168.69
+    ]
+   },
+   "note": "Forearm.R: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Forearm.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Forearm.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Thigh.R",
+    "radius": 0.085,
+    "depth": 0.4206,
+    "vertices": 16,
+    "location": [
+     -0.12,
+     -0.005,
+     0.72
+    ],
+    "rotation_deg": [
+     0,
+     176.952,
+     -153.435
+    ]
+   },
+   "note": "Thigh.R: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Thigh.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Thigh.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Shin.R",
+    "radius": 0.06,
+    "depth": 0.4202,
+    "vertices": 16,
+    "location": [
+     -0.135,
+     -0.005,
+     0.3
+    ],
+    "rotation_deg": [
+     0,
+     178.071,
+     135.0
+    ]
+   },
+   "note": "Shin.R: a limb that can bend",
+   "video_time": "20:05"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Shin.R",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Shin.R",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jshoulder.R",
+    "radius": 0.07,
+    "vertices": 16,
+    "location": [
+     -0.21,
+     0,
+     1.49
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jelbow.R",
+    "radius": 0.055,
+    "vertices": 16,
+    "location": [
+     -0.33,
+     0.02,
+     1.21
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jwrist.R",
+    "radius": 0.05,
+    "vertices": 16,
+    "location": [
+     -0.43,
+     0,
+     0.95
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jknee.R",
+    "radius": 0.075,
+    "vertices": 16,
+    "location": [
+     -0.13,
+     -0.01,
+     0.51
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Jankle.R",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     -0.14,
+     0,
+     0.09
+    ]
+   },
+   "note": "a ball joint, like the tutor's wooden-mannequin model",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Hand.R",
+    "radius": 0.06,
+    "vertices": 16,
+    "location": [
+     -0.46,
+     -0.01,
+     0.86
+    ]
+   },
+   "note": "a hand",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Hand.R",
+    "dimensions": [
+     0.07,
+     0.1,
+     0.17
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Foot.R",
+    "radius": 0.08,
+    "vertices": 16,
+    "location": [
+     -0.14,
+     -0.07,
+     0.05
+    ]
+   },
+   "note": "a foot",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Foot.R",
+    "dimensions": [
+     0.11,
+     0.26,
+     0.09
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Pelvis",
+    "radius": 0.2,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     0.98
+    ]
+   },
+   "note": "Pelvis",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Pelvis",
+    "dimensions": [
+     0.34,
+     0.22,
+     0.24
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Chest",
+    "radius": 0.3,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.3
+    ]
+   },
+   "note": "Chest",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Chest",
+    "dimensions": [
+     0.4,
+     0.24,
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Belly",
+    "radius": 0.2,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.1
+    ]
+   },
+   "note": "Belly",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Belly",
+    "dimensions": [
+     0.32,
+     0.2,
+     0.26
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Skull",
+    "radius": 0.12,
+    "vertices": 24,
+    "location": [
+     0,
+     0,
+     1.73
+    ]
+   },
+   "note": "Skull",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Skull",
+    "dimensions": [
+     0.2,
+     0.23,
+     0.27
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "NeckMesh",
+    "radius": 0.05,
+    "depth": 0.13,
+    "vertices": 16,
+    "location": [
+     0.0,
+     0.0,
+     1.565
+    ],
+    "rotation_deg": [
+     0,
+     0.0,
+     0.0
+    ]
+   },
+   "note": "NeckMesh",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "NeckMesh",
+    "axis": "z",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "loop cuts so it can bend",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "NeckMesh",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "UpperArm.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Forearm.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Thigh.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Shin.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jshoulder.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jelbow.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jwrist.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jknee.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jankle.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Hand.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Foot.L",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "UpperArm.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Forearm.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Thigh.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Shin.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jshoulder.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jelbow.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jwrist.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jknee.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Jankle.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Hand.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Foot.R",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Pelvis",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Chest",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Belly",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Skull",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "NeckMesh",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "UpperArm.L",
+     "Forearm.L",
+     "Thigh.L",
+     "Shin.L",
+     "Jshoulder.L",
+     "Jelbow.L",
+     "Jwrist.L",
+     "Jknee.L",
+     "Jankle.L",
+     "Hand.L",
+     "Foot.L",
+     "UpperArm.R",
+     "Forearm.R",
+     "Thigh.R",
+     "Shin.R",
+     "Jshoulder.R",
+     "Jelbow.R",
+     "Jwrist.R",
+     "Jknee.R",
+     "Jankle.R",
+     "Hand.R",
+     "Foot.R",
+     "Pelvis",
+     "Chest",
+     "Belly",
+     "Skull",
+     "NeckMesh"
+    ],
+    "into": "Chest"
+   },
+   "note": "one mesh, the body",
+   "video_time": null
+  },
+  {
+   "action": "rename_object",
+   "args": {
+    "object": "Chest",
+    "new_name": "Body"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Body",
+    "location": true,
+    "rotation": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Body",
+    "name": "Maniqui",
+    "base_color": "#D98579",
+    "roughness": 0.55
+   },
+   "note": "the tutor's pink mannequin",
+   "video_time": "20:10"
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "Rig",
+    "display": "STICK",
+    "bones": [
+     {
+      "name": "hips",
+      "head": [
+       0,
+       0,
+       0.93
+      ],
+      "tail": [
+       0,
+       0,
+       1.1
+      ]
+     },
+     {
+      "name": "spine",
+      "tail": [
+       0,
+       0,
+       1.33
+      ],
+      "parent": "hips",
+      "connect": true
+     },
+     {
+      "name": "chest",
+      "tail": [
+       0,
+       0,
+       1.5
+      ],
+      "parent": "spine",
+      "connect": true
+     },
+     {
+      "name": "neck",
+      "tail": [
+       0,
+       0,
+       1.62
+      ],
+      "parent": "chest",
+      "connect": true
+     },
+     {
+      "name": "head",
+      "tail": [
+       0,
+       0,
+       1.9
+      ],
+      "parent": "neck",
+      "connect": true
+     }
+    ]
+   },
+   "note": "the rig: spine from the hips (the root) to the head",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "Rig",
+    "bones": [
+     {
+      "name": "shoulder.L",
+      "head": [
+       0.03,
+       0,
+       1.47
+      ],
+      "tail": [
+       0.21,
+       0,
+       1.49
+      ],
+      "parent": "chest"
+     },
+     {
+      "name": "upper_arm.L",
+      "tail": [
+       0.33,
+       0.02,
+       1.21
+      ],
+      "parent": "shoulder.L",
+      "connect": true
+     },
+     {
+      "name": "forearm.L",
+      "tail": [
+       0.43,
+       0,
+       0.95
+      ],
+      "parent": "upper_arm.L",
+      "connect": true
+     },
+     {
+      "name": "hand.L",
+      "tail": [
+       0.47,
+       -0.01,
+       0.8
+      ],
+      "parent": "forearm.L",
+      "connect": true
+     },
+     {
+      "name": "thigh.L",
+      "head": [
+       0.11,
+       0,
+       0.93
+      ],
+      "tail": [
+       0.13,
+       -0.01,
+       0.51
+      ],
+      "parent": "hips"
+     },
+     {
+      "name": "shin.L",
+      "tail": [
+       0.14,
+       0,
+       0.09
+      ],
+      "parent": "thigh.L",
+      "connect": true
+     },
+     {
+      "name": "foot.L",
+      "tail": [
+       0.14,
+       -0.17,
+       0.03
+      ],
+      "parent": "shin.L",
+      "connect": true
+     }
+    ]
+   },
+   "note": "arm and leg chains of one side",
+   "video_time": null
+  },
+  {
+   "action": "symmetrize_bones",
+   "args": {
+    "armature": "Rig"
+   },
+   "note": "mirrored to the right side",
+   "video_time": null
+  },
+  {
+   "action": "bind_to_armature",
+   "args": {
+    "objects": [
+     "Body"
+    ],
+    "armature": "Rig",
+    "mode": "AUTOMATIC"
+   },
+   "note": "Ctrl+P > With Automatic Weights",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.6
+    ],
+    "max": [
+     null,
+     null,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "weights cleaned: the head rigid",
+   "video_time": null
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "head",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     -0.18,
+     null,
+     0.86
+    ],
+    "max": [
+     0.18,
+     null,
+     1.05
+    ],
+    "space": "local"
+   },
+   "note": "weights cleaned: the hips rigid",
+   "video_time": null
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "hips",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Body",
+    "element": "VERT",
+    "min": [
+     -0.19,
+     null,
+     1.2
+    ],
+    "max": [
+     0.19,
+     null,
+     1.52
+    ],
+    "space": "local"
+   },
+   "note": "weights cleaned: the chest rigid",
+   "video_time": null
+  },
+  {
+   "action": "assign_weights",
+   "args": {
+    "object": "Body",
+    "group": "chest",
+    "weight": 1.0,
+    "exclusive": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Body",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_armature",
+   "args": {
+    "name": "Rig",
+    "bones": [
+     {
+      "name": "ik_foot.L",
+      "head": [
+       0.14,
+       0,
+       0.09
+      ],
+      "tail": [
+       0.14,
+       0.2,
+       0.09
+      ],
+      "deform": false
+     },
+     {
+      "name": "pole.L",
+      "head": [
+       0.13,
+       -0.6,
+       0.51
+      ],
+      "tail": [
+       0.13,
+       -0.7,
+       0.51
+      ],
+      "deform": false
+     },
+     {
+      "name": "ik_foot.R",
+      "head": [
+       -0.14,
+       0,
+       0.09
+      ],
+      "tail": [
+       -0.14,
+       0.2,
+       0.09
+      ],
+      "deform": false
+     },
+     {
+      "name": "pole.R",
+      "head": [
+       -0.13,
+       -0.6,
+       0.51
+      ],
+      "tail": [
+       -0.13,
+       -0.7,
+       0.51
+      ],
+      "deform": false
+     }
+    ]
+   },
+   "note": "IK handles at the ankles and poles in front of the knees (not deforming, no parent)",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "type": "IK",
+    "target": "Rig",
+    "subtarget": "ik_foot.L",
+    "pole_target": "Rig",
+    "pole_subtarget": "pole.L",
+    "pole_angle_deg": -64,
+    "chain_count": 2
+   },
+   "note": "IK on the shin: chain 2 to the IK handle, knee towards the pole",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "parent": ""
+   },
+   "note": "the foot freed from the shin",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "type": "CHILD_OF",
+    "name": "IK foot",
+    "target": "Rig",
+    "subtarget": "ik_foot.L"
+   },
+   "note": "IK: the foot follows the IK handle",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "type": "CHILD_OF",
+    "name": "FK foot",
+    "target": "Rig",
+    "subtarget": "shin.L",
+    "influence": 0.0
+   },
+   "note": "FK: the foot follows the shin (off until the switch)",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "color": "THEME04"
+   },
+   "note": "controls coloured: IK blue, poles red",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "pole.L",
+    "color": "THEME01"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "type": "IK",
+    "target": "Rig",
+    "subtarget": "ik_foot.R",
+    "pole_target": "Rig",
+    "pole_subtarget": "pole.R",
+    "pole_angle_deg": -116,
+    "chain_count": 2
+   },
+   "note": "IK on the shin: chain 2 to the IK handle, knee towards the pole",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "parent": ""
+   },
+   "note": "the foot freed from the shin",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "type": "CHILD_OF",
+    "name": "IK foot",
+    "target": "Rig",
+    "subtarget": "ik_foot.R"
+   },
+   "note": "IK: the foot follows the IK handle",
+   "video_time": null
+  },
+  {
+   "action": "add_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "type": "CHILD_OF",
+    "name": "FK foot",
+    "target": "Rig",
+    "subtarget": "shin.R",
+    "influence": 0.0
+   },
+   "note": "FK: the foot follows the shin (off until the switch)",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "color": "THEME04"
+   },
+   "note": "controls coloured: IK blue, poles red",
+   "video_time": null
+  },
+  {
+   "action": "set_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "pole.R",
+    "color": "THEME01"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     5.0,
+     1.1,
+     1.25
+    ],
+    "look_at": [
+     0,
+     0.25,
+     1.15
+    ],
+    "lens": 35
+   },
+   "note": "a camera from the side, where the flip reads best",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "SueloGris",
+    "base_color": "#8C8F8E",
+    "roughness": 0.8
+   },
+   "note": "a neutral grey floor, like the tutor's viewport",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Key",
+    "location": [
+     3,
+     -3,
+     4
+    ],
+    "look_at": [
+     0,
+     0.2,
+     1
+    ],
+    "power": 600,
+    "size": 3
+   },
+   "note": "a key light from the front side",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 135,
+    "fps": 60,
+    "current": 1
+   },
+   "note": "60 fps, like the tutor (the timeline runs fast)",
+   "video_time": "20:44"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "key pose 1: standing, arms relaxed (not symmetrical)",
+   "video_time": "20:25"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     4,
+     0,
+     12
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -12,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -2,
+     0,
+     -10
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -8,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     -0.2,
+     0.03
+    ],
+    "rotation_deg": [
+     22,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "the wind-up: arms swung back, elbows bent a little, body down and tilted forward, over the legs",
+   "video_time": "20:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     10,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -14,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     62,
+     0,
+     8
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -28,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     55,
+     0,
+     -12
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -20,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.03,
+     -0.05
+    ],
+    "rotation_deg": [
+     -16,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "the take-off: arms thrown up, the body extended and leaning back, up on the toes",
+   "video_time": "21:34"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     -12,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -25,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -150,
+     0,
+     10
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -12,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0,
+     0.05
+    ],
+    "rotation_deg": [
+     20,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -158,
+     0,
+     -6
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -6,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0,
+     0.05
+    ],
+    "rotation_deg": [
+     22,
+     0,
+     0
+    ],
+    "frame": 46
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.1,
+     -0.08
+    ],
+    "rotation_deg": [
+     -32,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "the feet leave the floor",
+   "video_time": "21:40"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     -14,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -32,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -165,
+     0,
+     12
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -8,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0.04,
+     0.12
+    ],
+    "rotation_deg": [
+     35,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -170,
+     0,
+     -8
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -5,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0.05,
+     0.11
+    ],
+    "rotation_deg": [
+     32,
+     0,
+     0
+    ],
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 1
+   },
+   "note": "the IK/FK switch keyed at IK (0 = IK in his rig) from the start",
+   "video_time": "24:45"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": "24:45"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "visual": true,
+    "frame": 52
+   },
+   "note": "take-off: key the FK leg bones where the IK put them (match FK to IK)",
+   "video_time": "25:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "visual": true,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "visual": true,
+    "frame": 52
+   },
+   "note": "take-off: key the FK leg bones where the IK put them (match FK to IK)",
+   "video_time": "25:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "visual": true,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "visual": true,
+    "frame": 52
+   },
+   "note": "take-off: key the FK leg bones where the IK put them (match FK to IK)",
+   "video_time": "25:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "visual": true,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "visual": true,
+    "frame": 52
+   },
+   "note": "take-off: key the FK leg bones where the IK put them (match FK to IK)",
+   "video_time": "25:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "visual": true,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 52
+   },
+   "note": "the switch keyed on the last frame on the floor",
+   "video_time": "24:50"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 52
+   },
+   "note": "",
+   "video_time": "24:50"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 52
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "constraint": "IK",
+    "influence": 0.0,
+    "frame": 53
+   },
+   "note": "one frame later: FK, the legs now turn with the body",
+   "video_time": "24:55"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "IK foot",
+    "influence": 0.0,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "FK foot",
+    "influence": 1.0,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "constraint": "IK",
+    "influence": 0.0,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": "24:55"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "IK foot",
+    "influence": 0.0,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "FK foot",
+    "influence": 1.0,
+    "frame": 53
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.45,
+     -0.2
+    ],
+    "rotation_deg": [
+     -120,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "in the air, rotating back: knees coming up, arms coming down",
+   "video_time": "26:00"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     12,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     8,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -110,
+     0,
+     14
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -30,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "rotation_deg": [
+     -85,
+     0,
+     4
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "rotation_deg": [
+     95,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -100,
+     0,
+     -10
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -25,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -78,
+     0,
+     -3
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     88,
+     0,
+     0
+    ],
+    "frame": 62
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.55,
+     -0.28
+    ],
+    "rotation_deg": [
+     -200,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "upside down, tucked: knees to the chest, the elbows tuck in",
+   "video_time": "26:10"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     22,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     15,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -60,
+     0,
+     12
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -55,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "rotation_deg": [
+     -118,
+     0,
+     6
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "rotation_deg": [
+     128,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -55,
+     0,
+     -12
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -60,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -110,
+     0,
+     -4
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     122,
+     0,
+     0
+    ],
+    "frame": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.32,
+     -0.42
+    ],
+    "rotation_deg": [
+     -300,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "coming round: the tuck released, legs reaching for the floor, arms next to the body, head back to find the floor",
+   "video_time": "26:15"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     4,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -20,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     12,
+     0,
+     16
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -8,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "rotation_deg": [
+     -55,
+     0,
+     3
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "rotation_deg": [
+     60,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     8,
+     0,
+     -14
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -10,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -48,
+     0,
+     -2
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     55,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     0.02,
+     -0.5
+    ],
+    "rotation_deg": [
+     -342,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "one frame before the landing: the FK legs close to the landing pose",
+   "video_time": "26:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     4,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -8,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -30,
+     0,
+     16
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -18,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.L",
+    "rotation_deg": [
+     -26,
+     0,
+     2
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.L",
+    "rotation_deg": [
+     22,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -26,
+     0,
+     -14
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -20,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "thigh.R",
+    "rotation_deg": [
+     -22,
+     0,
+     -1
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "shin.R",
+    "rotation_deg": [
+     20,
+     0,
+     0
+    ],
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "constraint": "IK",
+    "influence": 0.0,
+    "frame": 87
+   },
+   "note": "the landing: FK keyed one frame before",
+   "video_time": "26:50"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "IK foot",
+    "influence": 0.0,
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "FK foot",
+    "influence": 1.0,
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "constraint": "IK",
+    "influence": 0.0,
+    "frame": 87
+   },
+   "note": "",
+   "video_time": "26:50"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "IK foot",
+    "influence": 0.0,
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "FK foot",
+    "influence": 1.0,
+    "frame": 87
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.L",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 88
+   },
+   "note": "and IK on the frame he lands: the feet have contact with the floor",
+   "video_time": "26:52"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.L",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "shin.R",
+    "constraint": "IK",
+    "influence": 1.0,
+    "frame": 88
+   },
+   "note": "",
+   "video_time": "26:52"
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "IK foot",
+    "influence": 1.0,
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "key_constraint",
+   "args": {
+    "object": "Rig",
+    "bone": "foot.R",
+    "constraint": "FK foot",
+    "influence": 0.0,
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     -0.04,
+     -0.5
+    ],
+    "rotation_deg": [
+     -340,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "the landing: IK back on, feet planted where he lands, leaning forward, arms forward",
+   "video_time": "26:55"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     6,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -10,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -45,
+     0,
+     16
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -25,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0.48,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -40,
+     0,
+     -14
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -28,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0.53,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     -0.3,
+     -0.52
+    ],
+    "rotation_deg": [
+     -334,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "he crouches as he lands, the arms forward and bent to stop the momentum",
+   "video_time": "27:40"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     14,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     -22,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     -72,
+     0,
+     14
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -38,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0.48,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -66,
+     0,
+     -12
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -32,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0.53,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 100
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "hips",
+    "location": [
+     0,
+     -0.02,
+     -0.5
+    ],
+    "rotation_deg": [
+     -360,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "back up, arms coming down",
+   "video_time": "28:30"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "spine",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "head",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.L",
+    "rotation_deg": [
+     2,
+     0,
+     12
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.L",
+    "rotation_deg": [
+     -12,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.L",
+    "location": [
+     0,
+     0.48,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "upper_arm.R",
+    "rotation_deg": [
+     -3,
+     0,
+     -11
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "forearm.R",
+    "rotation_deg": [
+     -9,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "ik_foot.R",
+    "location": [
+     0,
+     0.53,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 125
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "interpolation": "CONSTANT"
+   },
+   "note": "select all bones (A), all keys in the graph (A), T > Constant: blocking, poses pop from one to the next so the timing can be judged",
+   "video_time": "23:10"
+  }
+ ]
+}

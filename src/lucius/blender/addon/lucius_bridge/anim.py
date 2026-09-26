@@ -5,6 +5,7 @@ Keyframes are set the way a tutorial does it: go to a frame, put the object wher
 """
 
 import os
+import re
 
 import bpy
 
@@ -15,6 +16,7 @@ from .scene import _look_at
 INTERPOLATIONS = ("BEZIER", "LINEAR", "CONSTANT")
 HANDLES = ("AUTO_CLAMPED", "AUTO", "VECTOR", "ALIGNED", "FREE")
 AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
+AXES = ("x", "y", "z", "xy", "xz", "yz", "xyz")
 VIDEO_EXTENSIONS = (".mp4",)
 
 
@@ -206,6 +208,132 @@ def render_animation(p):
     return {"path": path, "frames": frames, "bytes": os.path.getsize(path)}
 
 
+CHANNELS = ("location", "rotation", "scale", "influence")
+_BONE_PATH = re.compile(r'^pose\.bones\["((?:[^"\\]|\\.)*)"\]\.(.+)$')
+
+
+def _channel(prop):
+    if prop.startswith("constraints["):
+        return "influence" if prop.endswith(".influence") else None
+    return {"location": "location", "rotation_euler": "rotation", "rotation_quaternion": "rotation",
+            "scale": "scale"}.get(prop)
+
+
+def _select_curves(obj, bones, channels, axes):
+    """The curves a graph-editor selection covers: optionally only some bones' channels, only location, rotation,
+    scale or constraint influence, only some axes."""
+    known = set(obj.pose.bones.keys()) if obj.type == "ARMATURE" else set()
+    for bone in bones or ():
+        if bone not in known:
+            raise BridgeCommandError("invalid_param", f"bone {bone!r} not found on {obj.name}", param="bones")
+    for channel in channels or ():
+        if channel not in CHANNELS:
+            raise BridgeCommandError("invalid_param", f"channel must be one of {CHANNELS}", param="channels")
+    indexes = {AXIS_INDEX[a] for a in axes}
+    chosen = []
+    for curve in _fcurves(obj):
+        match = _BONE_PATH.match(curve.data_path)
+        bone, prop = (match.group(1), match.group(2)) if match else (None, curve.data_path)
+        if bones and bone not in bones:
+            continue
+        channel = _channel(prop)
+        if channels and channel not in channels:
+            continue
+        if channel in ("location", "scale") or prop == "rotation_euler":
+            if curve.array_index not in indexes:
+                continue
+        chosen.append(curve)
+    if not chosen:
+        raise BridgeCommandError("invalid_param", f"{obj.name} has no keyframes matching that selection",
+                                 param="object")
+    return chosen
+
+
+def _in_range(x, p):
+    return (p["start"] is None or x >= p["start"] - 1e-4) and (p["end"] is None or x <= p["end"] + 1e-4)
+
+
+def set_interpolation(p):
+    """Graph editor: select keyframes (all of an object's, or some bones' or channels' within a frame range),
+    then T (interpolation), V (handle type), or flat handles for an ease in / ease out given as a percentage of
+    the gap to the neighbouring key (what an ease add-on such as Graph Pilot applies)."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    if p["interpolation"] is None and p["handle"] is None and p["ease_in"] is None and p["ease_out"] is None:
+        raise BridgeCommandError("invalid_param", "give an interpolation, a handle type or an ease", param="interpolation")
+    for key in ("ease_in", "ease_out"):
+        if p[key] is not None and not 0 <= p[key] <= 100:
+            raise BridgeCommandError("invalid_param", f"{key} is a percentage 0..100", param=key)
+    changed = 0
+    for curve in _select_curves(obj, p["bones"], p["channels"], p["axes"]):
+        points = list(curve.keyframe_points)
+        for i, point in enumerate(points):
+            if not _in_range(point.co.x, p):
+                continue
+            changed += 1
+            if p["interpolation"] is not None:
+                point.interpolation = p["interpolation"]
+            if p["handle"] is not None:
+                point.handle_left_type = point.handle_right_type = p["handle"]
+            if p["ease_in"] is not None or p["ease_out"] is not None:
+                point.interpolation = "BEZIER"
+                point.handle_left_type = point.handle_right_type = "FREE"
+                x, y = point.co.x, point.co.y
+                if p["ease_in"] is not None and i > 0:
+                    point.handle_left = (x - (x - points[i - 1].co.x) * max(p["ease_in"], 1) / 100, y)
+                if p["ease_out"] is not None and i + 1 < len(points):
+                    point.handle_right = (x + (points[i + 1].co.x - x) * max(p["ease_out"], 1) / 100, y)
+        curve.update()
+    if not changed:
+        raise BridgeCommandError("invalid_param", "no keyframes in that frame range", param="start")
+    return {"object": obj.name, "keys": changed}
+
+
+def retime_keys(p):
+    """Dope sheet / graph editor timing: select the keyframes in a frame range (optionally only some bones or
+    channels) and scale them in time around a pivot frame (S X with the 2D cursor as the pivot: below 1 is faster)
+    and/or move them by some frames (G X). Keys snap to whole frames, as the editors do by default."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    if p["scale"] <= 0:
+        raise BridgeCommandError("invalid_param", "scale must be positive", param="scale")
+    if p["scale"] == 1 and p["offset"] == 0:
+        raise BridgeCommandError("invalid_param", "give a scale other than 1 or an offset", param="scale")
+    pivot = p["pivot"] if p["pivot"] is not None else (p["start"] if p["start"] is not None else 0)
+    moved = 0
+    curves = _select_curves(obj, p["bones"], p["channels"], p["axes"])
+    plans = []
+    for curve in curves:
+        new_x = []
+        for point in curve.keyframe_points:
+            x = point.co.x
+            if _in_range(x, p):
+                target = pivot + (x - pivot) * p["scale"] + p["offset"]
+                new_x.append(round(target) if p["snap"] else target)
+            else:
+                new_x.append(x)
+        ordered = sorted(new_x)
+        if any(abs(b - a) < 1e-3 for a, b in zip(ordered, ordered[1:])):
+            raise BridgeCommandError("invalid_param", f"keys of {curve.data_path}[{curve.array_index}] would land "
+                                     "on the same frame; move the neighbouring keys first", param="offset")
+        plans.append((curve, new_x))
+    for curve, new_x in plans:
+        for point, x in zip(list(curve.keyframe_points), new_x):
+            shift = x - point.co.x
+            if abs(shift) < 1e-9:
+                continue
+            old = point.co.x
+            factor = p["scale"] if _in_range(old, p) else 1.0
+            left, right = point.handle_left.x - old, point.handle_right.x - old
+            point.co.x = x
+            point.handle_left.x = x + left * factor
+            point.handle_right.x = x + right * factor
+            moved += 1
+        curve.update()
+    frames = sorted({round(pt.co.x, 3) for c in curves for pt in c.keyframe_points})
+    return {"object": obj.name, "moved": moved, "first": frames[0], "last": frames[-1]}
+
+
 def animation_summary():
     scene = bpy.context.scene
     animated = []
@@ -225,11 +353,19 @@ ACTIONS = {
         "look_at": ("vec3", None), "scale": ("vec3", None), "lens": ("float", None),
         "focus_distance": ("float", None), "fstop": ("float", None),
         "interpolation": (INTERPOLATIONS, "BEZIER"), "handle": (HANDLES, None),
-        "axes": (("x", "y", "z", "xy", "xz", "yz", "xyz"), "xyz")}),
+        "axes": (AXES, "xyz")}),
     "clear_animation": (clear_animation, {"object": OBJ}),
     "add_shake": (add_shake, {"object": OBJ, "strength": ("float", 0.05), "rotation_strength": ("float", 0.01),
                               "scale": ("float", 20.0), "influence": ("float", 0.5)}),
     "render_animation": (render_animation, {"path": ("path", REQUIRED), "step": ("int", 1),
                                             "samples": ("int", None), "percentage": ("int", 100)}),
+    "set_interpolation": (set_interpolation, {
+        "object": OBJ, "bones": ("names", None), "channels": ("names", None), "axes": (AXES, "xyz"),
+        "start": ("float", None), "end": ("float", None), "interpolation": (INTERPOLATIONS, None),
+        "handle": (HANDLES, None), "ease_in": ("float", None), "ease_out": ("float", None)}),
+    "retime_keys": (retime_keys, {
+        "object": OBJ, "bones": ("names", None), "channels": ("names", None), "axes": (AXES, "xyz"),
+        "start": ("float", None), "end": ("float", None), "scale": ("float", 1.0), "pivot": ("float", None),
+        "offset": ("float", 0.0), "snap": ("bool", True)}),
 }
 

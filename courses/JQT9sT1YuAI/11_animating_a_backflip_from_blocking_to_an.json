@@ -1,0 +1,382 @@
+{
+ "title": "Animating a Backflip: from blocking to animation",
+ "summary": "The blockout turned into animation, as the tutor does it in the graph editor: all keys Bezier with auto clamped handles (the IK/FK switch stays constant), the end sped up, the body's backward travel linear in the air (you can't slow down in the air) and its height and spin leaving the take-off and hitting the landing with vector handles, the wind-up eased at 36/36 like Graph Pilot, the legs' tuck released sharply before the landing, the feet pointing as he takes off and reaching for the floor (vector: they snap back), the arms carrying the spin into the landing, the elbows a few frames behind the upper arms (overlapping action), and the timing fixed: the slow beginning scaled in from frame 1 and the rest moved in after it.",
+ "objects": [],
+ "expected_result": "The same backflip, now smooth: a quick wind-up, a fast spin with the knees tucked, the legs snapping out to land half a metre behind, the arms swinging through; about 1.9 s at 60 fps.",
+ "steps": [
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "interpolation": "BEZIER",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "the blockout done: select all bones (A), all keys (A), T > Bezier, V > Auto Clamped",
+   "video_time": "28:50"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "channels": [
+     "influence"
+    ],
+    "interpolation": "CONSTANT"
+   },
+   "note": "except the IK/FK switch: it stays a switch (constant), or the legs would drift between IK and FK for thirty frames",
+   "video_time": "24:45"
+  },
+  {
+   "action": "retime_keys",
+   "args": {
+    "object": "Rig",
+    "start": 89,
+    "scale": 0.8,
+    "pivot": 88
+   },
+   "note": "the end is too slow: the keys after the landing pulled in (S X from the landing frame)",
+   "video_time": "29:35"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "hips"
+    ],
+    "channels": [
+     "location"
+    ],
+    "axes": "z",
+    "start": 52,
+    "end": 88,
+    "interpolation": "LINEAR"
+   },
+   "note": "the main control first -- in the air you can't slow down: the backward motion is linear from take-off to landing",
+   "video_time": "34:45"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "hips"
+    ],
+    "channels": [
+     "location",
+     "rotation"
+    ],
+    "axes": "yz",
+    "start": 52,
+    "end": 52,
+    "handle": "VECTOR"
+   },
+   "note": "the height and the spin leave the take-off and hit the landing at full speed: vector handles (you don't slow down before you land)",
+   "video_time": "34:20"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "hips"
+    ],
+    "channels": [
+     "location",
+     "rotation"
+    ],
+    "axes": "yz",
+    "start": 88,
+    "end": 88,
+    "handle": "VECTOR"
+   },
+   "note": "the height and the spin leave the take-off and hit the landing at full speed: vector handles (you don't slow down before you land)",
+   "video_time": "35:00"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "hips",
+     "spine"
+    ],
+    "start": 1,
+    "end": 30,
+    "ease_in": 36,
+    "ease_out": 36
+   },
+   "note": "the wind-up eased in and out (Graph Pilot, both at 36)",
+   "video_time": "32:18"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "thigh.L",
+     "thigh.R",
+     "shin.L",
+     "shin.R"
+    ],
+    "start": 80,
+    "end": 87,
+    "handle": "VECTOR"
+   },
+   "note": "legs: tucked in, then the tuck released -- boom, the floor: vector, no slowing down",
+   "video_time": "37:07"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 53
+   },
+   "note": "the feet: extended as he takes off, back to normal, pointing for the floor, straight as he lands",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     40,
+     0,
+     0
+    ],
+    "frame": 58
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     12,
+     0,
+     0
+    ],
+    "frame": 66
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     30,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 86
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.L",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 53
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     44,
+     0,
+     0
+    ],
+    "frame": 58
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     12,
+     0,
+     0
+    ],
+    "frame": 66
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     26,
+     0,
+     0
+    ],
+    "frame": 80
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 86
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "pose_bone",
+   "args": {
+    "armature": "Rig",
+    "bone": "foot.R",
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "frame": 88
+   },
+   "note": "",
+   "video_time": "37:50"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "foot.L",
+     "foot.R"
+    ],
+    "handle": "VECTOR"
+   },
+   "note": "they stayed extended too long: vector handles, they correct as fast as possible",
+   "video_time": "38:10"
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "upper_arm.L",
+     "upper_arm.R"
+    ],
+    "start": 88,
+    "end": 88,
+    "handle": "VECTOR"
+   },
+   "note": "arms: as he lands the outgoing handles are vector, all the speed of the rotation",
+   "video_time": "40:45"
+  },
+  {
+   "action": "retime_keys",
+   "args": {
+    "object": "Rig",
+    "bones": [
+     "forearm.L",
+     "forearm.R"
+    ],
+    "start": 2,
+    "offset": 3
+   },
+   "note": "overlapping action: the elbows keep going after the upper arms stop -- their keys a few frames later",
+   "video_time": "41:30"
+  },
+  {
+   "action": "retime_keys",
+   "args": {
+    "object": "Rig",
+    "start": 1,
+    "end": 52,
+    "scale": 0.8,
+    "pivot": 1
+   },
+   "note": "the beginning is way too slow: a marker at the take-off, everything before it scaled in from frame 1 (2D cursor pivot, S X)",
+   "video_time": "42:26"
+  },
+  {
+   "action": "retime_keys",
+   "args": {
+    "object": "Rig",
+    "start": 53,
+    "offset": -10
+   },
+   "note": "then everything after it moved in (G X)",
+   "video_time": "42:45"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "end": 115
+   },
+   "note": "the frame range to the new end",
+   "video_time": "42:52"
+  }
+ ]
+}

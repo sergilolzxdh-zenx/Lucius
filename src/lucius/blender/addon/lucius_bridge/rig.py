@@ -276,8 +276,27 @@ def assign_weights(p):
     return {"object": obj.name, "group": group.name, "vertices": len(indices)}
 
 
+def _set_key_types(arm, bone, frame, interpolation, handle):
+    """The interpolation and handle type of a bone's keys on one frame (T and V on those keys)."""
+    from .anim import _fcurves
+
+    prefix = f'pose.bones["{bone}"]'
+    for curve in _fcurves(arm):
+        if not curve.data_path.startswith(prefix):
+            continue
+        for point in curve.keyframe_points:
+            if abs(point.co.x - frame) < 1e-4:
+                if interpolation is not None:
+                    point.interpolation = interpolation
+                if handle is not None:
+                    point.handle_left_type = point.handle_right_type = handle
+        curve.update()
+
+
 def pose_bone(p):
-    """Pose mode: move, turn or scale a bone (rotation in degrees, XYZ); with ``frame`` it is keyed there (I)."""
+    """Pose mode: move, turn or scale a bone (rotation in degrees, XYZ); with ``frame`` it is keyed there (I),
+    with an interpolation and handle type for those keys. ``visual`` (Pose > Apply > Visual Transform) gives the
+    bone the pose its constraints give it right now, e.g. to match FK bones to the IK pose before switching."""
     _leave_edit_mode()
     arm = _armature(p["armature"])
     name = _bone_name(p["bone"], "bone")
@@ -292,6 +311,14 @@ def pose_bone(p):
         pb.rotation_euler = (0.0, 0.0, 0.0)
         pb.scale = (1.0, 1.0, 1.0)
     keyed = []
+    if p["visual"]:
+        if any(p[k] is not None for k in ("location", "rotation", "scale")):
+            raise BridgeCommandError("invalid_param", "visual takes the constraint pose; give no values with it",
+                                     param="visual")
+        bpy.context.view_layer.update()
+        pb.rotation_mode = "XYZ"
+        pb.matrix_basis = arm.convert_space(pose_bone=pb, matrix=pb.matrix, from_space="POSE", to_space="LOCAL")
+        keyed += ["location", "rotation_euler", "scale"]
     if p["location"] is not None:
         pb.location = p["location"]
         keyed.append("location")
@@ -306,6 +333,11 @@ def pose_bone(p):
         for path in keyed or ["location", "rotation_euler" if pb.rotation_mode == "XYZ" else "rotation_quaternion",
                               "scale"]:
             pb.keyframe_insert(path, frame=p["frame"])
+        if p["interpolation"] is not None or p["handle"] is not None:
+            _set_key_types(arm, name, p["frame"], p["interpolation"], p["handle"])
+    elif p["interpolation"] is not None or p["handle"] is not None:
+        raise BridgeCommandError("invalid_param", "interpolation and handle apply to keys: give a frame",
+                                 param="frame")
     bpy.context.view_layer.update()
     return {"armature": arm.name, "bone": name, "head": [round(v, 4) for v in arm.matrix_world @ pb.head],
             "tail": [round(v, 4) for v in arm.matrix_world @ pb.tail], "keyed": keyed if p["frame"] else []}
@@ -322,11 +354,15 @@ def add_constraint(p):
         owner = obj.pose.bones[p["bone"]]
     else:
         owner = obj
-    name = p["name"] or p["type"].replace("_", " ").title()
-    con = owner.constraints.get(name)
+    # Unnamed: the owner's constraint of that type is changed, or a new one keeps Blender's name ("IK", "Child Of").
+    if p["name"]:
+        con = owner.constraints.get(p["name"])
+    else:
+        con = next((c for c in owner.constraints if c.type == p["type"]), None)
     if con is None or con.type != p["type"]:
         con = owner.constraints.new(p["type"])
-        con.name = name
+        if p["name"]:
+            con.name = p["name"]
     target = _obj(p["target"]) if p["target"] else None
     if target is not None:
         con.target = target
@@ -361,6 +397,42 @@ def add_constraint(p):
             con.set_inverse_pending = False
     bpy.context.view_layer.update()
     return {"object": obj.name, "bone": p["bone"], "constraint": con.name, "type": con.type}
+
+
+def key_constraint(p):
+    """A constraint's influence, set and keyed on a frame (hover the value, I): e.g. an IK/FK switch, the IK
+    constraint on at 1 while a foot is planted and off at 0 while the legs swing freely. Keys are constant by
+    default so the switch happens on that frame."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    if p["bone"]:
+        if obj.type != "ARMATURE" or obj.pose.bones.get(p["bone"]) is None:
+            raise BridgeCommandError("invalid_param", f"bone {p['bone']!r} not found on {obj.name}", param="bone")
+        owner = obj.pose.bones[p["bone"]]
+    else:
+        owner = obj
+    con = owner.constraints.get(p["constraint"])
+    if con is None:
+        have = ", ".join(c.name for c in owner.constraints) or "none"
+        raise BridgeCommandError("invalid_param", f"no constraint {p['constraint']!r} (has: {have})",
+                                 param="constraint")
+    if not 0 <= p["influence"] <= 1:
+        raise BridgeCommandError("invalid_param", "influence is 0..1", param="influence")
+    bpy.context.scene.frame_set(p["frame"])
+    con.influence = p["influence"]
+    con.keyframe_insert("influence", frame=p["frame"])
+    from .anim import _fcurves
+
+    path = con.path_from_id("influence")
+    for curve in _fcurves(obj):
+        if curve.data_path == path:
+            for point in curve.keyframe_points:
+                if abs(point.co.x - p["frame"]) < 1e-4:
+                    point.interpolation = p["interpolation"]
+            curve.update()
+    bpy.context.view_layer.update()
+    return {"object": obj.name, "bone": p["bone"], "constraint": con.name, "frame": p["frame"],
+            "influence": con.influence}
 
 
 def _check_expression(expression, variables):
@@ -473,7 +545,12 @@ ACTIONS = {
         "mode": (("REPLACE", "ADD", "SUBTRACT"), "REPLACE"), "exclusive": ("bool", False)}),
     "pose_bone": (pose_bone, {
         "armature": ("name", REQUIRED), "bone": ("name", REQUIRED), "location": ("vec3", None),
-        "rotation": ("vec3", None), "scale": ("vec3", None), "frame": ("int", None), "reset": ("bool", False)}),
+        "rotation": ("vec3", None), "scale": ("vec3", None), "frame": ("int", None), "reset": ("bool", False),
+        "visual": ("bool", False), "interpolation": (("BEZIER", "LINEAR", "CONSTANT"), None),
+        "handle": (("AUTO_CLAMPED", "AUTO", "VECTOR", "ALIGNED", "FREE"), None)}),
+    "key_constraint": (key_constraint, {
+        "object": OBJ, "bone": ("name", None), "constraint": ("name", REQUIRED), "influence": ("float", REQUIRED),
+        "frame": ("int", REQUIRED), "interpolation": (("CONSTANT", "LINEAR", "BEZIER"), "CONSTANT")}),
     "add_constraint": (add_constraint, {
         "object": OBJ, "bone": ("name", None), "type": (CONSTRAINTS, REQUIRED), "name": ("name", None),
         "target": ("name", None), "subtarget": ("name", None), "pole_target": ("name", None),

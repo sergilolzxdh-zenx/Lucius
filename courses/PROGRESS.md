@@ -70,10 +70,19 @@ Stand-ins where headless Blender can't do what the tutor did: a physical sky ins
 HDRI, noise on the camera instead of the Camera Shakify add-on, Cycles instead of Eevee, booleans for the
 wind-up key's holes instead of the knife tool.
 
-## 5. Animation tutorial (How to Animate ANYTHING): keyframes, graph editor, bouncing ball, 9/10 each
+## 5. Animation tutorial (How to Animate ANYTHING): all 5 build chapters 9/10
 
-[`JQT9sT1YuAI`](JQT9sT1YuAI). The backflip chapters need a rigged character: they come after the rigging
-tutorial.
+[`JQT9sT1YuAI`](JQT9sT1YuAI): keyframes, the graph editor, the bouncing ball, and (after the rigging course)
+the backflip: [`final.mp4`](JQT9sT1YuAI/final.mp4) and [`backflip_frames.jpg`](JQT9sT1YuAI/backflip_frames.jpg).
+The tutor's rigged Mixamo character is replaced by a pink mannequin with the rig he describes (IK legs with
+poles, an IK/FK switch that also moves the feet between the IK handle and the shin). Chapter 9 blocks it
+pose to pose at 60 fps with constant keys: stand, wind-up, take-off on the toes, FK in the air (the FK legs
+first keyed where the IK had them), the tuck upside down, legs reaching, IK back on the landing frame,
+crouch, stand. Chapter 11 polishes it in the graph editor the way he does: Bezier, linear travel in the
+air, vector handles at take-off and landing, the wind-up eased 36/36 (his Graph Pilot values), the feet
+pointing, the elbows a few frames behind the arms, and his retime (the slow beginning scaled in, the rest
+moved in). New tools for this: `key_constraint` (the IK/FK switch), `pose_bone visual` (Apply Visual
+Transform), `set_interpolation` (T / V / ease on any selection of keys), `retime_keys` (S X / G X on keys).
 
 ## 6. Rigging tutorial (How to Rig ANYTHING): all 15 build chapters 9/10
 

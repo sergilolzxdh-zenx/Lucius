@@ -135,8 +135,22 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "assign_weights": ("Vertex group > Assign (or weight painting)", "object, group (the bone's name), weight 0..1, "
                        "mode REPLACE|ADD|SUBTRACT, exclusive (take the vertices out of other groups): for the "
                        "vertices selected in edit mode"),
-    "pose_bone": ("Pose mode: G, R, S on a bone (I to key)", "armature, bone, location, rotation_deg [x,y,z], "
-                  "scale, frame (key it there), reset (back to the rest pose first)"),
+    "pose_bone": ("Pose mode: G, R, S on a bone (I to key)", "armature, bone, location, rotation_deg [x,y,z] "
+                  "(XYZ Euler, so a full 360 flip works; quaternions take the short way round), scale, frame (key it "
+                  "there), interpolation CONSTANT|BEZIER|LINEAR and handle for those keys, reset (back to the rest "
+                  "pose first), visual (Pose > Apply > Visual Transform: take the pose the constraints give it now, "
+                  "e.g. FK bones matched to the IK pose before an IK/FK switch)"),
+    "key_constraint": ("hover the constraint's influence (an IK/FK switch), I", "object, bone, constraint (its name), "
+                       "influence 0..1, frame, interpolation (CONSTANT by default: the switch happens on that frame)"),
+    "set_interpolation": ("graph editor: select keys (A), T / V, or an ease add-on", "object, bones [..] and channels "
+                          "[location|rotation|scale|influence] and axes (optional: only those curves), start/end "
+                          "frames (optional), interpolation CONSTANT (blocking: poses pop) | BEZIER | LINEAR, handle "
+                          "AUTO_CLAMPED | VECTOR (no slowing down: take-off, landing, free fall), ease_in / ease_out "
+                          "(0..100 % of the gap to the neighbouring key, flat handles: a gentle arrival / departure)"),
+    "retime_keys": ("dope sheet / graph editor: select keys, S X (2D cursor pivot) or G X", "object, bones, channels, "
+                    "start/end frames of the keys to move, scale (below 1 = faster) around pivot (a frame, default "
+                    "start), offset (frames); keys snap to whole frames. Overlapping action: offset a follower's keys "
+                    "(the forearm after the upper arm) by a few frames"),
     "add_constraint": ("Bone (or object) constraints", "object (the armature, or an object), bone, type IK|CHILD_OF|"
                        "COPY_ROTATION|COPY_LOCATION|DAMPED_TRACK|TRACK_TO|STRETCH_TO|LIMIT_ROTATION|MAINTAIN_VOLUME|"
                        "..., target (object), subtarget (bone), IK: pole_target, pole_subtarget, pole_angle_deg, "

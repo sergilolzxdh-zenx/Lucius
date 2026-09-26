@@ -305,7 +305,7 @@ Lucius built. The scores are the teacher's judgement from those comparisons, not
 |---|---|---|
 | [`courses/O-tV7uBf5LI`](courses/O-tV7uBf5LI) | LA GUÍA DEFINITIVA DE BLENDER 4.0 (Spanish, 77 min) | a Mario scene: warp pipe (hard surface), mushroom (organic, one subdivided object), Bob-omb (joined parts, boolean key), grass blades scattered as a collection over a lawn, materials with node spots, a sky-lit shot, a keyframed camera move with shake and rack focus, rendered to `final.mp4` |
 | [`courses/Y2SWwZmwrwM`](courses/Y2SWwZmwrwM) | How to Rig ANYTHING in Blender! (38 min) | armatures (extrude chains, Symmetrize), a rigid robot (Ctrl+P > Bone), a mannequin skinned with automatic weights and fixed weights, IK legs with poles, drivers, then a mechanical bacteriophage rigged end to end: bound parts, weighted cables, IK controls with poles, body/root split, custom control shapes and colours, a material driven by a leg, and an animation driven only by the controls (`final.mp4`) |
-| [`courses/JQT9sT1YuAI`](courses/JQT9sT1YuAI) | How to Animate ANYTHING in Blender (chapters so far) | keyframes, the graph editor's ease curve (X = 3.38 at frame 10, as the tutor reads it), and the bouncing ball: Vector contacts, 60% bounces, spin from distance, squash on an empty parent |
+| [`courses/JQT9sT1YuAI`](courses/JQT9sT1YuAI) | How to Animate ANYTHING in Blender (44 min) | keyframes, the graph editor's ease curve (X = 3.38 at frame 10, as the tutor reads it), the bouncing ball (Vector contacts, 60% bounces, spin from distance, squash on an empty parent), and a backflip on a rigged mannequin: blocked pose to pose with constant keys and an IK/FK switch, then polished (Bezier, vector take-off and landing, eased wind-up, overlapping elbows, retimed); [`final.mp4`](courses/JQT9sT1YuAI/final.mp4), [`backflip_frames.jpg`](courses/JQT9sT1YuAI/backflip_frames.jpg) |
 
 None is a 10: small differences remain (the handle's cross-section, the croissant's extra support loops,
 viewport-only steps such as camera clipping). What the Gemini runs taught about the approach:
@@ -331,7 +331,9 @@ viewport-only steps such as camera clipping). What the Gemini runs taught about 
   render and frame settings too). The rigging course added armatures (bones, Symmetrize, bone colours,
   custom shapes), binding (to a bone, automatic or empty weights), weight assignment, posing, bone
   constraints (IK with measured pole angles, Child Of, Copy/Limit/Track), and drivers on objects, bones
-  and material nodes.
+  and material nodes. The backflip added character animation tools: an IK/FK switch keyed on a frame,
+  Apply Visual Transform (FK matched to IK), graph-editor interpolation, handle types and ease by
+  bone, channel, axis and frame range, and retiming keys (scale around a frame, move by frames).
 
 ## Make something new, or from a reference image
 

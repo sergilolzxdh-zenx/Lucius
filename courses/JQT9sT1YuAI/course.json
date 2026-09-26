@@ -99,6 +99,26 @@
    "frame": "frames/08.jpg",
    "frame_at": "19:10",
    "note": "The tutor's method: X at full speed from frame 1 (Vector) easing out; Z bounces 60% as high each time, parabolic, Vector at every contact; spin = distance/radius (1547 deg); an empty at the ball's bottom (parent) carries position and squash (1.22,1.22,0.67 on landings) while the child ball only spins. Checked frame by frame: bottom stays on the floor while squashed."
+  },
+  {
+   "chapter": 9,
+   "title": "Animating a Backflip",
+   "recipe": "09_animating_a_backflip_blocking.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/09.jpg",
+   "frame_at": "26:10",
+   "note": "The tutor's rigged Mixamo character replaced by a pink mannequin with the rig he describes (IK legs with poles, an IK/FK switch that also moves the feet between the IK handle and the shin). Key poses at 60 fps as he blocks them: stand, wind-up, take-off on the toes, FK in the air (FK keyed to the IK pose first), tuck, legs reaching, IK back on the landing frame, crouch, stand; all constant. Euler rotations so the flip goes the full 360."
+  },
+  {
+   "chapter": 11,
+   "title": "Animating a Backflip",
+   "recipe": "11_animating_a_backflip_from_blocking_to_an.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/11.jpg",
+   "frame_at": "41:50",
+   "note": "The blockout made into animation the tutor's way in the graph editor: Bezier + auto clamped (the IK/FK switch kept constant), the end sped up, linear backward travel in the air, vector handles for the take-off and landing, the wind-up eased 36/36 (his Graph Pilot values), the tuck released with vector handles, the feet pointing and snapping back, the arms carrying the spin, the elbows 3 frames late (overlapping action), and his final retime: the beginning scaled in from frame 1, the rest moved in."
   }
  ]
 }

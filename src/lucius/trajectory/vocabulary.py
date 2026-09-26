@@ -80,6 +80,7 @@ BRIDGE_ACTION_TYPES = {
     "set_frames": "timeline", "render_animation": "render", "parent_object": "parent", "clear_animation": "keyframe",
     "hide_objects": "rename", "add_armature": "rig", "symmetrize_bones": "rig", "set_bone": "rig", "bind_to_armature": "parent",
     "assign_weights": "weights", "pose_bone": "pose", "add_constraint": "constraint", "add_driver": "driver",
+    "key_constraint": "keyframe", "set_interpolation": "keyframe", "retime_keys": "keyframe",
 }
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).
