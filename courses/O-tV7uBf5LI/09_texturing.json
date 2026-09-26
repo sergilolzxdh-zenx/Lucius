@@ -1,0 +1,220 @@
+{
+ "title": "Texturing",
+ "summary": "Materials in Material Preview: the pipe one green metallic material with a fairly low roughness; the mushroom three materials on one object, the first (skin) for everything, then eyes (black) and cap (red) assigned to parts selected in edit mode with L, and the cap's white spots made with nodes: a Voronoi texture through a Color Ramp pushed to hard edges into the base colour; the bomb a black metallic reflective material with orange feet assigned the same way; the ground dark green and the three grass clumps three different greens so the lawn varies.",
+ "objects": [],
+ "expected_result": "A green shiny pipe, a mushroom with a cream stem, black eyes and a red cap with white spots, a black metallic bomb with orange feet, and a varied green lawn.",
+ "steps": [
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Tuberia",
+    "name": "Tuberia verde",
+    "base_color": "#1FA83A",
+    "metallic": 1.0,
+    "roughness": 0.3
+   },
+   "note": "Material > New 'tuberia verde': base colour green, metallic up, roughness down a bit (a blurred mirror)",
+   "video_time": "42:42"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Seta",
+    "name": "Piel",
+    "base_color": "#F2C58A",
+    "metallic": 0.0,
+    "roughness": 0.6
+   },
+   "note": "the mushroom: a first material 'piel', orange-cream, not metallic, diffuse (the whole object)",
+   "video_time": "44:05"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Seta",
+    "element": "VERT",
+    "min": [
+     -0.5,
+     null,
+     null
+    ],
+    "max": [
+     0.5,
+     -0.7,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the eyes",
+   "video_time": "45:00"
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Seta"
+   },
+   "note": "L: all of each eye",
+   "video_time": "45:02"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Seta",
+    "name": "Ojos",
+    "base_color": "#0A0A0A",
+    "roughness": 0.2,
+    "assign": "selected_faces"
+   },
+   "note": "a second material 'ojos', black, Assign to the selection",
+   "video_time": "45:06"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Seta",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     1.5
+    ],
+    "space": "local"
+   },
+   "note": "the top of the cap",
+   "video_time": "45:30"
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Seta"
+   },
+   "note": "L: the whole cap",
+   "video_time": "45:32"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Seta",
+    "name": "Sombrero",
+    "base_color": "#D8232A",
+    "roughness": 0.4,
+    "pattern": "dots",
+    "pattern_color": "#FFFFFF",
+    "pattern_scale": 1.3,
+    "dot_size": 0.3,
+    "assign": "selected_faces"
+   },
+   "note": "a third material, red, Assign; Shading workspace: Voronoi texture -> Color Ramp with the sliders pushed together (hard circles) -> base colour: white spots",
+   "video_time": "46:34"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Seta",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bomba",
+    "name": "Bomba",
+    "base_color": "#141416",
+    "metallic": 1.0,
+    "roughness": 0.25
+   },
+   "note": "the bomb: the main material metallic and reflective",
+   "video_time": "48:29"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Bomba",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     -1.1
+    ],
+    "space": "local"
+   },
+   "note": "edit mode: the feet",
+   "video_time": "48:40"
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Bomba"
+   },
+   "note": "L",
+   "video_time": "48:42"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bomba",
+    "name": "Patas",
+    "base_color": "#F28C1C",
+    "roughness": 0.5,
+    "assign": "selected_faces"
+   },
+   "note": "a new orange material, Assign",
+   "video_time": "48:45"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Bomba",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#1E4A16",
+    "roughness": 0.9
+   },
+   "note": "the ground's material only colours the plane under the grass: a dark green",
+   "video_time": "48:59"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hierba1",
+    "name": "Verde 1",
+    "base_color": "#3CC42A",
+    "roughness": 0.6
+   },
+   "note": "each clump its own green (found where they were left): a bright one",
+   "video_time": "49:25"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hierba2",
+    "name": "Verde 2",
+    "base_color": "#86B42C",
+    "roughness": 0.6
+   },
+   "note": "a yellower, darker one",
+   "video_time": "49:30"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Hierba3",
+    "name": "Verde 3",
+    "base_color": "#2A7A20",
+    "roughness": 0.6
+   },
+   "note": "a dark green: three tones, the lawn varies",
+   "video_time": "49:35"
+  }
+ ]
+}

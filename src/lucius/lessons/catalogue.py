@@ -18,12 +18,14 @@ from typing import Any
 PROPORTIONAL = (", proportional (O: radius in metres; nearby vertices follow, fading out), falloff "
                 "SMOOTH|SPHERE|ROOT|SHARP|LINEAR|CONSTANT")
 ACTION_DOCS: dict[str, tuple[str, str]] = {
-    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey, "
+    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey|empty, "
                       "name, location [x,y,z], rotation_deg [x,y,z], size (cube/plane edge, default 2), radius, "
                       "depth (cylinder/cone height), radius2 (cone top), vertices (cylinder/cone/circle/sphere "
                       "segments, default 32), major_radius, minor_radius, major_segments, minor_segments (torus), "
-                      "fill (circle: true adds the face, like F)"),
+                      "fill (circle: true adds the face, like F), into (an existing mesh: Shift+A in edit mode, the shape joins that object, selected)"),
     "delete_objects": ("X in object mode", "names [..]"),
+    "join_objects": ("Ctrl+J", "names [..] (the objects to merge), into (the one they merge into; keeps its name, "
+                     "origin and modifiers -- apply the others' modifiers first)"),
     "duplicate_object": ("Shift+D", "object, new_name, offset [x,y,z] from the original, rotation_deg [x,y,z] added"),
     "transform_object": ("G / R / S in object mode", "object, location [x,y,z], rotation_deg [x,y,z], scale [x,y,z], "
                          "relative (true: add location/rotation and multiply scale)"),
@@ -47,11 +49,14 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "loop_cut_axis": ("Ctrl+R", "object, axis: x|y|z (cuts perpendicular to it), positions [0..1 of the object's "
                       "extent along the axis], e.g. [0.25, 0.5, 0.75] = three cuts"),
     "translate_selection": ("G in edit mode", "object, offset [x,y,z]" + PROPORTIONAL),
-    "scale_selection": ("S in edit mode", "object, factor [x,y,z], pivot: median|bbox_center" + PROPORTIONAL),
+    "scale_selection": ("S in edit mode", "object, factor [x,y,z], pivot: median|bbox_center|origin" + PROPORTIONAL),
     "rotate_selection": ("R in edit mode", "object, axis: x|y|z, angle_deg, pivot: median|bbox_center|origin"
                          + PROPORTIONAL),
     "taper_selection": ("proportional scaling along an axis", "object, along: x|y|z, affect: x|y|z|xy|xz|yz, "
                         "amount (0..1, how much the far end shrinks), start (0..1), reverse"),
+    "duplicate_selection": ("Shift+D in edit mode", "object, offset [x,y,z]: copies the selected part of the mesh "
+                            "(an eye, a button) and moves the copy, which stays selected"),
+    "select_linked": ("L / Ctrl+L", "object: grows the selection to everything connected to it (a whole part)"),
     "delete_elements": ("X in edit mode", "object, what: VERTS|EDGES|FACES|ONLY_FACES (ONLY_FACES keeps the rim "
                         "edges, which is what bridging needs)"),
     "bridge_edge_loops": ("Edge > Bridge Edge Loops", "object, cuts (extra loops along the bridge). Joins two "
@@ -73,7 +78,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}"),
     "apply_modifier": ("Ctrl+A over the modifier", "object, modifier (its name)"),
     "remove_modifier": ("X on the modifier", "object, modifier (its name)"),
-    "shade": ("right click > Shade Smooth / Flat", "object, smooth (true|false)"),
+    "shade": ("right click > Shade Smooth / Flat (Auto Smooth)", "object, smooth (true|false), auto_smooth_deg "
+              "(smooth by angle: edges sharper than this stay crisp, e.g. 30)"),
     "set_material": ("Material properties > Principled BSDF",
                      "object, name, base_color \"#RRGGBB\", roughness 0..1, metallic 0..1, alpha, emission_color, "
                      "emission_strength, transmission 0..1 (glass), subsurface 0..1 (soft food, skin), coat 0..1, "
@@ -93,17 +99,32 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "changes only the values given)", "name, location [x,y,z], look_at [x,y,z] or rotation_deg, "
                    "lens (mm, default 50), active (true), depth of field: focus_object (sharp there) or dof_distance "
                    "(metres), fstop (lower = more blur, default 2.8), dof (false turns the blur off)"),
-    "set_render": ("Render / Output / Color Management properties", "engine CYCLES|BLENDER_EEVEE, samples, width, "
+    "set_render": ("Render / Output / Color Management properties", "engine CYCLES|BLENDER_EEVEE, samples, motion_blur, width, "
                    "height (pixels), denoise, view_transform Standard|AgX|Filmic"),
     "scale_scene": ("A, then S", "factor, pivot [x,y,z]: every object scaled about the pivot (bring a scene to "
                     "real-world size; lights then need less power)"),
     "drop_object": ("G Z by eye until it rests on the surface", "object, onto [names] (default: everything), "
                     "floor (true: the ground at z=0 counts), gap (metres): the object falls straight down onto the "
                     "top surfaces below it, or comes up out of one it sank into"),
-    "set_world": ("World properties", "color \"#RRGGBB\", strength"),
-    "add_scatter": ("Particle system (hair, render as object)", "object (surface), instance (object copied over "
-                    "it, hidden itself), name (the same name again changes that system), count, scale (size of "
-                    "the copies), scale_random 0..1, rotation_random 0..1, seed"),
+    "move_to_collection": ("M", "names [..], collection (created if new): group objects in a collection"),
+    "set_frames": ("Timeline / Output properties", "start, end (frames), fps, current (go to that frame)"),
+    "insert_keyframe": ("go to the frame, place it, I", "object, frame, and what to key there: location [x,y,z], "
+                        "rotation_deg or look_at [x,y,z], scale; for a camera also lens, focus_distance (metres, "
+                        "animated focus), fstop; axes x|z|xz|.. (key only those components, e.g. only X), "
+                        "interpolation BEZIER|LINEAR|CONSTANT, handle AUTO_CLAMPED|VECTOR|ALIGNED|FREE (V in the graph "
+                        "editor: VECTOR = sharp, e.g. a bounce). Blender fills the frames between"),
+    "parent_object": ("Ctrl+P > Object (Alt+P clears)", "object (the child), parent (it follows the parent's moves, "
+                      "turns and scale; null clears)"),
+    "clear_animation": ("Alt+I / Clear Keyframes", "object: removes all its keyframes (it stays where it is now)"),
+    "add_shake": ("camera shake add-on (Camera Shakify)", "object, strength (metres), rotation_strength (radians), "
+                  "scale (frames per wobble, higher = slower), influence 0..1: handheld noise on top of the animation"),
+    "set_world": ("World properties", "color \"#RRGGBB\", strength; or sky true (a physical sky with a sun, "
+                  "like an outdoor HDRI: it lights everything), sun_elevation_deg, sun_rotation_deg, strength ~0.3"),
+    "add_scatter": ("Particle system (hair, render as object or collection)", "object (surface), instance (object "
+                    "copied over it, hidden itself) or collection (its objects copied, a random one each: grass kinds), "
+                    "name (the same name again changes that system), count, children (interpolated copies between "
+                    "particles, e.g. 20), scale (size of the copies), scale_random 0..1, rotation_random 0..1, "
+                    "rotation_axis NOR|OB_X|OB_Y|OB_Z (Advanced > Rotation: which way copies stand), seed"),
 }
 
 # Always usable: making, placing and selecting objects (what anyone knows after opening Blender once).

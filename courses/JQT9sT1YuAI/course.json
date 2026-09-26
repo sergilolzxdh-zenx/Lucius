@@ -1,0 +1,104 @@
+{
+ "video_id": "JQT9sT1YuAI",
+ "url": "https://www.youtube.com/watch?v=JQT9sT1YuAI",
+ "title": "How to Animate ANYTHING in Blender!",
+ "duration": 2651,
+ "language": "en-US",
+ "channel": "SharpWind",
+ "chapters": [
+  {
+   "title": "Intro",
+   "start_time": 0,
+   "end_time": 27
+  },
+  {
+   "title": "How Keyframes work",
+   "start_time": 27,
+   "end_time": 82
+  },
+  {
+   "title": "How to keyframe in Blender",
+   "start_time": 82,
+   "end_time": 237
+  },
+  {
+   "title": "Graph Editor",
+   "start_time": 237,
+   "end_time": 363
+  },
+  {
+   "title": "Keyframe Handle types",
+   "start_time": 363,
+   "end_time": 405
+  },
+  {
+   "title": "Graph Navigation",
+   "start_time": 405,
+   "end_time": 480
+  },
+  {
+   "title": "12 Principles of Animation",
+   "start_time": 480,
+   "end_time": 876
+  },
+  {
+   "title": "The Bouncing Ball!",
+   "start_time": 876,
+   "end_time": 1199
+  },
+  {
+   "title": "Animating a Backflip",
+   "start_time": 1199,
+   "end_time": 1881
+  },
+  {
+   "title": "Sponsor Time!",
+   "start_time": 1881,
+   "end_time": 1943
+  },
+  {
+   "title": "Animating a Backflip",
+   "start_time": 1943,
+   "end_time": 2625
+  },
+  {
+   "title": "Outro",
+   "start_time": 2625,
+   "end_time": 2651
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/JQT9sT1YuAI` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 3,
+   "title": "How to keyframe in Blender",
+   "recipe": "03_keyframes_on_a_cube.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/03.jpg",
+   "frame_at": "02:30",
+   "note": "Keyed the tutor's way: I on frame 1 (location + rotation), auto-key style rotation only on 30 (so it drifts from frame 1), move + turn on 60, then the fixing location key on 30. The renders show turn-in-place then move."
+  },
+  {
+   "chapter": 4,
+   "title": "Graph Editor",
+   "recipe": "04_graph_editor_and_handle_types.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/04.jpg",
+   "frame_at": "05:10",
+   "note": "Old keys cleared, X keyed 0 at frame 1 and 25 at frame 40: the default ease gives X = 3.38 at frame 10, matching the tutor's reading of ~3.5; a Vector handle on the return key makes it linear. Graph-editor navigation itself changes nothing in the scene."
+  },
+  {
+   "chapter": 8,
+   "title": "The Bouncing Ball!",
+   "recipe": "08_the_bouncing_ball.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/08.jpg",
+   "frame_at": "19:10",
+   "note": "The tutor's method: X at full speed from frame 1 (Vector) easing out; Z bounces 60% as high each time, parabolic, Vector at every contact; spin = distance/radius (1547 deg); an empty at the ball's bottom (parent) carries position and squash (1.22,1.22,0.67 on landings) while the child ball only spins. Checked frame by frame: bottom stays on the floor while squashed."
+  }
+ ]
+}

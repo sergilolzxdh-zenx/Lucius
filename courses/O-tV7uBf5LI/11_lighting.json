@@ -1,0 +1,158 @@
+{
+ "title": "Lighting",
+ "summary": "The two ways to light a scene. Light objects: point (every direction, power up), spot (a cone that lights only the character), area (a square that emits) and sun (the whole scene; only its rotation matters) used as a warm back light from behind, opposite the camera. The world: its colour lights the scene too, and an environment (an HDRI: here a physical sky with the sun high over a mountain) lights it from every direction; its strength lowered a little and an area light added above. Rendered with Cycles and denoise.",
+ "objects": [
+  {
+   "name": "Sol",
+   "description": "warm sun from behind: rim light"
+  },
+  {
+   "name": "Area",
+   "description": "area light above"
+  }
+ ],
+ "expected_result": "The scene in daylight: blue sky behind, the mushroom, pipe and bomb lit softly from above with warm rims from the sun behind them, the grass bright green.",
+ "steps": [
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Demo",
+    "location": [
+     0,
+     -2,
+     4
+    ],
+    "power": 1500
+   },
+   "note": "Shift+A > Light > Point: light in every direction; power up and move it around",
+   "video_time": "57:57"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Demo",
+    "type": "SPOT",
+    "location": [
+     -1.7,
+     -1.0,
+     5.5
+    ],
+    "look_at": [
+     -1.7,
+     -1.0,
+     1.0
+    ],
+    "power": 2500,
+    "spot_size": 40
+   },
+   "note": "type Spot: a cone above the character, only it is lit",
+   "video_time": "58:25"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "name": "Demo",
+    "type": "AREA",
+    "location": [
+     0,
+     -2,
+     4
+    ],
+    "look_at": [
+     0,
+     0,
+     1
+    ],
+    "power": 1200,
+    "size": 2
+   },
+   "note": "type Area: the whole square emits",
+   "video_time": "58:53"
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Demo"
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "Sol",
+    "location": [
+     0,
+     12,
+     8
+    ],
+    "look_at": [
+     0,
+     0,
+     0.5
+    ],
+    "power": 1.0,
+    "color": "#FFC98A"
+   },
+   "note": "type Sun: where it is does not matter, only where it comes from: rotated to come from behind, opposite the camera: a back light; a warmer colour",
+   "video_time": "59:20"
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#E06AD2",
+    "strength": 1.0
+   },
+   "note": "World: the background colour also lights the scene (pink)",
+   "video_time": "59:46"
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "sky": true,
+    "sun_elevation_deg": 28,
+    "sun_rotation_deg": 180,
+    "strength": 0.05
+   },
+   "note": "an environment texture instead of a colour: an HDRI, a 360 image that lights everything (here a physical sky: sun and atmosphere); strength lowered a little",
+   "video_time": "60:42"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "Area",
+    "location": [
+     0.2,
+     -1.5,
+     7.0
+    ],
+    "look_at": [
+     0.2,
+     0.3,
+     1.0
+    ],
+    "size": 6,
+    "power": 250
+   },
+   "note": "and an area light above with a good strength",
+   "video_time": "61:38"
+  },
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 64,
+    "width": 1280,
+    "height": 720,
+    "denoise": true
+   },
+   "note": "render engine: Eevee (real time; AO, bloom, screen-space reflections) or Cycles (traces every ray: realistic but noisy, so denoise on)",
+   "video_time": "63:58"
+  }
+ ]
+}

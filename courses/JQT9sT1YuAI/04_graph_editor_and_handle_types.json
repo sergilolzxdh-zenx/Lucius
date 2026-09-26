@@ -1,0 +1,113 @@
+{
+ "title": "Graph editor and handle types",
+ "summary": "The graph editor shows each animated value over time: isolate X, key X = 0 on frame 1 and X = 25 on frame 40. The default interpolation eases in and out (the S curve: slow start, fast middle, slow stop), the most natural motion. Handle types (V): Vector makes a key sharp and linear, Auto Clamped smooth without overshoot.",
+ "objects": [
+  {
+   "name": "Cube",
+   "description": "slides 25 m along X in 40 frames with an S curve, then a linear return"
+  }
+ ],
+ "expected_result": "The cube eases from X 0 to 25 over frames 1-40, then comes back linearly by frame 70.",
+ "steps": [
+  {
+   "action": "clear_animation",
+   "args": {
+    "object": "Cube"
+   },
+   "note": "start clean: Alt+I, the old keys go",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Cube",
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "back at the origin (Alt+G, Alt+R)",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 1,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "x"
+   },
+   "note": "only the X location: 0 on frame 1",
+   "video_time": "4:10"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 40,
+    "location": [
+     25,
+     0,
+     0
+    ],
+    "axes": "x"
+   },
+   "note": "25 on frame 40: the S curve (ease in and out)",
+   "video_time": "4:15"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 70,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "x",
+    "handle": "VECTOR"
+   },
+   "note": "V > Vector: the handle points at the previous key: a sharp, linear move back",
+   "video_time": "6:15"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 70
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     12.5,
+     -38,
+     8
+    ],
+    "look_at": [
+     12.5,
+     2,
+     0
+    ],
+    "lens": 50
+   },
+   "note": "a camera far enough to see the 25 m slide",
+   "video_time": null
+  }
+ ]
+}

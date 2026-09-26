@@ -45,6 +45,9 @@ PRIMITIVES = {
         location=p["location"], rotation=p["rotation"]),
     "monkey": lambda p: bpy.ops.mesh.primitive_monkey_add(
         size=p["size"], location=p["location"], rotation=p["rotation"]),
+    # An empty: an object with no geometry, a handle to move, scale or parent things with.
+    "empty": lambda p: bpy.ops.object.empty_add(type="PLAIN_AXES", radius=p["size"] / 2, location=p["location"],
+                                                rotation=p["rotation"]),
     # A ring of vertices (tutorials often start pipes, plates and croissants from one); ``fill`` adds the n-gon.
     "circle": lambda p: bpy.ops.mesh.primitive_circle_add(
         vertices=p["vertices"], radius=_radius(p), fill_type="NGON" if p.get("fill") else "NOTHING",
@@ -243,9 +246,30 @@ def add_primitive(p):
     with bpy.context.temp_override(**_context_override()):
         _op_result(PRIMITIVES[p["kind"]](p), f"add_{p['kind']}")
     obj = _active()
+    if p["into"]:
+        # Shift+A in edit mode: the new shape becomes part of an existing mesh, selected on its own.
+        target = _obj(p["into"])
+        if target.type != "MESH" or target == obj:
+            raise BridgeCommandError("invalid_param", "into must be another mesh object", param="into")
+        obj.data.transform(target.matrix_world.inverted() @ obj.matrix_world)
+        mesh = obj.data
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bm = _edit_bmesh(target)
+        old = set(bm.verts)
+        bm.from_mesh(mesh)
+        bpy.data.meshes.remove(mesh)
+        bm.verts.ensure_lookup_table()
+        new_verts = [v for v in bm.verts if v not in old]
+        new_set = set(new_verts)
+        _select_only(bm, [*new_verts, *(e for e in bm.edges if all(v in new_set for v in e.verts)),
+                          *(f for f in bm.faces if all(v in new_set for v in f.verts))])
+        bm.normal_update()
+        bmesh.update_edit_mesh(target.data)
+        return {"object": target.name, "added_verts": len(new_verts)}
     if p["name"]:
         obj.name = p["name"]
-        obj.data.name = p["name"]
+        if obj.data is not None:
+            obj.data.name = p["name"]
     created = sorted(set(bpy.data.objects.keys()) - before)
     return {"object": obj.name, "created": created}
 
@@ -263,6 +287,52 @@ def select_objects(p):
     elif objs:
         bpy.context.view_layer.objects.active = objs[0]
     return {"selected": [o.name for o in bpy.context.view_layer.objects if o.select_get()]}
+
+
+def parent_object(p):
+    """Ctrl+P > Object: the child follows the parent (moves, turns and scales with it) and keeps where it is now;
+    ``parent`` null clears the parent (Alt+P, keeping the transform)."""
+    _leave_edit_mode()
+    child = _obj(p["object"])
+    world = child.matrix_world.copy()
+    if p["parent"] is None:
+        child.parent = None
+        child.matrix_world = world
+        return {"object": child.name, "parent": None}
+    parent = _obj(p["parent"])
+    ancestor = parent
+    while ancestor is not None:
+        if ancestor == child:
+            raise BridgeCommandError("invalid_param", "an object cannot be parented to its own child", param="parent")
+        ancestor = ancestor.parent
+    child.parent = parent
+    child.matrix_parent_inverse = parent.matrix_world.inverted()
+    child.matrix_world = world
+    bpy.context.view_layer.update()
+    return {"object": child.name, "parent": parent.name}
+
+
+def join_objects(p):
+    """Ctrl+J: merge objects into one (the ``into`` object keeps its name, origin and modifiers; the others'
+    modifiers are lost, as in Blender -- apply them first)."""
+    _leave_edit_mode()
+    target = _obj(p["into"])
+    others = [_obj(n) for n in p["names"] if n != target.name]
+    if not others:
+        raise BridgeCommandError("invalid_param", "nothing to join", param="names")
+    for o in (target, *others):
+        if o.type != "MESH":
+            raise BridgeCommandError("not_a_mesh", f"{o.name} is not a mesh")
+    for o in bpy.context.view_layer.objects:
+        o.select_set(False)
+    for o in (target, *others):
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = target
+    joined = [o.name for o in others]
+    with bpy.context.temp_override(**_context_override(target), selected_objects=[target, *others],
+                                   selected_editable_objects=[target, *others]):
+        _op_result(bpy.ops.object.join(), "join")
+    return {"object": target.name, "joined": joined, "verts": len(target.data.vertices)}
 
 
 def delete_objects(p):
@@ -498,6 +568,8 @@ def scale_selection(p):
     verts = _selected_verts(bm)
     if p["pivot"] == "median":
         pivot = sum((v.co for v in verts), Vector()) / len(verts)
+    elif p["pivot"] == "origin":
+        pivot = Vector()
     else:
         lo, hi = _local_bbox(bm)
         pivot = (lo + hi) / 2
@@ -688,6 +760,39 @@ def rotate_selection(p):
     return {"object": obj.name, "rotated": len(verts), "followed": followed}
 
 
+def duplicate_selection(p):
+    """Shift+D in edit mode: copy the selected part of the mesh, moved by ``offset``; the copy stays selected."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    _selected_verts(bm)
+    geom = [*(v for v in bm.verts if v.select), *(e for e in bm.edges if e.select), *(f for f in bm.faces if f.select)]
+    copy = bmesh.ops.duplicate(bm, geom=geom)["geom"]
+    verts = [g for g in copy if isinstance(g, bmesh.types.BMVert)]
+    bmesh.ops.translate(bm, vec=Vector(p["offset"]), verts=verts)
+    _select_only(bm, copy)
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "copied_verts": len(verts)}
+
+
+def select_linked(p):
+    """L / Ctrl+L: grow the selection to everything connected to it (a whole part of the mesh)."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    seen = set(_selected_verts(bm))
+    todo = list(seen)
+    while todo:
+        v = todo.pop()
+        for e in v.link_edges:
+            other = e.other_vert(v)
+            if other not in seen:
+                seen.add(other)
+                todo.append(other)
+    _select_only(bm, [*seen, *(e for e in bm.edges if e.verts[0] in seen), *(f for f in bm.faces if f.verts[0] in seen)])
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "selected_verts": len(seen)}
+
+
 def delete_elements(p):
     """X in edit mode: delete the selected vertices, edges, faces, or only the faces (keeping the rim)."""
     obj = _obj(p["object"])
@@ -870,16 +975,28 @@ def shade(p):
     obj = _obj(p["object"])
     if obj.type != "MESH":
         raise BridgeCommandError("not_a_mesh", f"{obj.name} is not a mesh")
-    if obj.mode == "EDIT":
-        # In edit mode the edit mesh is written back on Tab: set it there, or the change is lost.
-        bm = bmesh.from_edit_mesh(obj.data)
-        for face in bm.faces:
-            face.smooth = p["smooth"]
+    editing = obj.mode == "EDIT"
+    # In edit mode the edit mesh is written back on Tab: set it there, or the change is lost.
+    bm = bmesh.from_edit_mesh(obj.data) if editing else bmesh.new()
+    if not editing:
+        bm.from_mesh(obj.data)
+    for face in bm.faces:
+        face.smooth = p["smooth"]
+    sharp = 0
+    if p["auto_smooth_deg"] is not None:
+        # Auto smooth / smooth by angle: edges whose faces meet at more than the angle stay sharp.
+        limit = math.radians(p["auto_smooth_deg"])
+        for edge in bm.edges:
+            hard = len(edge.link_faces) == 2 and edge.calc_face_angle(0.0) > limit
+            edge.smooth = not hard
+            sharp += hard
+    if editing:
         bmesh.update_edit_mesh(obj.data)
     else:
-        for poly in obj.data.polygons:
-            poly.use_smooth = p["smooth"]
-    return {"object": obj.name, "smooth": p["smooth"]}
+        bm.to_mesh(obj.data)
+        bm.free()
+        obj.data.update()
+    return {"object": obj.name, "smooth": p["smooth"], "sharp_edges": sharp}
 
 
 def reset_scene(p):
@@ -982,35 +1099,57 @@ def load_reference_image(p):
 
 
 def import_blend(p):
-    """Replace the scene's objects with the objects of a .blend file for inspection.
+    """Replace the scene with the scene of a .blend file (to continue it or inspect it): its objects, its
+    collections (including ones used only by particle systems), camera, world and render settings.
 
     Uses library appending (data only): scripts embedded in the file are never executed.
     """
     path = _check_path(p["path"], "LUCIUS_ALLOWED_READ_DIRS", (".blend",))
     _leave_edit_mode()
+    scene = bpy.context.scene
     for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
+    for child in list(scene.collection.children):
+        scene.collection.children.unlink(child)
+    for collection in list(bpy.data.collections):
+        if collection.users == 0:
+            bpy.data.collections.remove(collection)
     _purge_orphans()
     with bpy.data.libraries.load(path, link=False) as (data_from, data_to):
-        data_to.objects = list(data_from.objects)
-        data_to.worlds = list(data_from.worlds[:1])
-    names = []
-    scene = bpy.context.scene
-    for obj in data_to.objects:
-        if obj is not None:
-            scene.collection.objects.link(obj)
-            names.append(obj.name)
+        data_to.scenes = list(data_from.scenes[:1])
+    saved = data_to.scenes[0] if data_to.scenes else None
+    if saved is None:
+        raise BridgeCommandError("invalid_param", "the file has no scene", param="path")
+    for child in list(saved.collection.children):
+        scene.collection.children.link(child)
+    for obj in list(saved.collection.objects):
+        scene.collection.objects.link(obj)
+    # A saved scene continues where it stopped: camera, world, render and frame settings come back too.
+    scene.world = saved.world
+    render, old = scene.render, saved.render
+    render.engine = old.engine
+    render.resolution_x, render.resolution_y = old.resolution_x, old.resolution_y
+    render.resolution_percentage = old.resolution_percentage
+    render.fps = old.fps
+    scene.frame_start, scene.frame_end, scene.frame_current = saved.frame_start, saved.frame_end, saved.frame_current
+    scene.view_settings.view_transform = saved.view_settings.view_transform
+    if hasattr(scene, "cycles") and hasattr(saved, "cycles"):
+        scene.cycles.samples = saved.cycles.samples
+        scene.cycles.use_denoising = saved.cycles.use_denoising
+    camera = saved.camera
+    bpy.data.scenes.remove(saved)
     bpy.context.view_layer.update()   # appended objects get their world matrices only on an update
+    names = sorted(o.name for o in scene.objects)
     meshes = [o for o in scene.objects if o.type == "MESH"]
     if meshes and bpy.context.view_layer.objects.active is None:
         bpy.context.view_layer.objects.active = meshes[-1]   # as after working on it: something is active
-    # A saved scene continues where it stopped: its camera and world come back too.
     cameras = sorted((o for o in scene.objects if o.type == "CAMERA"), key=lambda o: o.name)
-    if cameras and (scene.camera is None or scene.camera.name not in scene.objects):
+    if camera is not None and camera.name in scene.objects:
+        scene.camera = camera
+    elif cameras and (scene.camera is None or scene.camera.name not in scene.objects):
         scene.camera = cameras[0]
-    if data_to.worlds and data_to.worlds[0] is not None:
-        scene.world = data_to.worlds[0]
-    return {"objects": sorted(names), "camera": scene.camera.name if scene.camera else None}
+    return {"objects": names, "camera": scene.camera.name if scene.camera else None,
+            "collections": [c.name for c in scene.collection.children]}
 
 
 def _snapshot_dir():
@@ -1092,9 +1231,14 @@ ACTIONS = {
         "kind": (tuple(PRIMITIVES), REQUIRED), "size": ("float", 2.0), "location": V3, "rotation": V3,
         "vertices": ("int", 32), "name": ("name", None), "radius": ("float", None), "radius2": ("float", None),
         "depth": ("float", None), "major_radius": ("float", None), "minor_radius": ("float", None),
-        "major_segments": ("int", None), "minor_segments": ("int", None), "fill": ("bool", False)}),
+        "major_segments": ("int", None), "minor_segments": ("int", None), "fill": ("bool", False),
+        "into": ("name", None)}),
+    "duplicate_selection": (duplicate_selection, {"object": OBJ, "offset": V3}),
+    "select_linked": (select_linked, {"object": OBJ}),
     "select_objects": (select_objects, {"names": ("names", REQUIRED), "active": OBJ, "deselect_others": ("bool", True)}),
     "delete_objects": (delete_objects, {"names": ("names", REQUIRED)}),
+    "join_objects": (join_objects, {"names": ("names", REQUIRED), "into": ("name", REQUIRED)}),
+    "parent_object": (parent_object, {"object": OBJ, "parent": ("name", None)}),
     "set_mode": (set_mode, {"object": OBJ, "mode": (("OBJECT", "EDIT", "SCULPT"), REQUIRED)}),
     "transform_object": (transform_object, {
         "object": OBJ, "location": ("vec3", None), "rotation": ("vec3", None), "scale": ("vec3", None),
@@ -1129,7 +1273,7 @@ ACTIONS = {
                                             "rotation": ("vec3", None), "linked": ("bool", False)}),
     "translate_selection": (translate_selection, {"object": OBJ, "offset": ("vec3", REQUIRED), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
     "scale_selection": (scale_selection, {
-        "object": OBJ, "factor": ("vec3", REQUIRED), "pivot": (("median", "bbox_center"), "median"), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
+        "object": OBJ, "factor": ("vec3", REQUIRED), "pivot": (("median", "bbox_center", "origin"), "median"), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
     "taper_selection": (taper_selection, {
         "object": OBJ, "along": (tuple(AXES), REQUIRED), "affect": (("x", "y", "z", "xy", "xz", "yz"), "x"),
         "amount": ("float", REQUIRED), "start": ("float", 0.0), "reverse": ("bool", False)}),
@@ -1143,7 +1287,7 @@ ACTIONS = {
     "remove_modifier": (remove_modifier, {"object": OBJ, "modifier": ("name", REQUIRED)}),
     "apply_modifier": (apply_modifier, {"object": OBJ, "modifier": ("name", REQUIRED)}),
     "set_symmetry": (set_symmetry, {"object": OBJ, "axes": ("bool3", REQUIRED)}),
-    "shade": (shade, {"object": OBJ, "smooth": ("bool", True)}),
+    "shade": (shade, {"object": OBJ, "smooth": ("bool", True), "auto_smooth_deg": ("float", None)}),
     "reset_scene": (reset_scene, {"keep_camera_light": ("bool", True)}),
     "set_view": (set_view, {"view": (("FRONT", "BACK", "LEFT", "RIGHT", "TOP", "BOTTOM"), REQUIRED),
                             "ortho": ("bool", True)}),
@@ -1167,9 +1311,9 @@ GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
 def registry():
     """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
-    from . import scene
+    from . import anim, scene
 
-    return {**ACTIONS, **scene.ACTIONS}
+    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS}
 
 
 def execute_action(name, args):

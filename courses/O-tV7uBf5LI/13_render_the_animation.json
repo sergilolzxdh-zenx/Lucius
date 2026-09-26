@@ -1,0 +1,31 @@
+{
+ "title": "Render the animation",
+ "summary": "Render settings for the final video: every quality option on (in Eevee full-quality reflections; here Cycles with denoise), motion blur for realism, Output 1920 x 1080 at 100 %, 24 frames per second, frames 1 to 150, FFmpeg video in an MP4 container with H.264 at a high quality, then Render > Render Animation.",
+ "objects": [],
+ "expected_result": "The 150-frame shot rendered as an MP4 video: the camera gliding from the mushroom across the grass to the pipe and the bomb in daylight.",
+ "steps": [
+  {
+   "action": "set_render",
+   "args": {
+    "engine": "CYCLES",
+    "samples": 64,
+    "width": 1920,
+    "height": 1080,
+    "denoise": true,
+    "motion_blur": true
+   },
+   "note": "Render properties: everything on (the tutor's Eevee: full-quality reflections), Motion Blur on; Output: 1920 x 1080, 100 %",
+   "video_time": "72:15"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 150,
+    "fps": 24
+   },
+   "note": "24 fps, frames 1-150; File Format FFmpeg, MPEG-4 container, H.264, Perceptually Lossless; Render > Render Animation",
+   "video_time": "73:08"
+  }
+ ]
+}

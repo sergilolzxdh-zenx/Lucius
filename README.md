@@ -299,6 +299,13 @@ tutorial's frames, rebuilding and comparing close-up renders with the tutor's un
 [`overview.jpg`](courses/lrlpwIumFnE/overview.jpg) has each chapter's tutorial frame next to what
 Lucius built. The scores are the teacher's judgement from those comparisons, not measurements.
 
+**More courses** (same way, all chapters 9/10; replay with `lucius teach course <folder>`):
+
+| Pack | Tutorial | What Lucius builds |
+|---|---|---|
+| [`courses/O-tV7uBf5LI`](courses/O-tV7uBf5LI) | LA GUÍA DEFINITIVA DE BLENDER 4.0 (Spanish, 77 min) | a Mario scene: warp pipe (hard surface), mushroom (organic, one subdivided object), Bob-omb (joined parts, boolean key), grass blades scattered as a collection over a lawn, materials with node spots, a sky-lit shot, a keyframed camera move with shake and rack focus, rendered to `final.mp4` |
+| [`courses/JQT9sT1YuAI`](courses/JQT9sT1YuAI) | How to Animate ANYTHING in Blender (chapters so far) | keyframes, the graph editor's ease curve (X = 3.38 at frame 10, as the tutor reads it), and the bouncing ball: Vector contacts, 60% bounces, spin from distance, squash on an empty parent |
+
 None is a 10: small differences remain (the handle's cross-section, the croissant's extra support loops,
 viewport-only steps such as camera clipping). What the Gemini runs taught about the approach:
 
@@ -316,7 +323,11 @@ viewport-only steps such as camera clipping). What the Gemini runs taught about 
   the step did not give, and Shade Smooth given in edit mode was lost on Tab (every smooth object
   was really flat-shaded). Teaching them added proportional editing (O) to moving, scaling and
   rotating a selection, `drop_object` (rest an object on what is below it), and modifiers changed by
-  name instead of duplicated.
+  name instead of duplicated. The later courses added edit-mode building (Shift+A into a mesh, L, Shift+D),
+  joining (Ctrl+J), parenting (Ctrl+P), empties, collections scattered by particle systems (with children),
+  auto smooth, a physical sky, keyframes (per axis, handle types, camera focus), camera shake, and
+  rendering an animation to MP4; chapters now continue the previous chapter's whole scene (collections,
+  render and frame settings too).
 
 ## Make something new, or from a reference image
 

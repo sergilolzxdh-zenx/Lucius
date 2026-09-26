@@ -181,8 +181,11 @@ def scene_summary():
         obj.update_from_editmode()   # edit-mode changes reach the mesh (and its size) only when flushed
     if edited:
         bpy.context.view_layer.update()
+    from .anim import animation_summary
+
     return {"objects": [object_summary(o) for o in scene.objects][:MAX_LISTED_OBJECTS],
-            "camera": scene.camera.name if scene.camera else None, "mode": bpy.context.mode}
+            "camera": scene.camera.name if scene.camera else None, "mode": bpy.context.mode,
+            "animation": animation_summary()}
 
 
 def capture_state(include_objects=True):

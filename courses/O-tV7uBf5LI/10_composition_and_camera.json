@@ -1,0 +1,121 @@
+{
+ "title": "Composition and camera",
+ "summary": "The layout in solid mode around the centre of the scene: a low shot with the mushroom close on the left turned towards the camera, the bomb on the right with its key towards the back, the pipe behind in the middle; each object lowered into the grass. A camera (Shift+A) placed low in front, a 35 mm lens, and depth of field focused on the mushroom with a low f-stop so the pipe and bomb blur.",
+ "objects": [
+  {
+   "name": "Camera",
+   "description": "low shot, 35 mm, focused on the mushroom"
+  }
+ ],
+ "expected_result": "From low in the grass: the red spotted mushroom big on the left and sharp, the green pipe behind in the middle and the bomb on the right, softly blurred.",
+ "steps": [
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Tuberia",
+    "location": [
+     0.4,
+     2.4,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "top view: the pipe at the back, in the middle",
+   "video_time": "51:32"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Seta",
+    "location": [
+     -1.7,
+     -1.0,
+     1.0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     -18
+    ]
+   },
+   "note": "the mushroom close on the left; R Z so it looks at the camera; G Shift+Z closer",
+   "video_time": "51:40"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Seta",
+    "onto": [
+     "Suelo"
+    ],
+    "gap": -0.08
+   },
+   "note": "G Z down so it sits in the grass",
+   "video_time": "52:10"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Bomba",
+    "location": [
+     2.2,
+     -0.3,
+     1.55
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     22
+    ]
+   },
+   "note": "the bomb on the right, its key towards the back",
+   "video_time": "51:45"
+  },
+  {
+   "action": "drop_object",
+   "args": {
+    "object": "Bomba",
+    "onto": [
+     "Suelo"
+    ],
+    "gap": -0.05
+   },
+   "note": "into the grass as well",
+   "video_time": "52:15"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.2,
+     -6.6,
+     1.1
+    ],
+    "look_at": [
+     0.3,
+     1.0,
+     1.35
+    ],
+    "lens": 35,
+    "active": true
+   },
+   "note": "Shift+A > Camera; Numpad 0; N > View > Lock Camera to View to place it low in front; focal length 35 mm (closest to how we see)",
+   "video_time": "54:21"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "focus_object": "Seta",
+    "fstop": 0.5
+   },
+   "note": "Depth of Field: focus on the mushroom, F-stop down: only its line is sharp",
+   "video_time": "55:47"
+  }
+ ]
+}

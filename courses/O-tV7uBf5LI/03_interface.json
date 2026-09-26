@@ -1,0 +1,37 @@
+{
+ "title": "Interface",
+ "summary": "Blender's panels (viewport, outliner, properties, timeline), navigating with the mouse and the numpad views, and replacing the default cube: select it, X to delete, Shift+A to add a monkey (Suzanne).",
+ "objects": [
+  {
+   "name": "Suzanne",
+   "description": "the monkey, added to try the views"
+  }
+ ],
+ "expected_result": "The default cube gone and Suzanne at the centre, with the camera and light.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube"
+    ]
+   },
+   "note": "click the cube, X to delete it",
+   "video_time": "7:13"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Suzanne",
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+A > Mesh > Monkey; then 1, 3, 7 (and Ctrl) for front, side and top views",
+   "video_time": "7:25"
+  }
+ ]
+}

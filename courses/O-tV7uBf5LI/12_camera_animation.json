@@ -1,0 +1,123 @@
+{
+ "title": "Camera animation",
+ "summary": "Keyframes: on a frame, place the camera and press I (Location) -- or turn on auto keying so every change is keyed -- then go to a later frame and move it again; Blender fills the frames between. A simple move: low beside the mushroom, then across the lawn, ending on the pipe and the bomb; the timeline end set to 150. Realistic handheld motion with a camera-shake add-on (influence 0.5). The focus distance keyed too, so the focus passes from the mushroom to the pipe at the back.",
+ "objects": [
+  {
+   "name": "Camera",
+   "description": "animated over frames 1-150 with shake and a rack focus"
+  }
+ ],
+ "expected_result": "A 150-frame shot that starts close on the mushroom and glides across the grass to the pipe and the bomb, the focus pulling from the mushroom to the pipe, with a light handheld wobble.",
+ "steps": [
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 1,
+    "location": [
+     -0.9,
+     -5.0,
+     0.9
+    ],
+    "look_at": [
+     -1.6,
+     -1.0,
+     1.1
+    ]
+   },
+   "note": "frame 1: the camera low beside the mushroom; I > Location (and Rotation) -- with auto keying every change is keyed",
+   "video_time": "66:37"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 75,
+    "location": [
+     0.2,
+     -6.0,
+     1.25
+    ],
+    "look_at": [
+     0.3,
+     0.6,
+     1.3
+    ]
+   },
+   "note": "frame 75: pulled back and centred",
+   "video_time": "68:03"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 150,
+    "location": [
+     0.5,
+     -5.6,
+     1.5
+    ],
+    "look_at": [
+     0.9,
+     2.4,
+     1.35
+    ]
+   },
+   "note": "frame 150: moved to the right, turned towards the pipe and the bomb",
+   "video_time": "68:20"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 150,
+    "fps": 24
+   },
+   "note": "the timeline's End from 250 to 150",
+   "video_time": "68:55"
+  },
+  {
+   "action": "add_shake",
+   "args": {
+    "object": "Camera",
+    "strength": 0.03,
+    "rotation_strength": 0.008,
+    "scale": 18,
+    "influence": 0.5
+   },
+   "note": "Camera Shakify add-on: a handheld preset, influence 0.5 so it is not too wild",
+   "video_time": "70:21"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 1,
+    "focus_distance": 3.2,
+    "fstop": 0.5
+   },
+   "note": "Depth of Field > Focus Distance (right click > pick the distance on the mushroom's eye), I",
+   "video_time": "71:15"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 60,
+    "focus_distance": 3.4
+   },
+   "note": "a little later, still on the mushroom, I",
+   "video_time": "71:43"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 130,
+    "focus_distance": 6.6
+   },
+   "note": "as the mushroom leaves the shot, the focus passes to the pipe at the back, I",
+   "video_time": "71:55"
+  }
+ ]
+}

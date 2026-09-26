@@ -21,7 +21,7 @@ from lucius.planner.model import PlanAction
 
 
 # Actions that can take longer than an ordinary bridge request.
-SLOW_ACTIONS = {"render_image": 600.0, "apply_modifier": 120.0, "add_scatter": 120.0}
+SLOW_ACTIONS = {"render_image": 600.0, "apply_modifier": 120.0, "add_scatter": 120.0, "render_animation": 7200.0}
 
 
 class ActionResult(BaseModel):

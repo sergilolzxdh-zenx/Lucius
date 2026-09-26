@@ -551,3 +551,87 @@ def test_taught_objects_are_rebuilt_without_a_model(tmp_path, headless_blender):
             maker.make("a spaceship", offline=True)
     finally:
         app.close()
+
+
+def test_edit_mode_building_and_joining(headless_blender):
+    """Shift+A in edit mode joins the mesh; L grows a selection to the connected part; Shift+D copies it;
+    Ctrl+J joins objects; auto smooth keeps right angles sharp."""
+    def ex(action, **args):
+        return headless_blender.execute(action, args, timeout=120)["result"]
+
+    def obj(name):
+        return next((o for o in headless_blender.request("scene_summary")["objects"] if o["name"] == name), None)
+
+    ex("reset_scene", keep_camera_light=False)
+    ex("add_primitive", kind="cube", name="Body", size=2, location=[0, 0, 1])
+    assert ex("add_primitive", kind="cube", size=0.5, location=[0, 0, 3], into="Body")["added_verts"] == 8
+    assert obj("Body")["mesh"]["verts"] == 16 and len(headless_blender.request("scene_summary")["objects"]) == 1
+    ex("select_box", object="Body", element="VERT", min=[None, None, 2.2], max=[0.1, 0.1, 2.8], space="local")
+    assert ex("select_linked", object="Body")["selected_verts"] == 8
+    assert ex("duplicate_selection", object="Body", offset=[1, 0, 0])["copied_verts"] == 8
+    assert obj("Body")["mesh"]["verts"] == 24
+    assert ex("shade", object="Body", smooth=True, auto_smooth_deg=30)["sharp_edges"] == 36
+    ex("add_primitive", kind="uv_sphere", name="Head", radius=0.5, location=[0, 0, 4])
+    joined = ex("join_objects", names=["Head", "Body"], into="Body")
+    assert joined["joined"] == ["Head"] and obj("Head") is None
+    ex("set_world", sky=True, sun_elevation_deg=20, strength=0.1)
+    assert ex("set_world", color=[0.1, 0.1, 0.1], strength=1.0)["sky"] is False
+
+
+def test_animation_keyframes_shake_and_video(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    out = tmp_path / "out"
+    out.mkdir()
+    with HeadlessBlender(allowed_save_dirs=[str(out)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=True)
+        ex("add_primitive", kind="cube", name="Box", size=1)
+        ex("insert_keyframe", object="Camera", frame=1, location=[6, -6, 3], look_at=[0, 0, 0])
+        ex("insert_keyframe", object="Camera", frame=4, location=[0, -8, 2], look_at=[0, 0, 0], interpolation="LINEAR")
+        assert ex("insert_keyframe", object="Camera", frame=1, focus_distance=5, fstop=2)["keyed"] == ["focus_distance",
+                                                                                                        "fstop"]
+        with pytest.raises(Exception, match="belong to a camera"):
+            ex("insert_keyframe", object="Box", frame=1, lens=30)
+        assert ex("set_frames", start=1, end=4, fps=12)["end"] == 4
+        assert ex("add_shake", object="Camera", strength=0.05)["noisy_curves"] == 6
+        animation = bridge.request("scene_summary")["animation"]
+        assert animation["animated"] == ["Camera"] and animation["end"] == 4
+        ex("set_render", samples=1, width=64, height=36, denoise=False)
+        still = ex("render_image", path=str(out / "f4.png"), camera="scene", width=64, height=36, samples=1,
+                   frame_number=4, lights="scene")
+        assert Path(still["path"]).exists()
+        video = ex("render_animation", path=str(out / "shot.mp4"), step=2, samples=1, percentage=33)   # odd -> even
+        assert video["frames"] == 2 and video["bytes"] > 0
+        with pytest.raises(Exception, match="must end with"):
+            ex("render_animation", path=str(out / "shot.avi"))
+
+
+def test_collections_and_scattered_collections_survive_the_next_chapter(tmp_path):
+    """A chapter continues the previous chapter's saved scene: collections (even ones only a particle system uses)
+    come back with the objects."""
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    out = tmp_path / "out"
+    out.mkdir()
+    with HeadlessBlender(allowed_save_dirs=[str(out)], allowed_read_dirs=[str(out)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=300)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="cone", name="Blade", radius=0.05, depth=0.4, location=[5, 0, 0])
+        ex("add_primitive", kind="cone", name="Blade2", radius=0.08, depth=0.3, location=[6, 0, 0])
+        assert ex("move_to_collection", names=["Blade", "Blade2"], collection="Grass")["objects"] == ["Blade", "Blade2"]
+        ex("add_primitive", kind="plane", name="Ground", size=4)
+        scattered = ex("add_scatter", object="Ground", collection="Grass", name="Lawn", count=50, children=5,
+                       rotation_axis="OB_Y")
+        assert scattered["children"] == 5
+        ex("save_file", path=str(out / "chapter.blend"))
+        ex("reset_scene", keep_camera_light=False)
+        loaded = ex("import_blend", path=str(out / "chapter.blend"))
+        assert "Ground" in loaded["objects"] and "Blade" not in loaded["objects"]   # hidden originals stay hidden
+        ex("add_scatter", object="Ground", collection="Grass", name="Lawn", count=80)   # the collection is back

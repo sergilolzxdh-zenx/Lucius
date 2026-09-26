@@ -294,16 +294,34 @@ def add_camera(p):
 
 
 def set_world(p):
+    """World properties: a plain colour, or a physical sky (sun and atmosphere, a stand-in for an outdoor HDRI)
+    that lights the scene from every direction."""
     world = bpy.context.scene.world or bpy.data.worlds.new("World")
     bpy.context.scene.world = world
     world.use_nodes = True
-    background = next((n for n in world.node_tree.nodes if n.type == "BACKGROUND"), None)
+    tree = world.node_tree
+    background = next((n for n in tree.nodes if n.type == "BACKGROUND"), None)
     if background is None:
         raise BridgeCommandError("operator_failed", "the world has no background node")
-    if p["color"] is not None:
+    sky = tree.nodes.get("LuciusSky")
+    if p["sky"]:
+        if sky is None:
+            sky = tree.nodes.new("ShaderNodeTexSky")
+            sky.name = "LuciusSky"
+        types = sky.bl_rna.properties["sky_type"].enum_items.keys()
+        sky.sky_type = "MULTIPLE_SCATTERING" if "MULTIPLE_SCATTERING" in types else "NISHITA"
+        sky.sun_elevation = math.radians(p["sun_elevation_deg"])
+        sky.sun_rotation = math.radians(p["sun_rotation_deg"])
+        tree.links.new(sky.outputs["Color"], background.inputs["Color"])
+    else:
+        for link in list(background.inputs["Color"].links):
+            tree.links.remove(link)
+        if sky is not None:
+            tree.nodes.remove(sky)
+    if p["color"] is not None and not p["sky"]:
         background.inputs["Color"].default_value = _unit_color(p["color"], "color")
     background.inputs["Strength"].default_value = p["strength"]
-    return {"strength": p["strength"]}
+    return {"strength": p["strength"], "sky": bool(p["sky"])}
 
 
 def set_render(p):
@@ -319,6 +337,8 @@ def set_render(p):
         scene.eevee.taa_render_samples = p["samples"]
     if p["view_transform"] is not None:
         scene.view_settings.view_transform = p["view_transform"]
+    if p["motion_blur"] is not None:
+        scene.render.use_motion_blur = p["motion_blur"]
     return {"engine": scene.render.engine, "samples": p["samples"], "resolution": [p["width"], p["height"]],
             "view_transform": scene.view_settings.view_transform}
 
@@ -479,6 +499,8 @@ def render_image(p):
         render.engine = "CYCLES"   # Eevee needs a GPU context headless Blender does not have
     render.image_settings.file_format = "JPEG" if path.lower().endswith((".jpg", ".jpeg")) else "PNG"
     render.filepath = path
+    if p["frame_number"] is not None:
+        scene.frame_set(p["frame_number"])   # a moment of an animation
     temporary = []
     hidden = []
     world_created = False
@@ -560,10 +582,13 @@ def _scatter_collection(instance):
 
 
 def add_scatter(p):
-    """A hair particle system that places copies of an object over a surface (sprinkles on icing)."""
+    """A hair particle system that places copies of an object, or of the objects of a collection, over a surface
+    (sprinkles on icing, grass on the ground)."""
     _leave_edit_mode()
     obj = _obj(p["object"])
-    instance = _obj(p["instance"])
+    if p["collection"] is None and p["instance"] is None:
+        raise BridgeCommandError("invalid_param", "give the instance object or the collection to scatter", param="instance")
+    instance = _obj(p["instance"]) if p["instance"] else None
     if instance == obj:
         raise BridgeCommandError("invalid_param", "an object cannot be scattered over itself", param="instance")
     name = p["name"] or "Scatter"
@@ -580,18 +605,60 @@ def add_scatter(p):
     settings.particle_size = p["scale"]
     settings.size_random = p["scale_random"]
     settings.use_rotations = True
-    settings.rotation_mode = "NOR"
+    settings.rotation_mode = p["rotation_axis"]
     settings.phase_factor_random = p["rotation_random"]
     settings.rotation_factor_random = p["rotation_random"] / 2.0
     modifier.particle_system.seed = p["seed"]
-    if p["hide_instance"]:
+    if p["children"]:
+        # Children: more copies between the real particles, cheap to display (Interpolated).
+        settings.child_type = "INTERPOLATED"
+        settings.child_percent = p["children"]   # the viewport count ("child_nbr" before Blender 4)
+        settings.rendered_child_count = p["children"]
+    else:
+        settings.child_type = "NONE"
+    if p["collection"] is not None:
+        collection = bpy.data.collections.get(p["collection"])
+        if collection is None:
+            raise BridgeCommandError("invalid_param", f"collection {p['collection']!r} not found", param="collection")
+        if p["hide_instance"]:
+            _unlink_collection(collection)   # the originals do not render; their copies do
+        settings.render_type = "COLLECTION"
+        settings.instance_collection = collection
+        settings.use_collection_pick_random = True   # each copy a random member (three kinds of grass)
+    elif p["hide_instance"]:
         settings.render_type = "COLLECTION"
         settings.instance_collection = _scatter_collection(instance)
     else:
         settings.render_type = "OBJECT"
         settings.instance_object = instance
     obj.show_instancer_for_render = True
-    return {"object": obj.name, "instance": instance.name, "count": settings.count}
+    return {"object": obj.name, "instance": instance.name if instance else p["collection"], "count": settings.count,
+            "children": p["children"]}
+
+
+def _unlink_collection(collection):
+    for parent in [bpy.context.scene.collection, *bpy.data.collections]:
+        if collection.name in parent.children:
+            parent.children.unlink(collection)
+
+
+def move_to_collection(p):
+    """M: put objects in a collection of their own (a new one if needed), like a folder in the outliner."""
+    _leave_edit_mode()
+    collection = bpy.data.collections.get(p["collection"])
+    if collection is None:
+        collection = bpy.data.collections.new(p["collection"])
+        bpy.context.scene.collection.children.link(collection)
+    moved = []
+    for name in p["names"]:
+        target = _obj(name)
+        if target.name not in collection.objects:
+            collection.objects.link(target)
+        for other in list(target.users_collection):
+            if other != collection:
+                other.objects.unlink(target)
+        moved.append(target.name)
+    return {"collection": collection.name, "objects": moved}
 
 
 ACTIONS = {
@@ -615,11 +682,12 @@ ACTIONS = {
         "name": ("name", None), "location": ("vec3", None), "rotation": ("vec3", None), "look_at": ("vec3", None),
         "lens": ("float", None), "active": ("bool", True), "dof_distance": ("float", None), "fstop": ("float", None),
         "focus_object": ("name", None), "dof": ("bool", None)}),
-    "set_world": (set_world, {"color": COLOR, "strength": ("float", 1.0)}),
+    "set_world": (set_world, {"color": COLOR, "strength": ("float", 1.0), "sky": ("bool", False),
+                              "sun_elevation_deg": ("float", 35.0), "sun_rotation_deg": ("float", 0.0)}),
     "set_render": (set_render, {
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
         "samples": ("int", 64), "width": ("int", 1280), "height": ("int", 720), "denoise": ("bool", True),
-        "view_transform": (("Standard", "AgX", "Filmic", "Khronos PBR Neutral"), None)}),
+        "view_transform": (("Standard", "AgX", "Filmic", "Khronos PBR Neutral"), None), "motion_blur": ("bool", None)}),
     "scale_scene": (scale_scene, {"factor": ("float", REQUIRED), "pivot": ("vec3", [0.0, 0.0, 0.0])}),
     "drop_object": (drop_object, {"object": OBJ, "onto": ("names", None), "floor": ("bool", True),
                                   "gap": ("float", 0.0)}),
@@ -627,9 +695,12 @@ ACTIONS = {
         "path": ("path", REQUIRED), "camera": (("scene", "auto"), "auto"), "view": (tuple(VIEW_DIRECTIONS), "three_quarter"),
         "engine": (("CYCLES", "BLENDER_EEVEE", "BLENDER_EEVEE_NEXT", "BLENDER_WORKBENCH"), "CYCLES"),
         "samples": ("int", 24), "width": ("int", 800), "height": ("int", 600), "frame": ("names", None),
-        "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio")}),
+        "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio"), "frame_number": ("int", None)}),
+    "move_to_collection": (move_to_collection, {"names": ("names", REQUIRED), "collection": ("name", REQUIRED)}),
     "add_scatter": (add_scatter, {
-        "object": OBJ, "instance": ("name", REQUIRED), "name": ("name", None), "count": ("int", 300),
+        "object": OBJ, "instance": ("name", None), "collection": ("name", None), "name": ("name", None),
+        "count": ("int", 300), "children": ("int", 0),
+        "rotation_axis": (("NOR", "OB_X", "OB_Y", "OB_Z", "GLOB_X", "GLOB_Y", "GLOB_Z"), "NOR"),
         "scale": ("float", 1.0), "scale_random": ("float", 0.3),
         "rotation_random": ("float", 1.0), "seed": ("int", 0), "hide_instance": ("bool", True)}),
 }

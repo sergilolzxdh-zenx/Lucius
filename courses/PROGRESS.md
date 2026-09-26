@@ -57,3 +57,20 @@ as skills, offline recall, objects packs (`lucius teach objects --out ...`, `luc
 
 How to make one from YOUR reference image: send it to me (Claude Code) in the chat, or in the control
 center (Projects -> Choose Files -> Make it; that path needs Gemini).
+
+## 4. Second Spanish course (Blender 4.0 guide): all chapters 9/10
+
+[`O-tV7uBf5LI/overview.jpg`](O-tV7uBf5LI/overview.jpg) and the rendered animation
+[`O-tV7uBf5LI/final.mp4`](O-tV7uBf5LI/final.mp4): the Mario pipe, mushroom and Bob-omb on a lawn of
+particle grass, textured, sky-lit, with a keyframed camera move (handheld shake, focus pulling from the
+mushroom to the pipe). `lucius teach course courses\O-tV7uBf5LI` learns it on your PC (about 30 minutes,
+most of it rendering the two videos).
+
+Stand-ins where headless Blender can't do what the tutor did: a physical sky instead of the downloaded
+HDRI, noise on the camera instead of the Camera Shakify add-on, Cycles instead of Eevee, booleans for the
+wind-up key's holes instead of the knife tool.
+
+## 5. Animation tutorial (How to Animate ANYTHING): keyframes, graph editor, bouncing ball, 9/10 each
+
+[`JQT9sT1YuAI`](JQT9sT1YuAI). The backflip chapters need a rigged character: they come after the rigging
+tutorial.

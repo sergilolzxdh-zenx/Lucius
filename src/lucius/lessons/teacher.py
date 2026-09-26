@@ -144,7 +144,8 @@ class Teacher:
                     "chapter": part.task_text, "chapter_index": chapter - 1, "start": part.start, "end": part.end,
                     "teacher": self.name}, start_from=str(start_from) if start_from else None)
         result, run = self._build(project, recipe, start_from=start_from, default_cube=default_cube,
-                                  scene_camera="add_camera" in recipe.actions_used() or self._uses_camera(video))
+                                  scene_camera="add_camera" in recipe.actions_used() or self._uses_camera(video),
+                                  animate=score is not None)
         info = json.loads(Path(video.info_path).read_text())
         t = part.end - 15.0
         if frame_at:
@@ -358,7 +359,7 @@ class Teacher:
         (dest / "frames").mkdir(parents=True, exist_ok=True)
         chapters = self.learner._state(video).get("chapters", {})
         lessons = []
-        last_render = None
+        last_render = last_video = None
         for key, entry in sorted(chapters.items(), key=lambda item: int(item[0].split("-")[0])):
             project = self.projects.get(str(entry["project_id"]))
             source = project.data.get("source") or {}
@@ -379,6 +380,8 @@ class Teacher:
             lessons.append(lesson)
             if project.data.get("final_render") and project.path(project.data["final_render"]).exists():
                 last_render = project.path(project.data["final_render"])
+            if project.data.get("video") and project.path(project.data["video"]).exists():
+                last_video = project.path(project.data["video"])
         info = json.loads(Path(video.info_path).read_text())
         course = {"video_id": video.video_id, "url": video.url, "title": video.title,
                   "duration": info.get("duration") or video.duration, "language": video.language,
@@ -392,6 +395,8 @@ class Teacher:
         (dest / "course.json").write_text(json.dumps(course, indent=1, ensure_ascii=False) + "\n")
         if last_render is not None:
             Image.open(last_render).convert("RGB").save(dest / "final.jpg", quality=90)
+        if last_video is not None:
+            shutil.copyfile(last_video, dest / "final.mp4")   # the course's animation, as Lucius rendered it
         overview = self.learner.overview(video)
         if overview is not None:
             Image.open(overview).convert("RGB").save(dest / "overview.jpg", quality=85)
@@ -409,7 +414,8 @@ class Teacher:
             copies.append(copy)
         project.data["references"] = [c.name for c in copies]
         result, run = self._build(project, recipe, start_from=None, default_cube=False,
-                                  scene_camera="add_camera" in recipe.actions_used(), clear=True)
+                                  scene_camera="add_camera" in recipe.actions_used(), clear=True,
+                                  animate=score is not None)
         tiles = [(c, f"Reference {i + 1}") for i, c in enumerate(copies)]
         tiles += [(r, f"Lucius ({r.stem.split('_')[-1]})") for r in result.renders]
         result.sheet = contact_sheet(tiles, project.path("sheet.png"), title=f"Task: {task}")
@@ -425,7 +431,7 @@ class Teacher:
         return result
 
     def _build(self, project: Any, recipe: Recipe, *, start_from: Path | None, default_cube: bool,
-               scene_camera: bool, clear: bool = False) -> tuple[TeachResult, RecipeRun]:
+               scene_camera: bool, clear: bool = False, animate: bool = False) -> tuple[TeachResult, RecipeRun]:
         backend = self.app.headless_backend()
         runner = self.learner.runner(backend)
         if clear:
@@ -438,7 +444,12 @@ class Teacher:
                              context=run.context_text() if not run.ok else "", scene=run.scene_text())
         project.add_attempt({"number": 1, "score": None, "run": run.to_dict(), "fixes": 0, "renders": [],
                              "teacher": self.name})
-        if run.ok:
+        if run.ok and scene_camera and run.scene.get("camera") and self._animated(run):
+            # An animation: the camera's shot at its start, middle and end (and, when kept, the video).
+            self._render_animation(runner, project, result, run, video=animate)
+            runner.save_blend(project.path("scene.blend"))
+            project.data["attempts"][-1]["renders"] = [r.name for r in result.renders]
+        elif run.ok:
             frame = subject_names(run.scene.get("objects", []))
             views = [("scene", "three_quarter", "camera")] if scene_camera and run.scene.get("camera") else []
             lit = any(o.get("type") == "LIGHT" for o in run.scene.get("objects", []))
@@ -465,6 +476,33 @@ class Teacher:
             runner.save_blend(project.path("scene.blend"))
             project.data["attempts"][-1]["renders"] = [r.name for r in result.renders]
         return result, run
+
+    @staticmethod
+    def _animated(run: RecipeRun) -> bool:
+        animation = run.scene.get("animation") or {}
+        return bool(animation.get("animated")) and animation.get("end", 0) > animation.get("start", 0)
+
+    def _render_animation(self, runner: Any, project: Any, result: TeachResult, run: RecipeRun, *,
+                          video: bool) -> None:
+        animation = run.scene["animation"]
+        start, end = int(animation["start"]), int(animation["end"])
+        rx, ry = (animation.get("resolution") or [1920, 1080])[:2]
+        width = 800
+        height = max(16, round(width * ry / rx))
+        for label, number in (("start", start), ("middle", (start + end) // 2), ("end", end)):
+            path = project.path(f"render_frame_{label}.png")
+            runner._bridge("render_image", {"path": str(path.resolve()), "camera": "scene", "width": width,
+                                            "height": height, "samples": self.render_samples,
+                                            "frame_number": number, "lights": "scene"})
+            result.renders.append(path)
+        if video:
+            percentage = max(10, min(100, round(640 / rx * 100)))
+            path = project.path("animation.mp4")
+            done = runner._bridge("render_animation", {"path": str(path.resolve()), "step": 2,
+                                                       "samples": max(8, self.render_samples // 2),
+                                                       "percentage": percentage})
+            project.data["video"] = path.name
+            project.data["video_frames"] = done.get("frames") if isinstance(done, dict) else None
 
     def _uses_camera(self, video: DownloadedVideo) -> bool:
         return any(entry.get("uses_camera") for entry in self.learner._state(video).get("chapters", {}).values())

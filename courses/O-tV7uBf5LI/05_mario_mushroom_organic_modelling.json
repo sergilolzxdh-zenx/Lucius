@@ -1,0 +1,252 @@
+{
+ "title": "Mario mushroom (organic modelling)",
+ "summary": "Organic modelling with a Subdivision Surface modifier: a cube turns into a sphere; a loop cut near the bottom flattens it into a gummy-shaped stem; in edit mode a second cube is added to the same object, scaled up, its bottom face scaled out further so the cap falls to the sides, inset and pushed up to make a hole for the stem, then the whole cap (L) lowered onto the stem and scaled; two eyes: a small cube added on the stem, stretched tall, and duplicated across with Shift+D along X; shade smooth.",
+ "objects": [
+  {
+   "name": "Seta",
+   "description": "the mushroom: stem, wide drooping cap and two oval eyes, one object with subdivision"
+  }
+ ],
+ "expected_result": "A cartoon mushroom: a rounded stem with two oval eyes under a wide dome cap that falls to the sides; the pipe moved aside.",
+ "steps": [
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Tuberia",
+    "location": [
+     -4,
+     1.5,
+     0
+    ]
+   },
+   "note": "object mode: move the pipe aside",
+   "video_time": "19:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Seta",
+    "size": 2,
+    "location": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "Shift+A > Cube",
+   "video_time": "20:10"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Seta",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 3,
+     "render_levels": 3
+    }
+   },
+   "note": "Modifiers > Subdivision Surface, levels up in viewport and render: the cube becomes a sphere",
+   "video_time": "20:36"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Seta",
+    "axis": "z",
+    "positions": [
+     0.12
+    ]
+   },
+   "note": "Ctrl+R: a loop close to the bottom: the bottom goes flat, like a gummy sweet",
+   "video_time": "21:31"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "size": 2,
+    "location": [
+     0,
+     0,
+     2.6
+    ],
+    "into": "Seta"
+   },
+   "note": "in edit mode Shift+A > Cube: part of the same object; G Z up",
+   "video_time": "22:24"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Seta",
+    "factor": [
+     1.45,
+     1.45,
+     0.9
+    ]
+   },
+   "note": "S: bigger in every direction: the cap",
+   "video_time": "22:51"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Seta",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.5
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     -1
+    ]
+   },
+   "note": "the cap's bottom face",
+   "video_time": "23:15"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Seta",
+    "factor": [
+     1.35,
+     1.35,
+     1
+    ]
+   },
+   "note": "S more: a sphere that falls to the sides",
+   "video_time": "23:20"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Seta",
+    "thickness": 0.35
+   },
+   "note": "I: an inset",
+   "video_time": "23:44"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Seta",
+    "thickness": 0.15
+   },
+   "note": "another inset",
+   "video_time": "23:55"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Seta",
+    "offset": [
+     0,
+     0,
+     0.55
+    ]
+   },
+   "note": "G Z up: a hole for the stem",
+   "video_time": "24:00"
+  },
+  {
+   "action": "select_linked",
+   "args": {
+    "object": "Seta"
+   },
+   "note": "mouse over the cap, L: all its faces",
+   "video_time": "24:25"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Seta",
+    "offset": [
+     0,
+     0,
+     -0.35
+    ]
+   },
+   "note": "G Z down onto the stem",
+   "video_time": "24:41"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Seta",
+    "factor": [
+     1.1,
+     1.1,
+     1
+    ]
+   },
+   "note": "S a bit more",
+   "video_time": "24:45"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "size": 0.3,
+    "location": [
+     -0.25,
+     -0.9,
+     0.78
+    ],
+    "into": "Seta"
+   },
+   "note": "front view: the Add Cube tool, a small cube on the stem: an eye",
+   "video_time": "25:11"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Seta",
+    "factor": [
+     0.75,
+     0.6,
+     1.6
+    ]
+   },
+   "note": "tall and a little flat",
+   "video_time": "25:38"
+  },
+  {
+   "action": "duplicate_selection",
+   "args": {
+    "object": "Seta",
+    "offset": [
+     0.5,
+     0,
+     0
+    ]
+   },
+   "note": "L, Shift+D, G X: the second eye, moved only along X",
+   "video_time": "25:50"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Seta",
+    "smooth": true
+   },
+   "note": "right click > Shade Smooth",
+   "video_time": "26:10"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Seta",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": "26:15"
+  }
+ ]
+}

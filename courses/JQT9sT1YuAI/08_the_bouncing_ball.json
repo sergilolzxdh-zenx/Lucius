@@ -1,0 +1,605 @@
+{
+ "title": "The bouncing ball",
+ "summary": "A ball rolls off a block and bounces to a stop: X moves at full speed from the start (Vector) and eases out; Z falls from the block and bounces, each bounce 60% as high as the last, parabolic, sharp (Vector) at every contact; the spin matches the distance travelled; an empty at the ball's bottom carries the position and squashes on each landing while the child ball only spins.",
+ "objects": [
+  {
+   "name": "Bola",
+   "description": "checkered ball, spins"
+  },
+  {
+   "name": "Control",
+   "description": "empty carrying position and squash"
+  },
+  {
+   "name": "Bloque",
+   "description": "the block"
+  },
+  {
+   "name": "Suelo",
+   "description": "floor"
+  }
+ ],
+ "expected_result": "A 120-frame animation of a red checkered ball rolling off a block, bouncing lower each time, squashing on the first landings, and rolling to a stop.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Cube"
+    ]
+   },
+   "note": "a fresh scene for the ball",
+   "video_time": "14:37"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 40,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the floor",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Suelo",
+    "name": "Suelo",
+    "base_color": "#6E7A5A",
+    "roughness": 0.8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Bloque",
+    "size": 1,
+    "location": [
+     -6,
+     0,
+     1
+    ]
+   },
+   "note": "the block the ball rolls off",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Bloque",
+    "dimensions": [
+     4,
+     3,
+     2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bloque",
+    "name": "Bloque",
+    "base_color": "#8B8F99",
+    "roughness": 0.6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Bola",
+    "radius": 0.5,
+    "vertices": 32,
+    "location": [
+     0,
+     0,
+     0.5
+    ]
+   },
+   "note": "the ball",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Bola",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Bola",
+    "name": "Bola",
+    "base_color": "#D11F2B",
+    "pattern": "checker",
+    "pattern_color": "#F4F0EA",
+    "pattern_scale": 4,
+    "roughness": 0.4
+   },
+   "note": "a red checker so its spin shows",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "Control",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "an empty at the ball's bottom: it will carry the position and the squash",
+   "video_time": "17:17"
+  },
+  {
+   "action": "parent_object",
+   "args": {
+    "object": "Bola",
+    "parent": "Control"
+   },
+   "note": "Ctrl+P: the ball follows the empty; the ball keeps only the spin",
+   "video_time": "17:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 1,
+    "location": [
+     -7.0,
+     0,
+     0
+    ],
+    "axes": "x",
+    "handle": "VECTOR"
+   },
+   "note": "X on frame 1; V > Vector so it starts at full speed",
+   "video_time": "15:05"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 120,
+    "location": [
+     6.5,
+     0,
+     0
+    ],
+    "axes": "x",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "X at the end, easing to a stop",
+   "video_time": "15:15"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 1,
+    "location": [
+     0,
+     0,
+     2.0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "Z on the block's top until the ball crosses its edge",
+   "video_time": "15:49"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 18,
+    "location": [
+     0,
+     0,
+     2.0
+    ],
+    "axes": "z"
+   },
+   "note": "",
+   "video_time": "15:49"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 33,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "imagine the fall: down on the floor, key (Vector: a sharp landing)",
+   "video_time": "15:55"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 45,
+    "location": [
+     0,
+     0,
+     1.2
+    ],
+    "axes": "z",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "bounce 1: up to 1.20 m (each bounce 60% of the last), a parabola",
+   "video_time": "16:14"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 57,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "down, sharp",
+   "video_time": "16:05"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 66,
+    "location": [
+     0,
+     0,
+     0.72
+    ],
+    "axes": "z",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "bounce 2: up to 0.72 m (each bounce 60% of the last), a parabola",
+   "video_time": "16:14"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 75,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "down, sharp",
+   "video_time": "16:05"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 82,
+    "location": [
+     0,
+     0,
+     0.432
+    ],
+    "axes": "z",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "bounce 3: up to 0.43 m (each bounce 60% of the last), a parabola",
+   "video_time": "16:14"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 89,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "down, sharp",
+   "video_time": "16:05"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 95,
+    "location": [
+     0,
+     0,
+     0.259
+    ],
+    "axes": "z",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "bounce 4: up to 0.26 m (each bounce 60% of the last), a parabola",
+   "video_time": "16:14"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 100,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z",
+    "handle": "VECTOR"
+   },
+   "note": "down, sharp",
+   "video_time": "16:05"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 120,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "axes": "z"
+   },
+   "note": "it stays on the floor",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Bola",
+    "location": [
+     0,
+     0,
+     0.5
+    ]
+   },
+   "note": "the ball raised so its bottom is on the empty's centre: the empty scales from the ball's bottom",
+   "video_time": "17:53"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Bola",
+    "frame": 1,
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ],
+    "axes": "y",
+    "handle": "VECTOR"
+   },
+   "note": "rotation like the X move: it rolls on the floor",
+   "video_time": "16:37"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Bola",
+    "frame": 120,
+    "rotation_deg": [
+     0,
+     1547.0,
+     0
+    ],
+    "axes": "y",
+    "handle": "AUTO_CLAMPED"
+   },
+   "note": "the spin matches the distance (distance / radius)",
+   "video_time": "16:40"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 32,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "normal just before landing",
+   "video_time": "18:40"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 33,
+    "scale": [
+     1.22,
+     1.22,
+     0.67
+    ]
+   },
+   "note": "squashed on the floor: Z down, X and Y up, the same volume",
+   "video_time": "18:43"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 35,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "back right after the bounce",
+   "video_time": "18:45"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 56,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "normal just before landing",
+   "video_time": "18:40"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 57,
+    "scale": [
+     1.22,
+     1.22,
+     0.67
+    ]
+   },
+   "note": "squashed on the floor: Z down, X and Y up, the same volume",
+   "video_time": "18:43"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 59,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "back right after the bounce",
+   "video_time": "18:45"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 74,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "normal just before landing",
+   "video_time": "18:40"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 75,
+    "scale": [
+     1.22,
+     1.22,
+     0.67
+    ]
+   },
+   "note": "squashed on the floor: Z down, X and Y up, the same volume",
+   "video_time": "18:43"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Control",
+    "frame": 77,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "back right after the bounce",
+   "video_time": "18:45"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 120,
+    "fps": 24
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "Sol",
+    "location": [
+     0,
+     0,
+     10
+    ],
+    "rotation_deg": [
+     40,
+     10,
+     30
+    ],
+    "power": 3.0
+   },
+   "note": "a sun for shadows",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     -0.3,
+     -18,
+     2.6
+    ],
+    "look_at": [
+     -0.3,
+     0,
+     1.3
+    ],
+    "lens": 35
+   },
+   "note": "the side view",
+   "video_time": null
+  }
+ ]
+}

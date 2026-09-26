@@ -1,0 +1,108 @@
+{
+ "title": "Keyframes on a cube",
+ "summary": "Keyframes are the poses; Blender makes the in-betweens. On frame 1 the cube gets a key for location and rotation (I); with auto keying on, frame 30 only the changed rotation is keyed, so the cube already starts moving from frame 1; frame 60 it is moved and turned again. The fix: a location key on frame 30 so it stays put until then.",
+ "objects": [
+  {
+   "name": "Cube",
+   "description": "the default cube, keyed at frames 1, 30 and 60"
+  }
+ ],
+ "expected_result": "A 60-frame animation: the cube turns in place, then moves and turns to a new spot.",
+ "steps": [
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 1,
+    "location": [
+     0,
+     0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "select the cube, I: a key for location and rotation on frame 1",
+   "video_time": "1:22"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 30,
+    "rotation_deg": [
+     0,
+     0,
+     45
+    ]
+   },
+   "note": "auto keying on: frame 30, R Z 45 -- only the rotation gets a key",
+   "video_time": "2:12"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 60,
+    "location": [
+     4,
+     2,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     120
+    ]
+   },
+   "note": "frame 60: moved and turned again",
+   "video_time": "2:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Cube",
+    "frame": 30,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "it drifts from frame 1 because nothing tells it to stay: a location key on frame 30 fixes it",
+   "video_time": "2:50"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 60,
+    "fps": 24
+   },
+   "note": "the timeline: frames 1 to 60",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     9,
+     -9,
+     7
+    ],
+    "look_at": [
+     2,
+     1,
+     0
+    ],
+    "lens": 40
+   },
+   "note": "the camera (Numpad 0) sees the whole move",
+   "video_time": null
+  }
+ ]
+}

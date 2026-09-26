@@ -1,0 +1,732 @@
+{
+ "title": "Bob-omb (hard and organic)",
+ "summary": "A Bob-omb mixing both kinds of modelling: a smooth UV sphere body, oval sphere eyes (one duplicated along X), a bevelled cylinder cap, a fuse from a thin cylinder with 20 loop cuts bent with proportional editing, shoes from subdivided cubes shaped in edit mode (flat sole, sloping toe, an inset extruded into a leg) and duplicated, a wind-up key with two lobes and holes made with booleans, the shoes' subdivision applied and everything joined into one object (Ctrl+J).",
+ "objects": [
+  {
+   "name": "Bomba",
+   "description": "the bomb: body, eyes, cap, fuse, shoes and key joined"
+  }
+ ],
+ "expected_result": "A round bomb with two oval eyes, a cap and a curved fuse on top, standing on two shoes, a wind-up key at its back.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Bomba",
+    "radius": 1.0,
+    "vertices": 32,
+    "location": [
+     4.0,
+     0,
+     1.55
+    ]
+   },
+   "note": "Shift+A > UV Sphere: the bomb, moved up",
+   "video_time": "26:50"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Bomba",
+    "smooth": true
+   },
+   "note": "right click > Shade Smooth",
+   "video_time": "26:52"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Ojo",
+    "radius": 0.13,
+    "vertices": 24,
+    "location": [
+     3.74,
+     -0.92,
+     1.75
+    ]
+   },
+   "note": "this time separate objects, joined later: a sphere for an eye",
+   "video_time": "26:56"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Ojo"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Ojo",
+    "factor": [
+     0.75,
+     0.55,
+     1.5
+    ]
+   },
+   "note": "tall oval",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Ojo",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Ojo",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Ojo",
+    "new_name": "Ojo2",
+    "offset": [
+     0.52,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+D, G X: the other eye",
+   "video_time": "27:05"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Tapa",
+    "radius": 0.36,
+    "depth": 0.26,
+    "vertices": 32,
+    "location": [
+     4.0,
+     0,
+     2.6
+    ]
+   },
+   "note": "top view: a cylinder for the top part, drawn from the centre (Alt), Alt+R straight, scaled",
+   "video_time": "27:15"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Tapa",
+    "element": "EDGE",
+    "space": "local",
+    "sharp_deg": 30
+   },
+   "note": "its edges",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Tapa",
+    "offset": 0.03,
+    "segments": 2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Tapa",
+    "smooth": true,
+    "auto_smooth_deg": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Tapa",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Mecha",
+    "radius": 0.07,
+    "depth": 0.9,
+    "vertices": 12,
+    "location": [
+     4.0,
+     0,
+     3.15
+    ]
+   },
+   "note": "another cylinder, long and thin: the fuse",
+   "video_time": "27:45"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Mecha",
+    "axis": "z",
+    "positions": [
+     0.0476,
+     0.0952,
+     0.1429,
+     0.1905,
+     0.2381,
+     0.2857,
+     0.3333,
+     0.381,
+     0.4286,
+     0.4762,
+     0.5238,
+     0.5714,
+     0.619,
+     0.6667,
+     0.7143,
+     0.7619,
+     0.8095,
+     0.8571,
+     0.9048,
+     0.9524
+    ]
+   },
+   "note": "edit mode, Ctrl+R with the wheel up: 20 cuts",
+   "video_time": "27:55"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Mecha",
+    "element": "FACE",
+    "min": [
+     null,
+     null,
+     0.44
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top face",
+   "video_time": "28:10"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Mecha",
+    "offset": [
+     0.35,
+     0,
+     -0.05
+    ],
+    "proportional": 0.75,
+    "falloff": "SMOOTH"
+   },
+   "note": "proportional editing (O), a big circle: G, the fuse bends",
+   "video_time": "28:18"
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Mecha",
+    "axis": "y",
+    "angle_deg": 35
+   },
+   "note": "R: the tip turns with it",
+   "video_time": "28:44"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Mecha",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Mecha",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Pie",
+    "size": 1,
+    "location": [
+     3.62,
+     -0.15,
+     0.18
+    ]
+   },
+   "note": "a foot: a cube",
+   "video_time": "28:50"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Pie",
+    "dimensions": [
+     0.5,
+     0.8,
+     0.36
+    ]
+   },
+   "note": "long like a shoe",
+   "video_time": "29:10"
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Pie",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Pie",
+    "type": "SUBSURF",
+    "name": "Subdivision",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "Subdivision, 2 levels",
+   "video_time": "28:58"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Pie",
+    "axis": "z",
+    "positions": [
+     0.2
+    ]
+   },
+   "note": "Ctrl+R low down: a flat sole",
+   "video_time": "29:12"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Pie",
+    "element": "VERT",
+    "max": [
+     null,
+     -0.2,
+     null
+    ],
+    "min": [
+     null,
+     null,
+     0.05
+    ],
+    "space": "local"
+   },
+   "note": "the front top edge",
+   "video_time": "29:18"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Pie",
+    "offset": [
+     0,
+     0,
+     -0.07
+    ]
+   },
+   "note": "lowered: the toe slopes down",
+   "video_time": "29:20"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Pie",
+    "axis": "y",
+    "positions": [
+     0.62
+    ]
+   },
+   "note": "another cut: where the leg comes out",
+   "video_time": "29:25"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Pie",
+    "element": "FACE",
+    "min": [
+     null,
+     0.1,
+     0.1
+    ],
+    "space": "local",
+    "facing": [
+     0,
+     0,
+     1
+    ]
+   },
+   "note": "the top face at the back",
+   "video_time": "29:30"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Pie",
+    "thickness": 0.04
+   },
+   "note": "a small inset: a round leg",
+   "video_time": "29:33"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Pie",
+    "offset": [
+     0,
+     0,
+     0.45
+    ]
+   },
+   "note": "E up: the leg",
+   "video_time": "29:35"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Pie",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Pie",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Pie",
+    "new_name": "Pie2",
+    "offset": [
+     0.76,
+     0,
+     0
+    ]
+   },
+   "note": "the other foot",
+   "video_time": "29:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Llave",
+    "size": 1,
+    "location": [
+     4.0,
+     1.2,
+     1.55
+    ]
+   },
+   "note": "the key: its stem",
+   "video_time": "30:02"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Llave",
+    "dimensions": [
+     0.1,
+     0.55,
+     0.16
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Llave",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Lobulo",
+    "radius": 0.28,
+    "depth": 0.1,
+    "vertices": 32,
+    "location": [
+     4.0,
+     1.72,
+     1.82
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a lobe of the key's handle",
+   "video_time": "30:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Lobulo2",
+    "radius": 0.28,
+    "depth": 0.1,
+    "vertices": 32,
+    "location": [
+     4.0,
+     1.72,
+     1.28
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a lobe of the key's handle",
+   "video_time": "30:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Hueco",
+    "radius": 0.09,
+    "depth": 0.4,
+    "vertices": 24,
+    "location": [
+     4.0,
+     1.76,
+     1.86
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a hole",
+   "video_time": "31:05"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Hueco2",
+    "radius": 0.09,
+    "depth": 0.4,
+    "vertices": 24,
+    "location": [
+     4.0,
+     1.76,
+     1.24
+    ],
+    "rotation_deg": [
+     0,
+     90,
+     0
+    ]
+   },
+   "note": "a hole",
+   "video_time": "31:05"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Llave",
+    "type": "BOOLEAN",
+    "name": "Union1",
+    "props": {
+     "object": "Lobulo",
+     "operation": "UNION"
+    }
+   },
+   "note": "Boolean: the outline (union) and the holes (difference), instead of drawing them with the knife",
+   "video_time": "30:31"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Llave",
+    "modifier": "Union1"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Llave",
+    "type": "BOOLEAN",
+    "name": "Union2",
+    "props": {
+     "object": "Lobulo2",
+     "operation": "UNION"
+    }
+   },
+   "note": "Boolean: the outline (union) and the holes (difference), instead of drawing them with the knife",
+   "video_time": "30:31"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Llave",
+    "modifier": "Union2"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Llave",
+    "type": "BOOLEAN",
+    "name": "Hole1",
+    "props": {
+     "object": "Hueco",
+     "operation": "DIFFERENCE"
+    }
+   },
+   "note": "Boolean: the outline (union) and the holes (difference), instead of drawing them with the knife",
+   "video_time": "30:31"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Llave",
+    "modifier": "Hole1"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Llave",
+    "type": "BOOLEAN",
+    "name": "Hole2",
+    "props": {
+     "object": "Hueco2",
+     "operation": "DIFFERENCE"
+    }
+   },
+   "note": "Boolean: the outline (union) and the holes (difference), instead of drawing them with the knife",
+   "video_time": "30:31"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Llave",
+    "modifier": "Hole2"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Lobulo",
+     "Lobulo2",
+     "Hueco",
+     "Hueco2"
+    ]
+   },
+   "note": "the cutting shapes are not needed",
+   "video_time": "31:20"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Llave",
+    "smooth": true,
+    "auto_smooth_deg": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Pie",
+    "modifier": "Subdivision"
+   },
+   "note": "to join, no modifiers: apply the shoes' subdivision (Ctrl+A)",
+   "video_time": "32:22"
+  },
+  {
+   "action": "apply_modifier",
+   "args": {
+    "object": "Pie2",
+    "modifier": "Subdivision"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "Ojo",
+     "Ojo2",
+     "Tapa",
+     "Mecha",
+     "Pie",
+     "Pie2",
+     "Llave"
+    ],
+    "into": "Bomba"
+   },
+   "note": "select everything, Ctrl+J: one object",
+   "video_time": "32:51"
+  }
+ ]
+}

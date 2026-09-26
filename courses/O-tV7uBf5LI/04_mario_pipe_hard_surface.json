@@ -1,0 +1,188 @@
+{
+ "title": "Mario pipe (hard surface)",
+ "summary": "Hard-surface modelling from a circle: filled (F), extruded up for the pipe, a short extrusion scaled out for the rim, extruded up, inset for the wall thickness and extruded down to the bottom; smooth shading with auto smooth so right angles stay crisp; every hard edge loop bevelled with three segments.",
+ "objects": [
+  {
+   "name": "Tuberia",
+   "description": "the green warp pipe: body, wider rim, hollow inside, bevelled edges"
+  }
+ ],
+ "expected_result": "A Mario warp pipe: a cylinder with a wider rim on top, open and hollow, soft bevelled edges.",
+ "steps": [
+  {
+   "action": "delete_objects",
+   "args": {
+    "names": [
+     "Suzanne",
+     "Camera",
+     "Light"
+    ]
+   },
+   "note": "a clean project: A selects everything, X deletes it",
+   "video_time": "10:19"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Tuberia",
+    "vertices": 32,
+    "radius": 1.0,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+A > Mesh > Circle (not a cylinder, to learn the techniques)",
+   "video_time": "11:09"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Tuberia",
+    "mode": "EDIT"
+   },
+   "note": "Tab: edit mode",
+   "video_time": "11:40"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Tuberia"
+   },
+   "note": "A: all the edges",
+   "video_time": "12:25"
+  },
+  {
+   "action": "fill",
+   "args": {
+    "object": "Tuberia"
+   },
+   "note": "F (fill): the first face",
+   "video_time": "12:38"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Tuberia",
+    "offset": [
+     0,
+     0,
+     2.4
+    ]
+   },
+   "note": "3 (faces), E: extrude up, the body of the pipe",
+   "video_time": "13:34"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Tuberia",
+    "offset": [
+     0,
+     0,
+     0.04
+    ]
+   },
+   "note": "E up a little",
+   "video_time": "14:02"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Tuberia",
+    "factor": [
+     1.25,
+     1.25,
+     1
+    ]
+   },
+   "note": "S: scaled out, the rim",
+   "video_time": "14:05"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Tuberia",
+    "offset": [
+     0,
+     0,
+     0.7
+    ]
+   },
+   "note": "E up: the rim's height",
+   "video_time": "14:10"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Tuberia",
+    "thickness": 0.14
+   },
+   "note": "I (inset): the same shape inwards, the wall thickness",
+   "video_time": "14:33"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Tuberia",
+    "offset": [
+     0,
+     0,
+     -3.05
+    ]
+   },
+   "note": "E down, and in X-ray G Z down to the bottom: the pipe is hollow",
+   "video_time": "15:03"
+  },
+  {
+   "action": "recalc_normals",
+   "args": {
+    "object": "Tuberia"
+   },
+   "note": "Shift+N",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Tuberia",
+    "element": "EDGE",
+    "space": "local",
+    "sharp_deg": 30
+   },
+   "note": "2 (edges), Alt+Shift+click every hard edge loop: outside, inside, rim, bottom",
+   "video_time": "17:21"
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "Tuberia",
+    "offset": 0.035,
+    "segments": 3
+   },
+   "note": "Ctrl+B, mouse wheel for 3 segments: real edges are never perfectly sharp",
+   "video_time": "18:47"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Tuberia",
+    "smooth": true,
+    "auto_smooth_deg": 30
+   },
+   "note": "right click > Shade Smooth, and Normals > Auto Smooth: the facets go, the right angles stay",
+   "video_time": "15:57"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Tuberia",
+    "mode": "OBJECT"
+   },
+   "note": "Tab",
+   "video_time": "18:50"
+  }
+ ]
+}

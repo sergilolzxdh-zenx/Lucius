@@ -1,0 +1,369 @@
+{
+ "title": "Grass blades",
+ "summary": "Grass as a few modelled blades: a plane stood up, narrowed, loop cut, its tip pointed and bent with proportional editing, duplicated in edit mode into a clump of three blades turned and scaled; two variants (shorter and wider; opening outwards); the three grouped in a collection 'Hierbas' (M); a large plane as the ground.",
+ "objects": [
+  {
+   "name": "Hierba1",
+   "description": "clump of three bent blades"
+  },
+  {
+   "name": "Hierba2",
+   "description": "shorter, wider clump"
+  },
+  {
+   "name": "Hierba3",
+   "description": "clump opening outwards"
+  },
+  {
+   "name": "Suelo",
+   "description": "the ground plane"
+  }
+ ],
+ "expected_result": "Three small grass clumps in their own collection, and a large ground plane under the models.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Hierba1",
+    "size": 0.4,
+    "location": [
+     9,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+A > Plane: one blade of grass",
+   "video_time": "34:23"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Hierba1"
+   },
+   "note": "edit mode",
+   "video_time": "34:23"
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Hierba1",
+    "axis": "x",
+    "angle_deg": 90,
+    "pivot": "origin"
+   },
+   "note": "R X 90: it stands up",
+   "video_time": "34:25"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Hierba1",
+    "offset": [
+     0,
+     0,
+     0.2
+    ]
+   },
+   "note": "G Z up: its base on the ground",
+   "video_time": "34:27"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba1",
+    "factor": [
+     0.14,
+     1,
+     1
+    ],
+    "pivot": "origin"
+   },
+   "note": "S X: narrow like a blade",
+   "video_time": "34:30"
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Hierba1",
+    "axis": "z",
+    "positions": [
+     0.25,
+     0.5,
+     0.75
+    ]
+   },
+   "note": "Ctrl+R, wheel up: cuts so it can bend",
+   "video_time": "34:45"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Hierba1",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.38
+    ],
+    "space": "local"
+   },
+   "note": "the tip",
+   "video_time": "34:35"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba1",
+    "factor": [
+     0.15,
+     1,
+     1
+    ]
+   },
+   "note": "S: a pointed tip",
+   "video_time": "34:37"
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Hierba1",
+    "offset": [
+     0,
+     0.12,
+     -0.03
+    ],
+    "proportional": 0.36000000000000004,
+    "falloff": "SMOOTH"
+   },
+   "note": "proportional editing: G, the blade bends",
+   "video_time": "34:50"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Hierba1"
+   },
+   "note": "A",
+   "video_time": "34:55"
+  },
+  {
+   "action": "duplicate_selection",
+   "args": {
+    "object": "Hierba1",
+    "offset": [
+     0.04,
+     0.02,
+     0
+    ]
+   },
+   "note": "Shift+D: a second blade, moved",
+   "video_time": "34:57"
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Hierba1",
+    "axis": "z",
+    "angle_deg": 70,
+    "pivot": "median"
+   },
+   "note": "R Z",
+   "video_time": "35:00"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba1",
+    "factor": [
+     0.8,
+     0.8,
+     0.8
+    ],
+    "pivot": "median"
+   },
+   "note": "S smaller",
+   "video_time": "35:02"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Hierba1"
+   },
+   "note": "A",
+   "video_time": "35:05"
+  },
+  {
+   "action": "duplicate_selection",
+   "args": {
+    "object": "Hierba1",
+    "offset": [
+     -0.05,
+     -0.03,
+     0
+    ]
+   },
+   "note": "Shift+D again",
+   "video_time": "35:07"
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Hierba1",
+    "axis": "z",
+    "angle_deg": -110,
+    "pivot": "median"
+   },
+   "note": "R Z",
+   "video_time": "35:09"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba1",
+    "factor": [
+     0.9,
+     0.9,
+     1.1
+    ],
+    "pivot": "median"
+   },
+   "note": "S",
+   "video_time": "35:10"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Hierba1",
+    "mode": "OBJECT"
+   },
+   "note": "object mode; in the outliner it is called hierba 1",
+   "video_time": "35:16"
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Hierba1",
+    "new_name": "Hierba2",
+    "offset": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+D: hierba 2",
+   "video_time": "35:30"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Hierba2"
+   },
+   "note": "edit mode",
+   "video_time": "35:35"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba2",
+    "factor": [
+     1.3,
+     1.3,
+     0.7
+    ],
+    "pivot": "origin"
+   },
+   "note": "shorter (S Z) and a bit wider",
+   "video_time": "35:40"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Hierba2",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Hierba2",
+    "new_name": "Hierba3",
+    "offset": [
+     1,
+     0,
+     0
+    ]
+   },
+   "note": "Shift+D: hierba 3",
+   "video_time": "35:50"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Hierba3",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.12
+    ],
+    "space": "local"
+   },
+   "note": "the upper half",
+   "video_time": "35:55"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Hierba3",
+    "factor": [
+     1.7,
+     1.7,
+     0.95
+    ],
+    "pivot": "origin"
+   },
+   "note": "S: the blades open outwards",
+   "video_time": "35:58"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Hierba3",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "move_to_collection",
+   "args": {
+    "names": [
+     "Hierba1",
+     "Hierba2",
+     "Hierba3"
+    ],
+    "collection": "Hierbas"
+   },
+   "note": "select the three, M > New Collection 'Hierbas'",
+   "video_time": "36:08"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Suelo",
+    "size": 16,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a new plane: the ground, scaled",
+   "video_time": "36:38"
+  }
+ ]
+}

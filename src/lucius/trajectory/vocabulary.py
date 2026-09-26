@@ -61,7 +61,7 @@ for _name, _family, _mut, _lvl in [
     ("geometry_edit", "edit", True, 1), ("unknown_action", "unknown", False, -1),
     ("separate", "edit", True, 1), ("set_material", "shading", True, 2), ("scatter", "shading", True, 2),
     ("add_light", "lighting", True, -1), ("set_world", "lighting", True, -1), ("add_camera", "camera", True, -1),
-    ("render", "render", False, -1),
+    ("render", "render", False, -1), ("keyframe", "animation", True, -1), ("timeline", "animation", True, -1), ("parent", "object", True, -1),
 ]:
     register_action_type(_name, _family, _mut, _lvl)
 
@@ -74,10 +74,13 @@ BRIDGE_ACTION_TYPES = {
     "separate_selection": "separate", "duplicate_object": "duplicate", "shade": "shade_smooth", "add_scatter": "scatter",
     "render_image": "render", "set_render": "render", "rename_object": "rename", "save_file": "save",
     "recalc_normals": "geometry_edit", "scale_scene": "scale", "drop_object": "translate",
+    "duplicate_selection": "duplicate", "select_linked": "select_elements", "join_objects": "geometry_edit",
+    "move_to_collection": "rename", "insert_keyframe": "keyframe", "add_shake": "keyframe",
+    "set_frames": "timeline", "render_animation": "render", "parent_object": "parent", "clear_animation": "keyframe",
 }
 
 # Mesh primitives the Blender bridge can add (``add_primitive`` kinds).
-PRIMITIVE_KINDS = ("cube", "plane", "cylinder", "cone", "uv_sphere", "ico_sphere", "torus", "circle", "monkey")
+PRIMITIVE_KINDS = ("cube", "plane", "cylinder", "cone", "uv_sphere", "ico_sphere", "torus", "circle", "monkey", "empty")
 
 # Modifier types whose addition is setup (symmetry) rather than detail.
 MODIFIER_DETAIL = {"MIRROR": 0, "SOLIDIFY": 1, "ARRAY": 1, "SIMPLE_DEFORM": 0, "BEVEL": 2, "SUBSURF": 2,

@@ -1,0 +1,30 @@
+{
+ "title": "Grass with a particle system",
+ "summary": "The ground gets a hair particle system 'Cesped' that renders the 'Hierbas' collection (a random clump each), stood up with Advanced > Rotation (object axis), 1000 particles, a little random rotation and full random scale, and 20 interpolated children between particles (20000 clumps, still light to display).",
+ "objects": [
+  {
+   "name": "Suelo",
+   "description": "the ground, now a lawn"
+  }
+ ],
+ "expected_result": "A dense lawn of grass clumps of different sizes covering the ground around the pipe, mushroom and bomb.",
+ "steps": [
+  {
+   "action": "add_scatter",
+   "args": {
+    "object": "Suelo",
+    "collection": "Hierbas",
+    "name": "Cesped",
+    "count": 1000,
+    "children": 20,
+    "scale": 1.0,
+    "scale_random": 1.0,
+    "rotation_random": 0.15,
+    "rotation_axis": "OB_Y",
+    "seed": 3
+   },
+   "note": "Particle properties > New, 'cesped', type Hair; Render As Collection 'Hierbas'; Advanced > Rotation on, object Y: they stand up; 1000; randomize rotation a little and scale fully; Children > Interpolated, 20 in viewport and render",
+   "video_time": "37:30"
+  }
+ ]
+}

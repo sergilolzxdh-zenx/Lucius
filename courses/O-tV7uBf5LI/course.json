@@ -1,0 +1,194 @@
+{
+ "video_id": "O-tV7uBf5LI",
+ "url": "https://www.youtube.com/watch?v=O-tV7uBf5LI",
+ "title": "🔥LA GUÍA DEFINITIVA DE BLENDER 4.0! (Tutorial completo en Español) | Desde cero! 2023",
+ "duration": 4624,
+ "language": "es",
+ "channel": "Aura Prods",
+ "chapters": [
+  {
+   "title": "Intro",
+   "start_time": 0,
+   "end_time": 150
+  },
+  {
+   "title": "Instalación Blender",
+   "start_time": 150,
+   "end_time": 269
+  },
+  {
+   "title": "Interfaz",
+   "start_time": 269,
+   "end_time": 566
+  },
+  {
+   "title": "Modelado tubería",
+   "start_time": 566,
+   "end_time": 1154
+  },
+  {
+   "title": "Modelado Orgánico",
+   "start_time": 1154,
+   "end_time": 1588
+  },
+  {
+   "title": "Modelado Bomba",
+   "start_time": 1588,
+   "end_time": 1979
+  },
+  {
+   "title": "Crear césped",
+   "start_time": 1979,
+   "end_time": 2224
+  },
+  {
+   "title": "Sistema de partículas",
+   "start_time": 2224,
+   "end_time": 2476
+  },
+  {
+   "title": "Texturizado",
+   "start_time": 2476,
+   "end_time": 3012
+  },
+  {
+   "title": "Composición",
+   "start_time": 3012,
+   "end_time": 3446
+  },
+  {
+   "title": "Iluminación",
+   "start_time": 3446,
+   "end_time": 3971
+  },
+  {
+   "title": "Animación Cámara",
+   "start_time": 3971,
+   "end_time": 4363
+  },
+  {
+   "title": "Renderizado",
+   "start_time": 4363,
+   "end_time": 4496
+  },
+  {
+   "title": "Resultado final y DESCUENTO",
+   "start_time": 4496,
+   "end_time": 4624
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/O-tV7uBf5LI` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 3,
+   "title": "Interfaz",
+   "recipe": "03_interface.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/03.jpg",
+   "frame_at": "08:30",
+   "note": "The only scene changes in the interface chapter: the default cube deleted with X and Suzanne added with Shift+A; the rest is navigation (panels, numpad views), which does not change the scene."
+  },
+  {
+   "chapter": 4,
+   "title": "Modelado tubería",
+   "recipe": "04_mario_pipe_hard_surface.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/04.jpg",
+   "frame_at": "16:50",
+   "note": "The tutor's steps: circle filled, extrude body, short extrude scaled out for the rim, extrude up, inset, extrude down to the bottom, smooth + auto smooth, all hard loops bevelled with 3 segments. Matches 16:50-19:10."
+  },
+  {
+   "chapter": 5,
+   "title": "Modelado Orgánico",
+   "recipe": "05_mario_mushroom_organic_modelling.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/05.jpg",
+   "frame_at": "25:10",
+   "note": "One object with subdivision the tutor's way: cube to sphere, low loop cut for the gummy stem, a second cube added in edit mode for the cap (scaled, bottom face scaled out, inset and pushed up for the hole, L-selected and lowered), an eye cube added and duplicated along X. Matches 24:50-26:10."
+  },
+  {
+   "chapter": 6,
+   "title": "Modelado Bomba",
+   "recipe": "06_bob_omb_hard_and_organic.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/06.jpg",
+   "frame_at": "32:50",
+   "note": "Sphere body, oval eyes duplicated on X, bevelled cap, 20-cut fuse bent with proportional editing, subdivided cube shoes (flat sole, sloping toe, inset leg) duplicated, the wind-up key's outline and holes made with boolean union/difference (instead of the knife), shoes' subdivision applied, all joined with Ctrl+J. Matches 28:50-32:50."
+  },
+  {
+   "chapter": 7,
+   "title": "Crear césped",
+   "recipe": "07_grass_blades.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/07.jpg",
+   "frame_at": "36:30",
+   "note": "Blades modelled from planes the tutor's way (stood up, narrowed, loop cuts, pointed tip, bent with proportional editing, duplicated into clumps in edit mode), three variants, grouped with M into the 'Hierbas' collection, a big ground plane."
+  },
+  {
+   "chapter": 8,
+   "title": "Sistema de partículas",
+   "recipe": "08_grass_with_a_particle_system.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/08.jpg",
+   "frame_at": "40:30",
+   "note": "Hair particle system 'Cesped' rendering the Hierbas collection (random clump each), Advanced > Rotation Object Y (checked: Y and X stand the blades up, Normal and Z lay them down, as the tutor found), 1000 particles, random scale 1, a little random rotation, 20 interpolated children. Dense lawn like 40:30/52:30."
+  },
+  {
+   "chapter": 9,
+   "title": "Texturizado",
+   "recipe": "09_texturing.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/09.jpg",
+   "frame_at": "48:30",
+   "note": "Green metallic pipe; mushroom with three materials on one object (skin, black eyes and red cap assigned to L-selected parts) and the cap's white spots from Voronoi thresholded like the tutor's color ramp; black metallic bomb with orange feet; dark green ground and three greens for the grass clumps. Matches 44:30-48:30."
+  },
+  {
+   "chapter": 10,
+   "title": "Composición",
+   "recipe": "10_composition_and_camera.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/10.jpg",
+   "frame_at": "56:00",
+   "note": "Layout like 52:00-56:30 (mushroom close left turned to the camera, bomb right with the key to the back, pipe behind), objects dropped into the grass, low 35 mm camera, DOF on the mushroom. Dark until the lighting chapter, as in the tutor's."
+  },
+  {
+   "chapter": 11,
+   "title": "Iluminación",
+   "recipe": "11_lighting.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/11.jpg",
+   "frame_at": "1:02:30",
+   "note": "Light types demonstrated (point, spot cone on the character, area, sun as a warm back light from behind); the world colour lights the scene; an environment lights everything (a physical sky standing in for the tutor's downloaded HDRI), its strength lowered and an area light added above; Cycles with denoise. Saturated look like 1:02:30. Eevee's AO/bloom/SSR toggles are not available headless."
+  },
+  {
+   "chapter": 12,
+   "title": "Animación Cámara",
+   "recipe": "12_camera_animation.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/12.jpg",
+   "frame_at": "1:10:30",
+   "note": "Camera keyed at frames 1/75/150 (location + rotation via look-at) gliding from the mushroom across the lawn to the pipe and bomb, timeline 1-150 at 24 fps, handheld noise standing in for the Camera Shakify add-on (influence 0.5), focus distance keyed from the mushroom to the pipe. Preview video rendered."
+  },
+  {
+   "chapter": 13,
+   "title": "Renderizado",
+   "recipe": "13_render_the_animation.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/13.jpg",
+   "frame_at": "1:14:30",
+   "note": "Final render settings the tutor's way (1920x1080 at 100%, 24 fps, frames 1-150, motion blur, H.264 MP4) with Cycles + denoise instead of Eevee (no GPU context headless); the animation rendered to video. Stills match the tutor's finished shot at 1:14:30."
+  }
+ ]
+}
