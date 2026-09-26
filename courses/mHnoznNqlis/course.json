@@ -478,6 +478,119 @@
    "frame": "frames/30.jpg",
    "frame_at": "7:05:50",
    "note": "The tutor's text workflow: typed on two lines, resolution 12, extrude 0.15, stood up 90 on X, bevel depth with resolution 6, centred with character spacing 1.1, the extrusion keyed 0 to 0.15, a yellow material, converted to a mesh (which drops the keys, as he points out) and the second line box-selected and given red. The tutor's own channel name is replaced by LUCIUS 3D, the text is centred rather than padded with spaces, and his Text on Curve experiment is kept (beyond the tutorial) as an arched headline following a hidden Bezier curve. Custom system fonts are not used (Blender's built-in font)."
+  },
+  {
+   "chapter": 31,
+   "title": "Chap-30 Geometry Nodes: Creating a Snowman",
+   "recipe": "31_geometry_nodes_1_a_snowman.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/31.jpg",
+   "frame_at": "7:23:50",
+   "note": "The tutor's geometry-nodes snowman: UV Sphere primitives through Transform Geometry nodes (middle up 1.2 at 0.75, head up 2.2 at 0.6), a Grid ground down 0.6, Join Geometry, Set Shade Smooth and Set Material after the join, and his snow material (two noises mixed at 0.1, light-blue-to-white ramp, bump 0.45). Beyond the tutorial, in the same tree: a cone nose, eyes and buttons instanced on Mesh Line points, twig arms and a felt hat, each with its own Set Material, under a sky. The spreadsheet and viewer-node tours are UI only and aren't reproduced."
+  },
+  {
+   "chapter": 32,
+   "title": "Chap-31 Geometry Nodes: Creating Buildings",
+   "recipe": "32_geometry_nodes_2_a_city_of_buildings.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/32.jpg",
+   "frame_at": "7:55:20",
+   "note": "The tutor's buildings: Instance on Points puts a cube on every grid vertex, a Height input exposed in the modifier drives the cube's Z size through Combine XYZ, a Math divide lifts the buildings onto the ground (exactly /2 where he eyeballs 1.89), Random Value scales each instance's height, Set Material applies his window material (Chebychev voronoi through a constant ramp mixing glass and black frames, glass coloured per building by a noise on Object Info location). His Extrude Mesh and Index/Compare demos become, beyond the tutorial, set-back rooftops: top faces picked by normal, extruded, scaled and extruded again. The grid is 7x7 over 3 m for a denser block."
+  },
+  {
+   "chapter": 33,
+   "title": "Chap-32 Geometry Nodes: Creating Fence",
+   "recipe": "33_geometry_nodes_3_a_fence_along_curves.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/33.jpg",
+   "frame_at": "8:11:50",
+   "note": "The tutor's fence: a post-and-rail piece from cubes with his wood material (stretched noise on smart-UV coordinates, brown ramp, bump 0.5, roughness 0.9), and Geometry Nodes on a Bezier curve: Resample Curve by length, Delete Geometry with a random boolean (probability 0.15) for missing pieces, Instance on Points of the piece via Object Info, rotated with Align Euler to Vector on the curve tangent. The tutor draws curves freehand; here the curves are given as points (a winding run, a short run and, beyond the tutorial, a closed square pen) and the piece is sized so a 1 m resample joins the rails without scaling."
+  },
+  {
+   "chapter": 34,
+   "title": "Chap-33 Geometry Nodes: Creating Base of Landscape",
+   "recipe": "34_geometry_nodes_4_the_base_of_a_landscape.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/34.jpg",
+   "frame_at": "8:24:50",
+   "note": "The tutor's landscape base exactly as built: a 40 m plane with 40 cuts, Set Position with Position + (noise x height) through Combine XYZ / Vector Math Add, a Value node driving Math Multiply and a Divide-by-2 Vector Math Subtract so the land stays level, Set Shade Smooth, Distribute Points on Faces (Poisson disk with a minimum distance) and Instance on Points of small cubes joined back as placeholders for the grass and rocks to come. A simple meadow material is added so the render reads. Beyond the tutorial, last chapter's fence is dropped onto the hills with a Raycast and Set Position."
+  },
+  {
+   "chapter": 35,
+   "title": "Chap-34 Geometry Nodes: Creating Grass",
+   "recipe": "35_geometry_nodes_5_grass.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/35.jpg",
+   "frame_at": "8:50:50",
+   "note": "The tutor's grass chain node for node: a Mesh Line curled by Vector Rotate (Index x Bending) in Set Position, Mesh to Curve, Set Curve Radius from a reversed Map Range of the Spline Parameter, Curve to Mesh with a Curve Line profile; patches from a triangle-filled Mesh Circle, Distribute Points on Faces and Instance on Points with random Z rotation and random scale; five Group Input sockets so three copies of the object make three kinds of grass; a collection of them instanced over the landscape with Collection Info (separate and reset children). Built in real-world units (blades ~35 cm) instead of his 20 m line scaled to 0.05, and beyond the tutorial Pick Instance mixes the kinds and an Object Info random tint varies the greens."
+  },
+  {
+   "chapter": 36,
+   "title": "Chap-35 Geometry Nodes: Creating Rocks",
+   "recipe": "36_geometry_nodes_6_rocks_and_the_finished_.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/36.jpg",
+   "frame_at": "9:19:20",
+   "note": "The tutor's rock node chain (Extrude Mesh on faces picked by Index <= 1, Subdivision Surface, noise-driven Set Position, smooth, his two-voronoi rock material; Geometry to Instance, Duplicate Elements, Set Position by Duplicate Index, random Rotate and Scale Instances) and his finishing touches (the library sand shader duplicated into soil, denser grass). The noise offset is centred and scaled (noise - 0.5 x 0.35) instead of adding the raw position, which in his setup also doubles the rock's size. Beyond the tutorial, the rocks drop onto the hills with a Raycast instead of being moved and rotated into place by hand."
+  },
+  {
+   "chapter": 37,
+   "title": "Chap-36 Geometry Nodes: Creating a House",
+   "recipe": "37_geometry_nodes_7_a_house.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/37.jpg",
+   "frame_at": "10:09:30",
+   "note": "The tutor's house node system: walls found by comparing face normals (not up / not down with an epsilon, Boolean AND) and given their material; a window built in nodes (subdivided cube, front/back faces picked by normal and OR, inset with Extrude Mesh + Scale Elements, recessed, frame and glass materials) placed on every wall face through Capture Attribute + Mesh to Points (faces) + Align Euler to Vector and cut in with Mesh Boolean; half-cylinder roof tiles instanced on a raised Grid raycast onto the roof, only where the ray hits a sloping face. Differences: dark glossy glass instead of Eevee glass with transparent back walls; tiles aligned to the hit normal and turned down each slope rather than rotated -60 by hand; beyond the tutorial the same node group dresses a long house and a two-storey house, and a stone plinth comes from the Bounding Box node."
+  },
+  {
+   "chapter": 38,
+   "title": "Chap-37 Geometry Nodes: Creating a Donut",
+   "recipe": "38_geometry_nodes_8_donuts.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/38.jpg",
+   "frame_at": "10:32:30",
+   "note": "The tutor's donut node tree on drawn curves: Set Spline Cyclic, Curve to Mesh with a Curve Circle profile, the upward faces picked by a vector Compare with an epsilon and extruded as frosting, Subdivision Surface, dough then chocolate (411900, noise bump) materials, sprinkles (a capsule via Object Info) distributed on the top only with random rotations, a random colour per instance stored with Store Named Attribute, Realize Instances and read in the shader through an Attribute node into a constant five-colour ramp. The attribute is named sprinkle_col because 'color' collides with a built-in name in Cycles (the tutor renders in Eevee); sprinkles scatter on the subdivided surface so they sit on it. Beyond the tutorial, a third smaller donut whose curve radius thins its tube."
+  },
+  {
+   "chapter": 39,
+   "title": "Chap-38 Geometry Nodes: Creating a Meteor Apocalypse Scene",
+   "recipe": "39_geometry_nodes_9_a_meteor_apocalypse.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/39.jpg",
+   "frame_at": "11:06:30",
+   "note": "The tutor's meteor apocalypse: modelled towers (loop cuts, bevels, a stepped top) with his voronoi window material and red roofs, instanced on the edges of a street grid via Collection Info with Pick Instance and random Z turns; Realize Instances, Split Edges and a Set Position that pushes faces out along their captured normals by Geometry Proximity to the meteor through a Map Range; the meteor as a subdivided jittered cube with a Musgrave-driven fire emission and an index-selected extrusion turned into smoke through Mesh to Volume, Distribute Points in Volume, Points to Volume and Volume to Mesh with a Principled Volume. Built at a 5 m city scale instead of his 80 m one (smoke density 0.6, blast range 5 m); beyond the tutorial the meteor is animated falling in at dusk (his suggestion) and a third of the windows are lit.",
+   "video": "videos/39.mp4"
+  },
+  {
+   "chapter": 40,
+   "title": "Chap-39 Geometry Nodes: Creating a Sci-Fi Corridor",
+   "recipe": "40_geometry_nodes_10_a_sci_fi_corridor.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/40.jpg",
+   "frame_at": "11:38:00",
+   "note": "The tutor's corridor node system: Separate Geometry takes the floor by its normal and Subdivide Mesh, Triangulate and Dual Mesh (keep boundaries) turn it into hexagons, loosened with Split Edges + Scale Elements and thickened with Extrude Mesh over the plain floor; the walls and ceiling get inset panels (Extrude at 0, Scale Elements on Top, extrude again) and his voronoi wall material; ceiling lights (an inset emissive cube) through Mesh to Points on the ceiling faces; voronoi+noise pillars on the floor points; 100 W point lights in different colours. The corridor is modelled as a 3 m box extruded along Y and X with loop cuts; beyond the tutorial, his walk-navigation recording becomes a keyframed fly-through round the corner, and the floor gets a dark metal material.",
+   "video": "videos/40.mp4"
+  },
+  {
+   "chapter": 41,
+   "title": "Chap-40 Geometry Nodes: Creating a Billboard with Text",
+   "recipe": "41_geometry_nodes_11_a_billboard_with_text.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/41.jpg",
+   "frame_at": "11:55:13",
+   "note": "Billboard text in geometry nodes: String to Curves, Fill Curve, emission materials, Join Strings with line breaks, Slice String keyed to type the title in and out, Value to String keyed 0->41 as a counter. Matches the tutorial's board; beyond it: the counter counts Lucius's chapters, posts, night plaza. Fix learned: clear the previous chapter's camera keys before placing the camera; multi-input sockets stack newest link first.",
+   "video": "videos/41.mp4"
   }
  ]
 }

@@ -1,0 +1,683 @@
+{
+ "title": "Geometry nodes 6: rocks, and the finished landscape",
+ "summary": "A rock from a cube in geometry nodes: Extrude Mesh on the faces picked by Index + Compare (integer, <= 1), Subdivision Surface, Set Position by a noise texture (Musgrave), smooth, a rock material (two voronoi textures distorted by noise and mixed, a grey ramp, bump); Geometry to Instance, Duplicate Elements (instances), Set Position by Duplicate Index, Rotate and Scale Instances with random vectors: four different rocks. The landscape finished: the library's sand shader copied into a brown soil, denser grass. Beyond the tutorial: the rocks drop onto the hills with a Raycast instead of being placed by hand.",
+ "objects": [
+  {
+   "name": "Landscape",
+   "description": "the finished landscape"
+  },
+  {
+   "name": "Rocks",
+   "description": "the four rocks"
+  }
+ ],
+ "expected_result": "Grassy brown hills with a wooden fence and a row of four grey rocks sitting on the slope.",
+ "steps": [
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Rock",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Map",
+      "type": "ShaderNodeMapping"
+     },
+     {
+      "name": "Warp1",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 3.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Cells1",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 4.0
+      }
+     },
+     {
+      "name": "Warp2",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 2.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Cells2",
+      "type": "ShaderNodeTexVoronoi",
+      "props": {
+       "feature": "DISTANCE_TO_EDGE"
+      },
+      "inputs": {
+       "Scale": 5.0
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      }
+     },
+     {
+      "name": "Greys",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.05,
+        "#222120"
+       ],
+       [
+        0.45,
+        "#6A6762"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.85
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Map",
+      "input": "Vector"
+     },
+     {
+      "from": "Map",
+      "output": "Vector",
+      "to": "Warp1",
+      "input": "Vector"
+     },
+     {
+      "from": "Warp1",
+      "output": "Color",
+      "to": "Cells1",
+      "input": "Vector"
+     },
+     {
+      "from": "Map",
+      "output": "Vector",
+      "to": "Warp2",
+      "input": "Vector"
+     },
+     {
+      "from": "Warp2",
+      "output": "Color",
+      "to": "Cells2",
+      "input": "Vector"
+     },
+     {
+      "from": "Cells1",
+      "output": "Distance",
+      "to": "Mix",
+      "input": "A"
+     },
+     {
+      "from": "Cells2",
+      "output": "Distance",
+      "to": "Mix",
+      "input": "B"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Greys",
+      "input": "Fac"
+     },
+     {
+      "from": "Greys",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the rock material: two voronoi textures distorted by noise textures (the second one's feature Distance to Edge), mixed, through a grey colour ramp, a bump at 0.5",
+   "video_time": "541:37"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Rocks",
+    "size": 1,
+    "location": [
+     -2.5,
+     -7.0,
+     0
+    ],
+    "rotation_deg": [
+     0,
+     0,
+     35
+    ]
+   },
+   "note": "a cube for the rocks",
+   "video_time": "532:21"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Rocks",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Index",
+      "type": "GeometryNodeInputIndex"
+     },
+     {
+      "name": "Pick",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "INT",
+       "operation": "LESS_EQUAL"
+      },
+      "inputs": {
+       "B": 1
+      }
+     },
+     {
+      "name": "Extrude",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.45,
+       "Individual": false
+      }
+     },
+     {
+      "name": "Subdivide",
+      "type": "GeometryNodeSubdivisionSurface",
+      "inputs": {
+       "Level": 3
+      }
+     },
+     {
+      "name": "Position",
+      "type": "GeometryNodeInputPosition"
+     },
+     {
+      "name": "Lumps",
+      "type": "ShaderNodeTexNoise",
+      "props": {
+       "normalize": false
+      },
+      "inputs": {
+       "Scale": 1.2,
+       "Roughness": 0.0,
+       "Detail": 2.0
+      }
+     },
+     {
+      "name": "Centre",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "SUBTRACT"
+      },
+      "inputs": {
+       "1": [
+        0.5,
+        0.5,
+        0.5
+       ]
+      }
+     },
+     {
+      "name": "Strength",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "SCALE"
+      },
+      "inputs": {
+       "Scale": 0.35
+      }
+     },
+     {
+      "name": "Distort",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "Smooth",
+      "type": "GeometryNodeSetShadeSmooth"
+     },
+     {
+      "name": "RockMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Rock"
+      }
+     },
+     {
+      "name": "ToInstance",
+      "type": "GeometryNodeGeometryToInstance"
+     },
+     {
+      "name": "Copies",
+      "type": "GeometryNodeDuplicateElements",
+      "props": {
+       "domain": "INSTANCE"
+      },
+      "inputs": {
+       "Amount": 4
+      }
+     },
+     {
+      "name": "Spread",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      },
+      "inputs": {
+       "1": -1.3
+      }
+     },
+     {
+      "name": "AlongY",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "Place",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "TurnRandom",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Max": [
+        0.0,
+        0.0,
+        10.0
+       ]
+      }
+     },
+     {
+      "name": "Turn",
+      "type": "GeometryNodeRotateInstances"
+     },
+     {
+      "name": "SizeRandom",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Min": [
+        0.45,
+        0.45,
+        0.4
+       ],
+       "Max": [
+        0.75,
+        0.75,
+        0.65
+       ],
+       "Seed": 2
+      }
+     },
+     {
+      "name": "Resize",
+      "type": "GeometryNodeScaleInstances"
+     }
+    ],
+    "links": [
+     {
+      "from": "Index",
+      "output": "Index",
+      "to": "Pick",
+      "input": "A"
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Extrude",
+      "input": "Mesh"
+     },
+     {
+      "from": "Pick",
+      "output": "Result",
+      "to": "Extrude",
+      "input": "Selection"
+     },
+     {
+      "from": "Extrude",
+      "output": "Mesh",
+      "to": "Subdivide",
+      "input": "Mesh"
+     },
+     {
+      "from": "Position",
+      "output": "Position",
+      "to": "Lumps",
+      "input": "Vector"
+     },
+     {
+      "from": "Lumps",
+      "output": "Color",
+      "to": "Centre",
+      "input": 0
+     },
+     {
+      "from": "Centre",
+      "output": "Vector",
+      "to": "Strength",
+      "input": 0
+     },
+     {
+      "from": "Subdivide",
+      "output": "Mesh",
+      "to": "Distort",
+      "input": "Geometry"
+     },
+     {
+      "from": "Strength",
+      "output": "Vector",
+      "to": "Distort",
+      "input": "Offset"
+     },
+     {
+      "from": "Distort",
+      "output": "Geometry",
+      "to": "Smooth",
+      "input": "Geometry"
+     },
+     {
+      "from": "Smooth",
+      "output": "Geometry",
+      "to": "RockMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "RockMat",
+      "output": "Geometry",
+      "to": "ToInstance",
+      "input": "Geometry"
+     },
+     {
+      "from": "ToInstance",
+      "output": "Instances",
+      "to": "Copies",
+      "input": "Geometry"
+     },
+     {
+      "from": "Copies",
+      "output": "Duplicate Index",
+      "to": "Spread",
+      "input": 0
+     },
+     {
+      "from": "Spread",
+      "output": "Value",
+      "to": "AlongY",
+      "input": "Y"
+     },
+     {
+      "from": "Copies",
+      "output": "Geometry",
+      "to": "Place",
+      "input": "Geometry"
+     },
+     {
+      "from": "AlongY",
+      "output": "Vector",
+      "to": "Place",
+      "input": "Offset"
+     },
+     {
+      "from": "Place",
+      "output": "Geometry",
+      "to": "Turn",
+      "input": "Instances"
+     },
+     {
+      "from": "TurnRandom",
+      "output": "Value",
+      "to": "Turn",
+      "input": "Rotation"
+     },
+     {
+      "from": "Turn",
+      "output": "Instances",
+      "to": "Resize",
+      "input": "Instances"
+     },
+     {
+      "from": "SizeRandom",
+      "output": "Value",
+      "to": "Resize",
+      "input": "Scale"
+     },
+     {
+      "from": "Resize",
+      "output": "Instances",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "the rock: Extrude Mesh on the faces with Index <= 1 (Compare, integer; not individual), Subdivision Surface, Set Position offsetting every point by a noise texture (Normalize off -- Musgrave), Set Shade Smooth and Set Material. Then Geometry to Instance, Duplicate Elements (Instance domain, 4), Set Position by Duplicate Index x -1.3 along Y (Combine XYZ), Rotate Instances with a random vector (Z up to 10), Scale Instances with a random vector: four different rocks in a row",
+   "video_time": "548:08"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Rocks",
+    "nodes": [
+     {
+      "name": "Land",
+      "type": "GeometryNodeObjectInfo",
+      "props": {
+       "transform_space": "RELATIVE"
+      },
+      "inputs": {
+       "Object": "Landscape"
+      }
+     },
+     {
+      "name": "Where",
+      "type": "GeometryNodeInputPosition"
+     },
+     {
+      "name": "High",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "ADD"
+      },
+      "inputs": {
+       "1": [
+        0.0,
+        0.0,
+        50.0
+       ]
+      }
+     },
+     {
+      "name": "Drop",
+      "type": "GeometryNodeRaycast",
+      "inputs": {
+       "Ray Direction": [
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "Ray Length": 100.0
+      }
+     },
+     {
+      "name": "Sink",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "ADD"
+      },
+      "inputs": {
+       "1": [
+        0.0,
+        0.0,
+        0.12
+       ]
+      }
+     },
+     {
+      "name": "Settle",
+      "type": "GeometryNodeSetPosition"
+     }
+    ],
+    "links": [
+     {
+      "from": "Where",
+      "output": "Position",
+      "to": "High",
+      "input": 0
+     },
+     {
+      "from": "High",
+      "output": "Vector",
+      "to": "Drop",
+      "input": "Source Position"
+     },
+     {
+      "from": "Land",
+      "output": "Geometry",
+      "to": "Drop",
+      "input": "Target Geometry"
+     },
+     {
+      "from": "Drop",
+      "output": "Hit Position",
+      "to": "Sink",
+      "input": 0
+     },
+     {
+      "from": "Resize",
+      "output": "Instances",
+      "to": "Settle",
+      "input": "Geometry"
+     },
+     {
+      "from": "Sink",
+      "output": "Vector",
+      "to": "Settle",
+      "input": "Position"
+     },
+     {
+      "from": "Settle",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "beyond the tutorial: the rocks settle onto the hills by themselves -- each instance dropped with a Raycast onto the landscape (instead of moving and rotating them by hand)",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Soil",
+    "copy_from": "Sand",
+    "object": "Landscape",
+    "nodes": [
+     {
+      "name": "SandColor",
+      "inputs": {
+       "A": "#3A2616",
+       "B": "#6E4326"
+      }
+     }
+    ]
+   },
+   "note": "the ground: the sand shader from the library duplicated as Soil, its colours brown and orange-red",
+   "video_time": "558:05"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Landscape",
+    "nodes": [
+     {
+      "name": "Scatter",
+      "inputs": {
+       "Density": 3.5
+      }
+     }
+    ]
+   },
+   "note": "the grass a little denser",
+   "video_time": "558:05"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.5,
+     -16.0,
+     4.2
+    ],
+    "look_at": [
+     -0.8,
+     -4.0,
+     0.0
+    ],
+    "lens": 30
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

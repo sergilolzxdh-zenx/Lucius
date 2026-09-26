@@ -1,0 +1,1420 @@
+{
+ "title": "Geometry nodes 9: a meteor apocalypse",
+ "summary": "Three futuristic towers modelled from cubes (loop cuts, bevelled corners, a stepped top) with a voronoi window material and red rooftops, collected and instanced on the edges of a street grid (Mesh to Points on edges, Collection Info with Pick Instance, random Z rotation); Realize Instances and Split Edges so every face is loose, and Set Position pushing the faces out along their captured normals by a Geometry Proximity to the meteor through a Map Range: the buildings burst where the meteor is. The meteor in nodes: a subdivided, jittered cube with a noise-driven fire emission, its faces from index 92 extruded into a tail turned into billowing smoke (Mesh to Volume, Distribute Points in Volume, Points to Volume, Volume to Mesh, a Principled Volume). Beyond the tutorial: the meteor animated falling in at dusk, the city bursting as it lands.",
+ "objects": [
+  {
+   "name": "Metropolis",
+   "description": "the city"
+  },
+  {
+   "name": "Meteor",
+   "description": "the meteor"
+  }
+ ],
+ "expected_result": "A dusk city of blue glass towers on a street grid; a blazing meteor with a smoky tail plunges in and the towers around it burst apart.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "DonutBoard",
+     "Donuts",
+     "PinkSpot"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "CityGround"
+    ],
+    "hide": false,
+    "render": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Tower",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "props": {
+       "distance": "CHEBYCHEV"
+      },
+      "inputs": {
+       "Scale": 7.0,
+       "Randomness": 0.0
+      }
+     },
+     {
+      "name": "Frames",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.38,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Glass",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#1C3E78",
+       "Metallic": 1.0,
+       "Roughness": 0.2,
+       "Emission Color": "#FFC878"
+      }
+     },
+     {
+      "name": "LitRooms",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.72,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Lamps",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      },
+      "inputs": {
+       "1": 1.5
+      }
+     },
+     {
+      "name": "Frame",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#2A2A2C",
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Cells",
+      "input": "Vector"
+     },
+     {
+      "from": "Cells",
+      "output": "Distance",
+      "to": "Frames",
+      "input": "Fac"
+     },
+     {
+      "from": "Cells",
+      "output": "Color",
+      "to": "LitRooms",
+      "input": "Fac"
+     },
+     {
+      "from": "LitRooms",
+      "output": "Color",
+      "to": "Lamps",
+      "input": 0
+     },
+     {
+      "from": "Lamps",
+      "output": "Value",
+      "to": "Glass",
+      "input": "Emission Strength"
+     },
+     {
+      "from": "Frames",
+      "output": "Color",
+      "to": "Mix",
+      "input": "Fac"
+     },
+     {
+      "from": "Glass",
+      "output": "BSDF",
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "Frame",
+      "output": "BSDF",
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": "Shader",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the buildings' material: a Chebychev voronoi (randomness 0) through a constant ramp mixing metallic dark-blue windows and dark grey frames (beyond the tutorial: a third of the windows lit, from the voronoi's random cell colour, for dusk)",
+   "video_time": "639:51"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "TowerA",
+    "size": 1,
+    "location": [
+     -8,
+     30,
+     0
+    ]
+   },
+   "note": "three towers from cubes: stretched up, loop cuts, edges bevelled, tops extruded",
+   "video_time": "635:06"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "TowerA",
+    "dimensions": [
+     1.0,
+     1.0,
+     4.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "TowerA",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "TowerA"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "TowerA",
+    "offset": [
+     0,
+     0,
+     2.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "TowerA",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerA",
+    "element": "EDGE",
+    "min": [
+     0.95,
+     0.95,
+     null
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerA",
+    "element": "EDGE",
+    "max": [
+     0.05,
+     0.05,
+     0.97
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "TowerA",
+    "offset": 0.22,
+    "segments": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerA",
+    "name": "Tower",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "TowerA",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerA",
+    "name": "Rooftop",
+    "base_color": "#4A1410",
+    "roughness": 0.7,
+    "assign": "selected_faces"
+   },
+   "note": "the rooftops dark red",
+   "video_time": "640:32"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "TowerA",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "TowerB",
+    "size": 1,
+    "location": [
+     -6,
+     30,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "TowerB",
+    "dimensions": [
+     1.0,
+     1.0,
+     3.2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "TowerB",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "TowerB"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "TowerB",
+    "offset": [
+     0,
+     0,
+     1.6
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "TowerB",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "TowerB",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "TowerB",
+    "offset": [
+     0,
+     0,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "TowerB",
+    "factor": [
+     0.6,
+     0.6,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerB",
+    "element": "EDGE",
+    "min": [
+     0.95,
+     0.95,
+     null
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerB",
+    "element": "EDGE",
+    "max": [
+     0.05,
+     0.05,
+     0.97
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "TowerB",
+    "offset": 0.22,
+    "segments": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerB",
+    "name": "Tower",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "TowerB",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerB",
+    "name": "Rooftop",
+    "base_color": "#4A1410",
+    "roughness": 0.7,
+    "assign": "selected_faces"
+   },
+   "note": "the rooftops dark red",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "TowerB",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "TowerC",
+    "size": 1,
+    "location": [
+     -4,
+     30,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "TowerC",
+    "dimensions": [
+     1.2,
+     0.8,
+     5.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "TowerC",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "TowerC"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "TowerC",
+    "offset": [
+     0,
+     0,
+     2.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "TowerC",
+    "axis": "z",
+    "positions": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerC",
+    "element": "EDGE",
+    "min": [
+     0.95,
+     0.95,
+     null
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "TowerC",
+    "element": "EDGE",
+    "max": [
+     0.05,
+     0.05,
+     0.97
+    ],
+    "extend": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "bevel",
+   "args": {
+    "object": "TowerC",
+    "offset": 0.3,
+    "segments": 4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerC",
+    "name": "Tower",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "TowerC",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "TowerC",
+    "name": "Rooftop",
+    "base_color": "#4A1410",
+    "roughness": 0.7,
+    "assign": "selected_faces"
+   },
+   "note": "the rooftops dark red",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "TowerC",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "move_to_collection",
+   "args": {
+    "names": [
+     "TowerA",
+     "TowerB",
+     "TowerC"
+    ],
+    "collection": "Towers"
+   },
+   "note": "Ctrl+G: a Buildings collection",
+   "video_time": "642:33"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Metropolis",
+    "size": 26,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the city: a mesh whose edges carry the buildings (a plane cut into a grid of streets)",
+   "video_time": "642:33"
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Metropolis",
+    "cuts": 5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Metropolis",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Meteor",
+    "size": 2.2,
+    "location": [
+     3.0,
+     1.0,
+     2.4
+    ],
+    "rotation_deg": [
+     0,
+     54,
+     0
+    ]
+   },
+   "note": "the meteor: a cube ...",
+   "video_time": "656:51"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MeteorFire",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Flames",
+      "type": "ShaderNodeTexNoise",
+      "props": {
+       "normalize": false
+      },
+      "inputs": {
+       "Scale": 10.0,
+       "Detail": 15.0,
+       "Roughness": 0.85
+      }
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Max": 8.0
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#3A1A0A",
+       "Emission Color": "#FFB21A"
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Flames",
+      "input": "Vector"
+     },
+     {
+      "from": "Flames",
+      "output": "Fac",
+      "to": "Glow",
+      "input": "Value"
+     },
+     {
+      "from": "Glow",
+      "output": "Result",
+      "to": "Surface",
+      "input": "Emission Strength"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "its fire: a noise texture (Normalize off -- Musgrave, detail 15, roughness 0.85, scale 10) through a Map Range into the emission strength, emission yellow",
+   "video_time": "662:57"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "MeteorSmoke",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Smoke",
+      "type": "ShaderNodeVolumePrincipled",
+      "inputs": {
+       "Color": "#3A3A3A",
+       "Density": 0.6,
+       "Emission Color": "#FF7A1A",
+       "Emission Strength": 0.2,
+       "Blackbody Intensity": 2.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Smoke",
+      "output": "Volume",
+      "to": "Output",
+      "input": "Volume"
+     }
+    ]
+   },
+   "note": "the smoke: a Principled Volume (density 0.6; the tutor's 0.15 suits his 80 m scene), an orange emission (0.2) and blackbody intensity 2",
+   "video_time": "665:38"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Meteor",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Round",
+      "type": "GeometryNodeSubdivisionSurface",
+      "inputs": {
+       "Level": 2
+      }
+     },
+     {
+      "name": "Jitter",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Min": [
+        -0.12,
+        -0.12,
+        -0.12
+       ],
+       "Max": [
+        0.12,
+        0.12,
+        0.12
+       ]
+      }
+     },
+     {
+      "name": "Lumpy",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "FireMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "MeteorFire"
+      }
+     },
+     {
+      "name": "Index",
+      "type": "GeometryNodeInputIndex"
+     },
+     {
+      "name": "Tail",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "INT",
+       "operation": "GREATER_EQUAL"
+      },
+      "inputs": {
+       "B": 92
+      }
+     },
+     {
+      "name": "Trail",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 9.0,
+       "Individual": false
+      }
+     },
+     {
+      "name": "ToVolume",
+      "type": "GeometryNodeMeshToVolume",
+      "inputs": {
+       "Voxel Amount": 48.0
+      }
+     },
+     {
+      "name": "Puffs",
+      "type": "GeometryNodeDistributePointsInVolume",
+      "inputs": {
+       "Density": 3.0
+      }
+     },
+     {
+      "name": "PuffVolume",
+      "type": "GeometryNodePointsToVolume",
+      "inputs": {
+       "Radius": 0.95,
+       "Voxel Amount": 64.0
+      }
+     },
+     {
+      "name": "PuffMesh",
+      "type": "GeometryNodeVolumeToMesh"
+     },
+     {
+      "name": "SmokeMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "MeteorSmoke"
+      }
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Round",
+      "input": "Mesh"
+     },
+     {
+      "from": "Round",
+      "output": "Mesh",
+      "to": "Lumpy",
+      "input": "Geometry"
+     },
+     {
+      "from": "Jitter",
+      "output": "Value",
+      "to": "Lumpy",
+      "input": "Offset"
+     },
+     {
+      "from": "Lumpy",
+      "output": "Geometry",
+      "to": "FireMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Index",
+      "output": "Index",
+      "to": "Tail",
+      "input": "A"
+     },
+     {
+      "from": "Lumpy",
+      "output": "Geometry",
+      "to": "Trail",
+      "input": "Mesh"
+     },
+     {
+      "from": "Tail",
+      "output": "Result",
+      "to": "Trail",
+      "input": "Selection"
+     },
+     {
+      "from": "Trail",
+      "output": "Mesh",
+      "to": "ToVolume",
+      "input": "Mesh"
+     },
+     {
+      "from": "ToVolume",
+      "output": "Volume",
+      "to": "Puffs",
+      "input": "Volume"
+     },
+     {
+      "from": "Puffs",
+      "output": "Points",
+      "to": "PuffVolume",
+      "input": "Points"
+     },
+     {
+      "from": "PuffVolume",
+      "output": "Volume",
+      "to": "PuffMesh",
+      "input": "Volume"
+     },
+     {
+      "from": "PuffMesh",
+      "output": "Mesh",
+      "to": "SmokeMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "FireMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "SmokeMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "its Geometry Nodes: Subdivision Surface (level 2), Set Position with a random offset (lumpy, burning), Set Material fire; the faces with Index >= 92 (Compare, integer) extruded 9 m into a tail, Mesh to Volume, Distribute Points in Volume, Points to Volume, Volume to Mesh -- a billowing smoke trail with the smoke material; joined with the rock",
+   "video_time": "660:17"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Metropolis",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "EdgePoints",
+      "type": "GeometryNodeMeshToPoints",
+      "props": {
+       "mode": "EDGES"
+      }
+     },
+     {
+      "name": "Towers",
+      "type": "GeometryNodeCollectionInfo",
+      "inputs": {
+       "Collection": "Towers",
+       "Separate Children": true,
+       "Reset Children": true
+      }
+     },
+     {
+      "name": "Turn",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Max": [
+        0.0,
+        0.0,
+        6.28
+       ]
+      }
+     },
+     {
+      "name": "Build",
+      "type": "GeometryNodeInstanceOnPoints",
+      "inputs": {
+       "Pick Instance": true,
+       "Scale": [
+        1.3,
+        1.3,
+        1.25
+       ]
+      }
+     },
+     {
+      "name": "Realize",
+      "type": "GeometryNodeRealizeInstances"
+     },
+     {
+      "name": "Split",
+      "type": "GeometryNodeSplitEdges"
+     },
+     {
+      "name": "CapN",
+      "type": "GeometryNodeCaptureAttribute",
+      "props": {
+       "domain": "FACE"
+      },
+      "items": [
+       {
+        "type": "VECTOR",
+        "name": "Normal"
+       }
+      ]
+     },
+     {
+      "name": "Normal",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "Meteor",
+      "type": "GeometryNodeObjectInfo",
+      "props": {
+       "transform_space": "RELATIVE"
+      },
+      "inputs": {
+       "Object": "Meteor"
+      }
+     },
+     {
+      "name": "Near",
+      "type": "GeometryNodeProximity",
+      "props": {
+       "target_element": "FACES"
+      }
+     },
+     {
+      "name": "Blast",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "From Min": 0.5,
+       "From Max": 5.0,
+       "To Min": 1.3,
+       "To Max": 0.0
+      }
+     },
+     {
+      "name": "Power",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      },
+      "inputs": {
+       "1": 2.2
+      }
+     },
+     {
+      "name": "Push",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "SCALE"
+      }
+     },
+     {
+      "name": "Shatter",
+      "type": "GeometryNodeSetPosition"
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "EdgePoints",
+      "input": "Mesh"
+     },
+     {
+      "from": "EdgePoints",
+      "output": "Points",
+      "to": "Build",
+      "input": "Points"
+     },
+     {
+      "from": "Towers",
+      "output": "Instances",
+      "to": "Build",
+      "input": "Instance"
+     },
+     {
+      "from": "Turn",
+      "output": "Value",
+      "to": "Build",
+      "input": "Rotation"
+     },
+     {
+      "from": "Build",
+      "output": "Instances",
+      "to": "Realize",
+      "input": "Geometry"
+     },
+     {
+      "from": "Realize",
+      "output": "Geometry",
+      "to": "Split",
+      "input": "Mesh"
+     },
+     {
+      "from": "Split",
+      "output": "Mesh",
+      "to": "CapN",
+      "input": "Geometry"
+     },
+     {
+      "from": "Normal",
+      "output": "Normal",
+      "to": "CapN",
+      "input": "Normal"
+     },
+     {
+      "from": "Meteor",
+      "output": "Geometry",
+      "to": "Near",
+      "input": "Geometry"
+     },
+     {
+      "from": "Near",
+      "output": "Distance",
+      "to": "Blast",
+      "input": "Value"
+     },
+     {
+      "from": "Blast",
+      "output": "Result",
+      "to": "Power",
+      "input": 0
+     },
+     {
+      "from": "CapN",
+      "output": "Normal",
+      "to": "Push",
+      "input": 0
+     },
+     {
+      "from": "Power",
+      "output": "Value",
+      "to": "Push",
+      "input": "Scale"
+     },
+     {
+      "from": "CapN",
+      "output": "Geometry",
+      "to": "Shatter",
+      "input": "Geometry"
+     },
+     {
+      "from": "Push",
+      "output": "Vector",
+      "to": "Shatter",
+      "input": "Offset"
+     },
+     {
+      "from": "Shatter",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "the city's Geometry Nodes: Mesh to Points on the Edges, Instance on Points of the Towers collection (Collection Info: separate and reset children, Pick Instance) with a random Z rotation; then Realize Instances, Split Edges (every face on its own), Capture Attribute of each face's Normal, and Set Position pushing faces out along it by a Geometry Proximity to the meteor through a Map Range (near = 1.3, beyond 5 m = 0) times a Multiply: wherever the meteor is, the buildings burst apart",
+   "video_time": "656:09"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 48,
+    "current": 40
+   },
+   "note": "beyond the tutorial (the tutor suggests it): the meteor animated falling into the city -- the buildings burst as it arrives, nothing else is keyed",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Meteor",
+    "frame": 1,
+    "location": [
+     22.0,
+     3.0,
+     16.0
+    ],
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Meteor",
+    "frame": 48,
+    "location": [
+     3.0,
+     1.0,
+     2.4
+    ],
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "nodes": [
+     {
+      "name": "Sky",
+      "props": {
+       "sun_elevation_deg": 6.0,
+       "sun_rotation_deg": 120.0
+      }
+     },
+     {
+      "name": "Background",
+      "inputs": {
+       "Strength": 0.12
+      }
+     }
+    ]
+   },
+   "note": "dusk: a low sun in the sky, dimmer",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "RaceSun",
+    "path": "energy",
+    "value": 1.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "RaceSun",
+    "path": "color",
+    "value": "#FFB070"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     -12.0,
+     -32.0,
+     15.0
+    ],
+    "look_at": [
+     6.0,
+     2.0,
+     5.0
+    ],
+    "lens": 30
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

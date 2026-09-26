@@ -65,7 +65,7 @@ def _number(value, param, integer=False):
     return int(value) if integer else float(value)
 
 
-TEXT_PROPS = ("attribute_name", "layer_name", "uv_map")
+TEXT_PROPS = ("attribute_name", "layer_name", "uv_map", "string")
 ITEM_COLLECTIONS = ("capture_items", "repeat_items", "state_items", "bake_items")
 ITEM_TYPES = ("FLOAT", "INT", "VECTOR", "RGBA", "BOOLEAN", "ROTATION", "MATRIX", "GEOMETRY")
 STUDIO_LIGHTS = ("city", "courtyard", "forest", "interior", "night", "studio", "sunrise", "sunset")
@@ -557,8 +557,9 @@ def edit_nodes(p):
             if key not in TEXT_PROPS or not hasattr(node, key):
                 raise BridgeCommandError("invalid_param", f"{param}: text {key!r} is not one of {TEXT_PROPS} on "
                                          f"{node.bl_idname}", param="nodes")
-            if not isinstance(value, str) or len(value) > 63:
-                raise BridgeCommandError("invalid_param", f"{param}: {key} is a name (up to 63 characters)",
+            limit = 500 if key == "string" else 63   # a String node's text; the others are names
+            if not isinstance(value, str) or len(value) > limit:
+                raise BridgeCommandError("invalid_param", f"{param}: {key} is text (up to {limit} characters)",
                                          param="nodes")
             setattr(node, key, value)
         if spec.get("object") is not None:

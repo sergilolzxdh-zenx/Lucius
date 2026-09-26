@@ -13,6 +13,7 @@ pip install -e ".[all,dev]" bpy
 lucius skills remove --learned                 # forget the half-learned Gemini skills
 lucius teach course courses\lrlpwIumFnE        # Lucius learns the Spanish course (about 10 minutes, no API)
 lucius teach course courses\objects            # and the 10 objects below
+lucius teach course courses\mHnoznNqlis        # Mastercourse Part 1: 37 chapters (the longest pack)
 lucius make "hazme una espada"                 # rebuilds the sword, no API needed
 lucius serve                                   # http://127.0.0.1:8765/ -> Projects: every chapter's pictures
 ```
@@ -117,10 +118,10 @@ One substitution: the blood squirt is a fluid simulation in the video; Blender's
 run inside the `bpy` Python module used here, so the same set-up is made with particles rendered as metaballs.
 `quick_liquid` and `bake_fluid` exist for a full Blender.
 
-## 8. Complete Blender Mastercourse part 1 (in progress): 26 chapters 9/10 so far
+## 8. Complete Blender Mastercourse part 1 (12 hours): all 37 build chapters 9/10
 
 Pack: `courses/mHnoznNqlis` (a recipe per chapter, `frames/`, `videos/` for the animated chapters,
-`overview.jpg`). Interface/installation chapters (1, 2, 4, 5) have nothing to build. Each chapter builds
+`overview.jpg`, `grid.jpg`). Interface/installation chapters (1, 2, 4, 5) have nothing to build. Each chapter builds
 on the previous one's scene, as the course does.
 
 | Ch. | Topic | What Lucius built (and beyond the tutorial) |
@@ -146,9 +147,28 @@ on the previous one's scene, as the course does.
 | 28 | graph editor | six cubes racing with Bezier / linear / sine / hand handles / noise / bounce, all cyclic |
 | 29 | NLA | named actions, push down, mute/solo, Combine; + the same actions reused on a second Suzanne |
 | 30 | 3D text | extruded, bevelled two-colour title converted to mesh; + an arched text on a curve |
+| 31 | geometry nodes 1 | a snowman from spheres in nodes; + carrot nose, coal eyes/buttons on a Mesh Line, twig arms, hat |
+| 32 | geometry nodes 2 | a city: cubes on a grid's points, random heights, voronoi windows; + set-back rooftops |
+| 33 | geometry nodes 3 | a fence instanced along curves with random gaps; + a closed square pen |
+| 34 | geometry nodes 4 | rolling hills (noise in Set Position), scattered trees; + the fence dropped onto the hills (Raycast) |
+| 35 | geometry nodes 5 | a procedural grass blade, patches, density/height inputs; + a mix of kinds, random greens |
+| 36 | geometry nodes 6 | procedural rocks, duplicated with random rotation/scale; + rocks raycast onto the hills: the finished landscape |
+| 37 | geometry nodes 7 | a house generator (walls by normal, windows instanced per wall face, roof); + a long house, a two-storey one, roof tiles, stone plinth |
+| 38 | geometry nodes 8 | donuts from drawn curves: frosting on the top faces, sprinkles on the top only; + a thinner third donut |
+| 39 | geometry nodes 9 | futuristic towers on a street grid blown apart by a meteor (faces pushed out along normals); + the meteor animated falling in at dusk |
+| 40 | geometry nodes 10 | an L-shaped sci-fi corridor: hexagon floor (Dual Mesh), inset wall panels, strip lights; + a keyframed fly-through round the corner |
+| 41 | geometry nodes 11 | a neon billboard: text in nodes, words on lines, the title typed in and out, a counter 0 -> 41; + the counter counts Lucius's chapters |
 
 New bridge abilities written for these chapters (all tested): colour attributes and vertex painting, texture
 baking, studio HDRIs, asset marking, cloth/soft-body baking, light linking, legacy node names, easing curves and
 hand-placed handles, F-curve modifiers, actions and the NLA editor, text objects and convert to mesh.
+For the geometry nodes chapters: group input defaults and `modifier_inputs` reach the modifier panel, dynamic
+node items (Capture Attribute values, repeat/simulation zone state), and a String node's text.
 
-Next: chapters 31-41 (geometry nodes projects).
+Lessons from the geometry nodes chapters, now in the recipes: give every new object a fresh name (a reused name
+silently becomes "Name.001"); hiding a collection's source objects hides Collection Info instances (Object Info
+with hide-in-render is fine); don't name an attribute "color" (Cycles has a built-in of that name); a loop cut
+exactly on an existing loop makes degenerate faces; clear the last chapter's camera keys before placing the camera;
+a multi-input socket (Join Strings, Join Geometry) stacks the newest link first.
+
+Part 1 is finished. Part 2 has not been started (waiting for the go-ahead).

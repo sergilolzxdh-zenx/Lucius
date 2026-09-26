@@ -1,0 +1,1230 @@
+{
+ "title": "Geometry nodes 10: a sci-fi corridor",
+ "summary": "An L-shaped corridor from a cube (extruded along Y and X, loop cuts for bays) dressed by geometry nodes: Separate Geometry picks the floor by its normal, and Subdivide Mesh, Triangulate and Dual Mesh (keep boundaries) turn it into hexagons, loosened with Split Edges and Scale Elements and thickened with Extrude Mesh over a plain floor; the walls and ceiling get inset panels (Extrude at 0, Scale Elements on the Top, extrude again) and a voronoi panel material; ceiling lights (an inset emissive cube) on the ceiling faces through Mesh to Points; pillars on the floor's points; point lights of different colours along it. Beyond the tutorial: a keyframed fly-through round the corner (the tutor records one with walk navigation).",
+ "objects": [
+  {
+   "name": "Corridor",
+   "description": "the corridor"
+  }
+ ],
+ "expected_result": "Inside a metallic sci-fi corridor: hexagon floor tiles, panelled walls, glowing blue ceiling lights, teal pillars and red, green, blue and yellow lights, the camera flying round the corner.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Metropolis",
+     "Meteor",
+     "CityGround"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "RaceSun",
+    "path": "energy",
+    "value": 0.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#05060A",
+    "strength": 0.2
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "CorridorWalls",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Panels",
+      "type": "ShaderNodeTexVoronoi",
+      "props": {
+       "distance": "CHEBYCHEV"
+      },
+      "inputs": {
+       "Scale": 8.0
+      }
+     },
+     {
+      "name": "Cut",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#9A9EA6"
+       ],
+       [
+        0.42,
+        "#D8DCE2"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.4
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.35,
+       "Metallic": 0.4
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Panels",
+      "input": "Vector"
+     },
+     {
+      "from": "Panels",
+      "output": "Distance",
+      "to": "Cut",
+      "input": "Fac"
+     },
+     {
+      "from": "Cut",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Panels",
+      "output": "Distance",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "materials: the walls (a Chebychev voronoi through a constant ramp, bump), the pillars (voronoi warped by noise, green to light blue), the ceiling lights (an emission, blue, strength 10)",
+   "video_time": "690:37"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "PillarMat",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Warp",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 3.0
+      }
+     },
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "props": {
+       "distance": "CHEBYCHEV"
+      },
+      "inputs": {
+       "Scale": 6.0
+      }
+     },
+     {
+      "name": "Tint",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.2,
+        "#0E3A2A"
+       ],
+       [
+        0.7,
+        "#8FD8FF"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.45
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.3,
+       "Metallic": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Warp",
+      "input": "Vector"
+     },
+     {
+      "from": "Warp",
+      "output": "Color",
+      "to": "Cells",
+      "input": "Vector"
+     },
+     {
+      "from": "Cells",
+      "output": "Distance",
+      "to": "Tint",
+      "input": "Fac"
+     },
+     {
+      "from": "Tint",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Cells",
+      "output": "Distance",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "LightPanel",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#9FD4FF",
+       "Strength": 10.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": "Emission",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "HexFloor",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#2A2D33",
+       "Metallic": 0.8,
+       "Roughness": 0.3
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Pillar",
+    "radius": 0.14,
+    "depth": 3.0,
+    "vertices": 16,
+    "location": [
+     0,
+     40,
+     0
+    ]
+   },
+   "note": "a pillar: a cylinder, taller and thinner, raised so it stands on its base",
+   "video_time": "680:02"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Pillar"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Pillar",
+    "offset": [
+     0,
+     0,
+     1.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Pillar",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Pillar",
+    "name": "PillarMat",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "CeilingLight",
+    "size": 1,
+    "location": [
+     3,
+     40,
+     0
+    ]
+   },
+   "note": "a ceiling light: a flattened cube, its bottom face inset and pushed in, that face emissive",
+   "video_time": "688:00"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "CeilingLight",
+    "dimensions": [
+     0.9,
+     0.9,
+     0.16
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "CeilingLight",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CeilingLight",
+    "name": "LightHousing",
+    "base_color": "#26282C",
+    "metallic": 1.0,
+    "roughness": 0.3
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "CeilingLight",
+    "direction": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "CeilingLight",
+    "thickness": 0.1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "CeilingLight",
+    "distance": -0.04
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CeilingLight",
+    "name": "LightPanel",
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "CeilingLight",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Pillar",
+     "CeilingLight"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Corridor",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the corridor: a cube, a face extruded along Y and cut into bays, the far end turned with another extrusion along X",
+   "video_time": "676:38"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Corridor",
+    "dimensions": [
+     3.0,
+     3.0,
+     3.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Corridor",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Corridor"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Corridor",
+    "offset": [
+     0,
+     0,
+     1.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Corridor",
+    "direction": [
+     0,
+     1,
+     0
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Corridor",
+    "offset": [
+     0,
+     9.0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Corridor",
+    "axis": "y",
+    "positions": [
+     0.125,
+     0.375,
+     0.5,
+     0.625,
+     0.75,
+     0.875
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Corridor",
+    "element": "FACE",
+    "min": [
+     0.99,
+     0.88,
+     null
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Corridor",
+    "offset": [
+     6.0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Corridor",
+    "axis": "x",
+    "positions": [
+     0.5,
+     0.667,
+     0.833
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Corridor",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Corridor",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Normal",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "IsFloor",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      },
+      "inputs": {
+       "B": [
+        0,
+        0,
+        -1
+       ]
+      }
+     },
+     {
+      "name": "Split",
+      "type": "GeometryNodeSeparateGeometry",
+      "props": {
+       "domain": "FACE"
+      }
+     },
+     {
+      "name": "Dense",
+      "type": "GeometryNodeSubdivideMesh",
+      "inputs": {
+       "Level": 3
+      }
+     },
+     {
+      "name": "Tris",
+      "type": "GeometryNodeTriangulate"
+     },
+     {
+      "name": "Hexes",
+      "type": "GeometryNodeDualMesh",
+      "inputs": {
+       "Keep Boundaries": true
+      }
+     },
+     {
+      "name": "Loose",
+      "type": "GeometryNodeSplitEdges"
+     },
+     {
+      "name": "Gaps",
+      "type": "GeometryNodeScaleElements",
+      "inputs": {
+       "Scale": 0.88
+      }
+     },
+     {
+      "name": "Thick",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": -0.03,
+       "Individual": false
+      }
+     },
+     {
+      "name": "HexMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "HexFloor"
+      }
+     },
+     {
+      "name": "Base",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "HexFloor"
+      }
+     },
+     {
+      "name": "Panel0",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.0
+      }
+     },
+     {
+      "name": "PanelInset",
+      "type": "GeometryNodeScaleElements",
+      "inputs": {
+       "Scale": 0.82
+      }
+     },
+     {
+      "name": "Panel1",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.12
+      }
+     },
+     {
+      "name": "WallMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "CorridorWalls"
+      }
+     },
+     {
+      "name": "Normal2",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "IsCeiling",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      },
+      "inputs": {
+       "B": [
+        0,
+        0,
+        1
+       ]
+      }
+     },
+     {
+      "name": "CeilPoints",
+      "type": "GeometryNodeMeshToPoints",
+      "props": {
+       "mode": "FACES"
+      }
+     },
+     {
+      "name": "Lamp",
+      "type": "GeometryNodeObjectInfo",
+      "inputs": {
+       "Object": "CeilingLight"
+      }
+     },
+     {
+      "name": "Lamps",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "PillarObj",
+      "type": "GeometryNodeObjectInfo",
+      "inputs": {
+       "Object": "Pillar"
+      }
+     },
+     {
+      "name": "Pillars",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Normal",
+      "output": "Normal",
+      "to": "IsFloor",
+      "input": "A"
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Split",
+      "input": "Geometry"
+     },
+     {
+      "from": "IsFloor",
+      "output": "Result",
+      "to": "Split",
+      "input": "Selection"
+     },
+     {
+      "from": "Split",
+      "output": "Selection",
+      "to": "Dense",
+      "input": "Mesh"
+     },
+     {
+      "from": "Dense",
+      "output": "Mesh",
+      "to": "Tris",
+      "input": "Mesh"
+     },
+     {
+      "from": "Tris",
+      "output": "Mesh",
+      "to": "Hexes",
+      "input": "Mesh"
+     },
+     {
+      "from": "Hexes",
+      "output": "Dual Mesh",
+      "to": "Loose",
+      "input": "Mesh"
+     },
+     {
+      "from": "Loose",
+      "output": "Mesh",
+      "to": "Gaps",
+      "input": "Geometry"
+     },
+     {
+      "from": "Gaps",
+      "output": "Geometry",
+      "to": "Thick",
+      "input": "Mesh"
+     },
+     {
+      "from": "Thick",
+      "output": "Mesh",
+      "to": "HexMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Split",
+      "output": "Selection",
+      "to": "Base",
+      "input": "Geometry"
+     },
+     {
+      "from": "Split",
+      "output": "Inverted",
+      "to": "Panel0",
+      "input": "Mesh"
+     },
+     {
+      "from": "Panel0",
+      "output": "Mesh",
+      "to": "PanelInset",
+      "input": "Geometry"
+     },
+     {
+      "from": "Panel0",
+      "output": "Top",
+      "to": "PanelInset",
+      "input": "Selection"
+     },
+     {
+      "from": "PanelInset",
+      "output": "Geometry",
+      "to": "Panel1",
+      "input": "Mesh"
+     },
+     {
+      "from": "Panel0",
+      "output": "Top",
+      "to": "Panel1",
+      "input": "Selection"
+     },
+     {
+      "from": "Panel1",
+      "output": "Mesh",
+      "to": "WallMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Normal2",
+      "output": "Normal",
+      "to": "IsCeiling",
+      "input": "A"
+     },
+     {
+      "from": "Split",
+      "output": "Inverted",
+      "to": "CeilPoints",
+      "input": "Mesh"
+     },
+     {
+      "from": "IsCeiling",
+      "output": "Result",
+      "to": "CeilPoints",
+      "input": "Selection"
+     },
+     {
+      "from": "CeilPoints",
+      "output": "Points",
+      "to": "Lamps",
+      "input": "Points"
+     },
+     {
+      "from": "Lamp",
+      "output": "Geometry",
+      "to": "Lamps",
+      "input": "Instance"
+     },
+     {
+      "from": "Split",
+      "output": "Selection",
+      "to": "Pillars",
+      "input": "Points"
+     },
+     {
+      "from": "PillarObj",
+      "output": "Geometry",
+      "to": "Pillars",
+      "input": "Instance"
+     },
+     {
+      "from": "HexMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Base",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "WallMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Lamps",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Pillars",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "the corridor's Geometry Nodes: Separate Geometry (faces) by Normal == (0, 0, -1) -- the floor: Subdivide Mesh, Triangulate, Dual Mesh (keep boundaries) turns the triangles into hexagons, Split Edges and Scale Elements open gaps, Extrude Mesh (-0.03) gives them thickness, the plain floor joined under them; the Inverted part (walls and ceiling): Extrude Mesh at 0 + Scale Elements on the Top (an inset) and extruded again -- panels, the walls material; Mesh to Points on the ceiling faces (Normal == (0, 0, 1)) with Instance on Points of the ceiling light; pillars instanced on the floor's points",
+   "video_time": "686:38"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon0",
+    "location": [
+     0,
+     0.5,
+     2.3
+    ],
+    "power": 100,
+    "color": "#FF2A2A"
+   },
+   "note": "point lights along the corridor, 100 W each, each its own colour",
+   "video_time": "693:14"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon1",
+    "location": [
+     0,
+     2.5,
+     2.3
+    ],
+    "power": 100,
+    "color": "#2AFF4A"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon2",
+    "location": [
+     0,
+     4.5,
+     2.3
+    ],
+    "power": 100,
+    "color": "#2A4AFF"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon3",
+    "location": [
+     0,
+     6.5,
+     2.3
+    ],
+    "power": 100,
+    "color": "#FFD21A"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon4",
+    "location": [
+     0,
+     8.5,
+     2.3
+    ],
+    "power": 100,
+    "color": "#6AD8FF"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon5",
+    "location": [
+     1.8,
+     9.8,
+     2.3
+    ],
+    "power": 100,
+    "color": "#FF2A2A"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon6",
+    "location": [
+     3.8,
+     9.8,
+     2.3
+    ],
+    "power": 100,
+    "color": "#FF5FB8"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "POINT",
+    "name": "Neon7",
+    "location": [
+     5.8,
+     9.8,
+     2.3
+    ],
+    "power": 100,
+    "color": "#2AFF4A"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0,
+     -1.1,
+     1.55
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ],
+    "lens": 22
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 72,
+    "current": 1
+   },
+   "note": "beyond the tutorial (the tutor records one with walk navigation and auto keying): a keyframed fly-through down the corridor and round the corner",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 1,
+    "location": [
+     0,
+     -1.1,
+     1.55
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 40,
+    "location": [
+     0,
+     6.5,
+     1.55
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 56,
+    "location": [
+     0.4,
+     9.3,
+     1.55
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     -60
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Camera",
+    "frame": 72,
+    "location": [
+     3.5,
+     9.75,
+     1.55
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     -90
+    ]
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

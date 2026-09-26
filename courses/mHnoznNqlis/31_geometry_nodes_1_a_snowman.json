@@ -1,0 +1,952 @@
+{
+ "title": "Geometry nodes 1: a snowman",
+ "summary": "Geometry nodes on an object (a Geometry Nodes modifier): Mesh Primitives (UV Sphere) replacing the cube, Transform Geometry to move and scale, Join Geometry to combine three spheres into a snowman and a Grid as the ground, Set Shade Smooth and Set Material after the join, all to the Group Output; a snow material (two noise textures mixed, a light blue-to-white ramp, a bump). Beyond the tutorial, in the same node tree: a cone carrot nose, coal eyes and buttons instanced on a Mesh Line's points, twig arms and a felt hat, each with its own Set Material, under a sky.",
+ "objects": [
+  {
+   "name": "Snowman",
+   "description": "the geometry-nodes snowman"
+  }
+ ],
+ "expected_result": "A three-ball snowman with a carrot nose, coal eyes and buttons, twig arms and a black hat, standing on a snowy square under a winter sky.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Title",
+     "ArchText",
+     "TextFloor",
+     "TextKey"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Snow",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "NoiseFine",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 5.0,
+       "Detail": 15.0,
+       "Roughness": 0.7
+      }
+     },
+     {
+      "name": "NoiseGrain",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 500.0,
+       "Detail": 0.1,
+       "Roughness": 0.1
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA"
+      },
+      "inputs": {
+       "Factor": 0.1
+      }
+     },
+     {
+      "name": "Tint",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.3,
+        "#BFE3FF"
+       ],
+       [
+        0.7,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.45
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "NoiseFine",
+      "input": "Vector"
+     },
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "NoiseGrain",
+      "input": "Vector"
+     },
+     {
+      "from": "NoiseFine",
+      "output": "Color",
+      "to": "Mix",
+      "input": "A"
+     },
+     {
+      "from": "NoiseGrain",
+      "output": "Color",
+      "to": "Mix",
+      "input": "B"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Tint",
+      "input": "Fac"
+     },
+     {
+      "from": "Tint",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Mix",
+      "output": "Result",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the Snow material: two noise textures on Object coordinates (one scale 5 with detail, one scale 500 with detail and roughness 0.1) mixed at factor 0.1, through a colour ramp light blue to white, and into a bump (0.45)",
+   "video_time": "441:26"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Carrot",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#F26A12",
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Coal",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#0B0B0B",
+       "Roughness": 0.8
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Twig",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#5A3A1E",
+       "Roughness": 0.9
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Felt",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#141414",
+       "Roughness": 0.95
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Snowman",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.6
+    ]
+   },
+   "note": "an object to carry the Geometry Nodes modifier (the Geometry Nodes workspace > New)",
+   "video_time": "427:31"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Snowman",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     },
+     {
+      "name": "Body",
+      "type": "GeometryNodeMeshUVSphere",
+      "inputs": {
+       "Segments": 48,
+       "Rings": 24,
+       "Radius": 1.0
+      }
+     },
+     {
+      "name": "Middle",
+      "type": "GeometryNodeMeshUVSphere",
+      "inputs": {
+       "Segments": 48,
+       "Rings": 24,
+       "Radius": 1.0
+      }
+     },
+     {
+      "name": "MiddleMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        1.2
+       ],
+       "Scale": [
+        0.75,
+        0.75,
+        0.75
+       ]
+      }
+     },
+     {
+      "name": "Head",
+      "type": "GeometryNodeMeshUVSphere",
+      "inputs": {
+       "Segments": 48,
+       "Rings": 24,
+       "Radius": 1.0
+      }
+     },
+     {
+      "name": "HeadMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        2.2
+       ],
+       "Scale": [
+        0.6,
+        0.6,
+        0.6
+       ]
+      }
+     },
+     {
+      "name": "Ground",
+      "type": "GeometryNodeMeshGrid",
+      "inputs": {
+       "Size X": 8.0,
+       "Size Y": 8.0
+      }
+     },
+     {
+      "name": "GroundMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        -0.6
+       ]
+      }
+     },
+     {
+      "name": "Smooth",
+      "type": "GeometryNodeSetShadeSmooth"
+     },
+     {
+      "name": "SnowMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Snow"
+      }
+     },
+     {
+      "name": "All",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Body",
+      "output": "Mesh",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Middle",
+      "output": "Mesh",
+      "to": "MiddleMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "MiddleMove",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Head",
+      "output": "Mesh",
+      "to": "HeadMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "HeadMove",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Ground",
+      "output": "Mesh",
+      "to": "GroundMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "GroundMove",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Smooth",
+      "input": "Geometry"
+     },
+     {
+      "from": "Smooth",
+      "output": "Geometry",
+      "to": "SnowMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "SnowMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "All",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "Mesh > Primitives > UV Sphere instead of the cube, through Transform Geometry nodes: three spheres (the middle one up 1.2 and scaled 0.75, the head up 2.2 and scaled 0.6) and a Grid (8 x 8 m, down 0.6) for the ground, all into a Join Geometry, then Set Shade Smooth and Set Material (Snow), to the Group Output",
+   "video_time": "443:03"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Snowman",
+    "nodes": [
+     {
+      "name": "Nose",
+      "type": "GeometryNodeMeshCone",
+      "inputs": {
+       "Vertices": 24,
+       "Radius Top": 0.0,
+       "Radius Bottom": 0.09,
+       "Depth": 0.45
+      }
+     },
+     {
+      "name": "NoseMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        -0.78,
+        2.2
+       ],
+       "Rotation_deg": [
+        90,
+        0,
+        0
+       ]
+      }
+     },
+     {
+      "name": "NoseMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Carrot"
+      }
+     },
+     {
+      "name": "EyesLine",
+      "type": "GeometryNodeMeshLine",
+      "inputs": {
+       "Count": 2,
+       "Start Location": [
+        -0.2,
+        -0.53,
+        2.38
+       ],
+       "Offset": [
+        0.4,
+        0,
+        0
+       ]
+      }
+     },
+     {
+      "name": "EyesBall",
+      "type": "GeometryNodeMeshIcoSphere",
+      "inputs": {
+       "Radius": 0.06,
+       "Subdivisions": 2
+      }
+     },
+     {
+      "name": "EyesOn",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "EyesReal",
+      "type": "GeometryNodeRealizeInstances"
+     },
+     {
+      "name": "EyesMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Coal"
+      }
+     },
+     {
+      "name": "ButtonsLine",
+      "type": "GeometryNodeMeshLine",
+      "inputs": {
+       "Count": 3,
+       "Start Location": [
+        0,
+        -0.73,
+        0.95
+       ],
+       "Offset": [
+        0,
+        0,
+        0.25
+       ]
+      }
+     },
+     {
+      "name": "ButtonsBall",
+      "type": "GeometryNodeMeshIcoSphere",
+      "inputs": {
+       "Radius": 0.075,
+       "Subdivisions": 2
+      }
+     },
+     {
+      "name": "ButtonsOn",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "ButtonsReal",
+      "type": "GeometryNodeRealizeInstances"
+     },
+     {
+      "name": "ButtonsMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Coal"
+      }
+     },
+     {
+      "name": "ArmL",
+      "type": "GeometryNodeMeshCylinder",
+      "inputs": {
+       "Vertices": 12,
+       "Radius": 0.035,
+       "Depth": 1.2
+      }
+     },
+     {
+      "name": "ArmLMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        -1.12,
+        0,
+        1.55
+       ],
+       "Rotation_deg": [
+        0,
+        -58,
+        0
+       ]
+      }
+     },
+     {
+      "name": "ArmLMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Twig"
+      }
+     },
+     {
+      "name": "ArmR",
+      "type": "GeometryNodeMeshCylinder",
+      "inputs": {
+       "Vertices": 12,
+       "Radius": 0.035,
+       "Depth": 1.2
+      }
+     },
+     {
+      "name": "ArmRMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        1.12,
+        0,
+        1.55
+       ],
+       "Rotation_deg": [
+        0,
+        58,
+        0
+       ]
+      }
+     },
+     {
+      "name": "ArmRMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Twig"
+      }
+     },
+     {
+      "name": "Brim",
+      "type": "GeometryNodeMeshCylinder",
+      "inputs": {
+       "Vertices": 48,
+       "Radius": 0.5,
+       "Depth": 0.05
+      }
+     },
+     {
+      "name": "BrimMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        2.74
+       ]
+      }
+     },
+     {
+      "name": "BrimMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Felt"
+      }
+     },
+     {
+      "name": "Crown",
+      "type": "GeometryNodeMeshCylinder",
+      "inputs": {
+       "Vertices": 48,
+       "Radius": 0.33,
+       "Depth": 0.5
+      }
+     },
+     {
+      "name": "CrownMove",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        3.0
+       ]
+      }
+     },
+     {
+      "name": "CrownMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Felt"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Nose",
+      "output": "Mesh",
+      "to": "NoseMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "NoseMove",
+      "output": "Geometry",
+      "to": "NoseMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "NoseMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "EyesLine",
+      "output": "Mesh",
+      "to": "EyesOn",
+      "input": "Points"
+     },
+     {
+      "from": "EyesBall",
+      "output": "Mesh",
+      "to": "EyesOn",
+      "input": "Instance"
+     },
+     {
+      "from": "EyesOn",
+      "output": "Instances",
+      "to": "EyesReal",
+      "input": "Geometry"
+     },
+     {
+      "from": "EyesReal",
+      "output": "Geometry",
+      "to": "EyesMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "EyesMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "ButtonsLine",
+      "output": "Mesh",
+      "to": "ButtonsOn",
+      "input": "Points"
+     },
+     {
+      "from": "ButtonsBall",
+      "output": "Mesh",
+      "to": "ButtonsOn",
+      "input": "Instance"
+     },
+     {
+      "from": "ButtonsOn",
+      "output": "Instances",
+      "to": "ButtonsReal",
+      "input": "Geometry"
+     },
+     {
+      "from": "ButtonsReal",
+      "output": "Geometry",
+      "to": "ButtonsMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "ButtonsMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmL",
+      "output": "Mesh",
+      "to": "ArmLMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmLMove",
+      "output": "Geometry",
+      "to": "ArmLMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmLMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmR",
+      "output": "Mesh",
+      "to": "ArmRMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmRMove",
+      "output": "Geometry",
+      "to": "ArmRMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "ArmRMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "Brim",
+      "output": "Mesh",
+      "to": "BrimMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "BrimMove",
+      "output": "Geometry",
+      "to": "BrimMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "BrimMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "Crown",
+      "output": "Mesh",
+      "to": "CrownMove",
+      "input": "Geometry"
+     },
+     {
+      "from": "CrownMove",
+      "output": "Geometry",
+      "to": "CrownMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "CrownMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "beyond the tutorial: a carrot nose (a Cone turned to face front), coal eyes and buttons (a Mesh Line's points with Instance on Points of an ico sphere, realized), twig arms and a felt hat (cylinders), each with its own Set Material, joined in",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "world",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Sky",
+      "type": "ShaderNodeTexSky",
+      "props": {
+       "sky_type": "SINGLE_SCATTERING",
+       "sun_elevation_deg": 22.0,
+       "sun_rotation_deg": 200.0
+      }
+     },
+     {
+      "name": "Background",
+      "type": "ShaderNodeBackground",
+      "inputs": {
+       "Strength": 0.15
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputWorld"
+     }
+    ],
+    "links": [
+     {
+      "from": "Sky",
+      "output": "Color",
+      "to": "Background",
+      "input": "Color"
+     },
+     {
+      "from": "Background",
+      "output": "Background",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a winter sky",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "RaceSun",
+    "path": "energy",
+    "value": 2.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.2,
+     -8.0,
+     2.5
+    ],
+    "look_at": [
+     0,
+     0,
+     1.65
+    ],
+    "lens": 40
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

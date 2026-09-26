@@ -268,7 +268,7 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "colour], ...], ramp_interpolation LINEAR|CONSTANT|B_SPLINE|EASE, image (a file, textures/<name>.png made by bake_texture, or studio:interior|studio|city|"
                    "courtyard|forest|night|sunrise|sunset -- the HDRIs Blender ships, for an Environment Texture), "
                    "non_color (data maps), projection FLAT|BOX, items [{type FLOAT|INT|VECTOR|RGBA|BOOLEAN|ROTATION, name}] (a Capture Attribute's "
-                   "values, a repeat/simulation zone's state), text {attribute_name | layer_name | uv_map: "
+                   "values, a repeat/simulation zone's state), text {attribute_name | layer_name | uv_map | string (a String node's text): "
                    "a name}, generated_image {name, type UV_GRID|COLOR_GRID|BLANK, width, height, color} "
                    "(Image > New), "
                    "object (texture coordinate object), group (a node group), location [x, y]}], links [{from, output, to, input}] "

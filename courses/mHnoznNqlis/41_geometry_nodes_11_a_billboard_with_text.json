@@ -1,0 +1,851 @@
+{
+ "title": "Geometry nodes 11: a billboard with text",
+ "summary": "Text made in geometry nodes on a billboard (a flattened cube, its screen face inset and pushed in): String nodes into String to Curves (size, spacing, alignment) and Fill Curve, Set Material emissions and Translate Instances to place each block; Join Strings with a Special Characters line break for a list of words; Slice String keyed to type the title in and out; Value to String keyed as a counter with a caption. Beyond the tutorial: the counter counts the chapters Lucius learned (41), the board stands on posts.",
+ "objects": [
+  {
+   "name": "Billboard",
+   "description": "the billboard"
+  },
+  {
+   "name": "BoardText",
+   "description": "the node text"
+  }
+ ],
+ "expected_result": "A black billboard with a dark blue screen: LUCIUS 3D in glowing orange across the top, BLENDER / MASTERCOURSE / ANIMATION in blue on the left, and a white counter reading 41 CHAPTERS LEARNED.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Corridor",
+     "Neon0",
+     "Neon1",
+     "Neon2",
+     "Neon3",
+     "Neon4",
+     "Neon5",
+     "Neon6",
+     "Neon7"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_world",
+   "args": {
+    "color": "#0B0D14",
+    "strength": 0.4
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Plaza",
+    "size": 60,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Plaza",
+    "name": "PlazaStone",
+    "base_color": "#2A2C31",
+    "roughness": 0.35
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NeonOrange",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#FF8A1A",
+       "Strength": 9.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": "Emission",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the text materials: emissions, orange (strength ~10), blue, white",
+   "video_time": "716:31"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NeonBlue",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#2E8BFF",
+       "Strength": 9.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": "Emission",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "NeonWhite",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#EAF2FF",
+       "Strength": 6.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": "Emission",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "Billboard",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     2.6
+    ]
+   },
+   "note": "the billboard: a cube flattened, its front face inset and pushed in, stretched in X",
+   "video_time": "702:40"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Billboard",
+    "dimensions": [
+     6.4,
+     0.35,
+     3.4
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Billboard",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Billboard",
+    "name": "BoardBlack",
+    "base_color": "#0A0A0C",
+    "roughness": 0.4
+   },
+   "note": "black, the screen face dark blue",
+   "video_time": "717:12"
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Billboard",
+    "direction": [
+     0,
+     -1,
+     0
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Billboard",
+    "thickness": 0.14
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "Billboard",
+    "distance": -0.06
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Billboard",
+    "name": "ScreenBlue",
+    "base_color": "#0A1633",
+    "roughness": 0.25,
+    "assign": "selected_faces"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Billboard",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "BoardPost0",
+    "radius": 0.09,
+    "depth": 1.0,
+    "location": [
+     -2.2,
+     0.05,
+     0.45
+    ]
+   },
+   "note": "beyond the tutorial: two posts to stand it on",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "BoardPost0",
+    "name": "BoardBlack",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "BoardPost1",
+    "radius": 0.09,
+    "depth": 1.0,
+    "location": [
+     2.2,
+     0.05,
+     0.45
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "BoardPost1",
+    "name": "BoardBlack",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "BoardText",
+    "size": 1,
+    "location": [
+     0,
+     -0.16,
+     2.6
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "an object for the text nodes, stood up in front of the screen",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "BoardText",
+    "group": "BoardTextNodes",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Title",
+      "type": "FunctionNodeInputString",
+      "text": {
+       "string": "LUCIUS 3D"
+      }
+     },
+     {
+      "name": "Slice",
+      "type": "FunctionNodeSliceString",
+      "inputs": {
+       "Position": 0,
+       "Length": 9
+      }
+     },
+     {
+      "name": "TitleCurves",
+      "type": "GeometryNodeStringToCurves",
+      "props": {
+       "align_x": "CENTER",
+       "align_y": "MIDDLE"
+      },
+      "inputs": {
+       "Size": 0.7,
+       "Character Spacing": 1.1
+      }
+     },
+     {
+      "name": "TitleFill",
+      "type": "GeometryNodeFillCurve"
+     },
+     {
+      "name": "TitleMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "NeonOrange"
+      }
+     },
+     {
+      "name": "TitleMove",
+      "type": "GeometryNodeTranslateInstances",
+      "inputs": {
+       "Translation": [
+        0,
+        0.9,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Word1",
+      "type": "FunctionNodeInputString",
+      "text": {
+       "string": "BLENDER"
+      }
+     },
+     {
+      "name": "Word2",
+      "type": "FunctionNodeInputString",
+      "text": {
+       "string": "MASTERCOURSE"
+      }
+     },
+     {
+      "name": "Word3",
+      "type": "FunctionNodeInputString",
+      "text": {
+       "string": "ANIMATION"
+      }
+     },
+     {
+      "name": "Breaks",
+      "type": "FunctionNodeInputSpecialCharacters"
+     },
+     {
+      "name": "Words",
+      "type": "GeometryNodeStringJoin"
+     },
+     {
+      "name": "WordCurves",
+      "type": "GeometryNodeStringToCurves",
+      "props": {
+       "align_x": "LEFT",
+       "align_y": "TOP"
+      },
+      "inputs": {
+       "Size": 0.3,
+       "Line Spacing": 1.1
+      }
+     },
+     {
+      "name": "WordFill",
+      "type": "GeometryNodeFillCurve"
+     },
+     {
+      "name": "WordMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "NeonBlue"
+      }
+     },
+     {
+      "name": "WordMove",
+      "type": "GeometryNodeTranslateInstances",
+      "inputs": {
+       "Translation": [
+        -2.75,
+        0.2,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Count",
+      "type": "FunctionNodeValueToString",
+      "inputs": {
+       "Value": 41.0,
+       "Decimals": 0
+      }
+     },
+     {
+      "name": "CountCurves",
+      "type": "GeometryNodeStringToCurves",
+      "props": {
+       "align_x": "CENTER",
+       "align_y": "TOP"
+      },
+      "inputs": {
+       "Size": 0.95
+      }
+     },
+     {
+      "name": "CountFill",
+      "type": "GeometryNodeFillCurve"
+     },
+     {
+      "name": "CountMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "NeonWhite"
+      }
+     },
+     {
+      "name": "CountMove",
+      "type": "GeometryNodeTranslateInstances",
+      "inputs": {
+       "Translation": [
+        1.6,
+        0.25,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Caption",
+      "type": "FunctionNodeInputString",
+      "text": {
+       "string": "CHAPTERS LEARNED"
+      }
+     },
+     {
+      "name": "CaptionCurves",
+      "type": "GeometryNodeStringToCurves",
+      "props": {
+       "align_x": "CENTER",
+       "align_y": "TOP"
+      },
+      "inputs": {
+       "Size": 0.24,
+       "Character Spacing": 1.15
+      }
+     },
+     {
+      "name": "CaptionFill",
+      "type": "GeometryNodeFillCurve"
+     },
+     {
+      "name": "CaptionMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "NeonOrange"
+      }
+     },
+     {
+      "name": "CaptionMove",
+      "type": "GeometryNodeTranslateInstances",
+      "inputs": {
+       "Translation": [
+        1.6,
+        -0.75,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Title",
+      "output": "String",
+      "to": "Slice",
+      "input": "String"
+     },
+     {
+      "from": "Slice",
+      "output": "String",
+      "to": "TitleCurves",
+      "input": "String"
+     },
+     {
+      "from": "TitleCurves",
+      "output": "Curve Instances",
+      "to": "TitleFill",
+      "input": "Curve"
+     },
+     {
+      "from": "TitleFill",
+      "output": "Mesh",
+      "to": "TitleMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "TitleMat",
+      "output": "Geometry",
+      "to": "TitleMove",
+      "input": "Instances"
+     },
+     {
+      "from": "Breaks",
+      "output": "Line Break",
+      "to": "Words",
+      "input": "Delimiter"
+     },
+     {
+      "from": "Word3",
+      "output": "String",
+      "to": "Words",
+      "input": "Strings"
+     },
+     {
+      "from": "Word2",
+      "output": "String",
+      "to": "Words",
+      "input": "Strings"
+     },
+     {
+      "from": "Word1",
+      "output": "String",
+      "to": "Words",
+      "input": "Strings"
+     },
+     {
+      "from": "Words",
+      "output": "String",
+      "to": "WordCurves",
+      "input": "String"
+     },
+     {
+      "from": "WordCurves",
+      "output": "Curve Instances",
+      "to": "WordFill",
+      "input": "Curve"
+     },
+     {
+      "from": "WordFill",
+      "output": "Mesh",
+      "to": "WordMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "WordMat",
+      "output": "Geometry",
+      "to": "WordMove",
+      "input": "Instances"
+     },
+     {
+      "from": "Count",
+      "output": "String",
+      "to": "CountCurves",
+      "input": "String"
+     },
+     {
+      "from": "CountCurves",
+      "output": "Curve Instances",
+      "to": "CountFill",
+      "input": "Curve"
+     },
+     {
+      "from": "CountFill",
+      "output": "Mesh",
+      "to": "CountMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "CountMat",
+      "output": "Geometry",
+      "to": "CountMove",
+      "input": "Instances"
+     },
+     {
+      "from": "Caption",
+      "output": "String",
+      "to": "CaptionCurves",
+      "input": "String"
+     },
+     {
+      "from": "CaptionCurves",
+      "output": "Curve Instances",
+      "to": "CaptionFill",
+      "input": "Curve"
+     },
+     {
+      "from": "CaptionFill",
+      "output": "Mesh",
+      "to": "CaptionMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "CaptionMat",
+      "output": "Geometry",
+      "to": "CaptionMove",
+      "input": "Instances"
+     },
+     {
+      "from": "TitleMove",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "WordMove",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "CountMove",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "CaptionMove",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "the text in Geometry Nodes: String nodes into String to Curves (size, character spacing, alignment), Fill Curve, Set Material, Translate Instances to place each block; Join Strings with a Special Characters line break as the delimiter puts words on separate lines; Slice String trims the title; Value to String turns a number into text (a counter) with a caption under it",
+   "video_time": "715:13"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 90,
+    "current": 45
+   },
+   "note": "the animations: the title typed in and out by keying Slice String's Position (9 -> 0 by frame 40, held to 50, back to 9 by 90) and the counter by keying Value to String's value (0 -> 41; the tutor counts subscribers)",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Slice\"].inputs[\"Position\"].default_value",
+    "value": 9,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "711:17"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Slice\"].inputs[\"Position\"].default_value",
+    "value": 0,
+    "frame": 40,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Slice\"].inputs[\"Position\"].default_value",
+    "value": 0,
+    "frame": 50,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Slice\"].inputs[\"Position\"].default_value",
+    "value": 9,
+    "frame": 90,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Count\"].inputs[\"Value\"].default_value",
+    "value": 0.0,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "714:35"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "group",
+    "name": "BoardTextNodes",
+    "path": "nodes[\"Count\"].inputs[\"Value\"].default_value",
+    "value": 41.0,
+    "frame": 70,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "AREA",
+    "name": "BoardFill",
+    "location": [
+     2.5,
+     -6.0,
+     5.0
+    ],
+    "look_at": [
+     0,
+     0,
+     2.2
+    ],
+    "power": 150,
+    "size": 4.0
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "clear_animation",
+   "args": {
+    "object": "Camera"
+   },
+   "note": "the camera's fly-through keys from the corridor cleared first",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.6,
+     -8.8,
+     2.6
+    ],
+    "look_at": [
+     0,
+     0,
+     2.5
+    ],
+    "lens": 38
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

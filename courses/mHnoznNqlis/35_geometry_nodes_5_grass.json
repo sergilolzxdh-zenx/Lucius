@@ -1,0 +1,615 @@
+{
+ "title": "Geometry nodes 5: grass",
+ "summary": "A grass blade made procedurally (Mesh Line curled with Vector Rotate by Index x Bending in Set Position, Mesh to Curve, Set Curve Radius tapered by Spline Parameter through a reversed Map Range, Curve to Mesh with a Curve Line profile), a patch of blades (Mesh Circle, Distribute Points on Faces, Instance on Points with random Z rotation and random scale), five Group Input sockets (density, patch size, rotation, height, bending) so three copies make three kinds of grass; the kinds in a collection, instanced over the landscape with Collection Info (separate and reset children). Beyond the tutorial: Pick Instance for a mix of kinds, per-patch random green shades.",
+ "objects": [
+  {
+   "name": "Landscape",
+   "description": "the grassy hills"
+  },
+  {
+   "name": "GrassA",
+   "description": "one kind of grass patch"
+  }
+ ],
+ "expected_result": "The rolling landscape covered in tufts of grass in three heights and several greens, the wooden fence running through it.",
+ "steps": [
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Grass",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Info",
+      "type": "ShaderNodeObjectInfo"
+     },
+     {
+      "name": "Greens",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#2F6B1E"
+       ],
+       [
+        0.5,
+        "#5DA22E"
+       ],
+       [
+        1.0,
+        "#A7B83C"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.6
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Info",
+      "output": "Random",
+      "to": "Greens",
+      "input": "Fac"
+     },
+     {
+      "from": "Greens",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the Grass material (beyond the tutorial: each patch a slightly different green, from Object Info > Random)",
+   "video_time": "524:38"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GrassA",
+    "size": 1,
+    "location": [
+     -3,
+     30,
+     0
+    ]
+   },
+   "note": "a cube to carry the grass nodes, moved aside",
+   "video_time": "506:35"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "GrassA",
+    "group": "GrassPatch",
+    "clear": true,
+    "interface": [
+     {
+      "name": "Density",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 450.0
+     },
+     {
+      "name": "Grass Patch Size",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 0.22
+     },
+     {
+      "name": "Rotate Z",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 6.28
+     },
+     {
+      "name": "Height",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 1.0
+     },
+     {
+      "name": "Bending",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 0.035
+     }
+    ],
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Line",
+      "type": "GeometryNodeMeshLine",
+      "inputs": {
+       "Count": 20,
+       "Offset": [
+        0,
+        0,
+        0.018
+       ]
+      }
+     },
+     {
+      "name": "Position",
+      "type": "GeometryNodeInputPosition"
+     },
+     {
+      "name": "Index",
+      "type": "GeometryNodeInputIndex"
+     },
+     {
+      "name": "Bend",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      }
+     },
+     {
+      "name": "Rotate",
+      "type": "ShaderNodeVectorRotate",
+      "props": {
+       "rotation_type": "X_AXIS"
+      }
+     },
+     {
+      "name": "Curl",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "ToCurve",
+      "type": "GeometryNodeMeshToCurve"
+     },
+     {
+      "name": "Param",
+      "type": "GeometryNodeSplineParameter"
+     },
+     {
+      "name": "Taper",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 1.0,
+       "To Max": 0.05
+      }
+     },
+     {
+      "name": "Radius",
+      "type": "GeometryNodeSetCurveRadius"
+     },
+     {
+      "name": "Width",
+      "type": "GeometryNodeCurvePrimitiveLine",
+      "inputs": {
+       "Start": [
+        0.012,
+        0,
+        0
+       ],
+       "End": [
+        0,
+        0,
+        0
+       ]
+      }
+     },
+     {
+      "name": "ToMesh",
+      "type": "GeometryNodeCurveToMesh"
+     },
+     {
+      "name": "Patch",
+      "type": "GeometryNodeMeshCircle",
+      "props": {
+       "fill_type": "TRIANGLE_FAN"
+      },
+      "inputs": {
+       "Vertices": 16
+      }
+     },
+     {
+      "name": "Spots",
+      "type": "GeometryNodeDistributePointsOnFaces"
+     },
+     {
+      "name": "TurnMax",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "Turn",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      }
+     },
+     {
+      "name": "SizeMax",
+      "type": "ShaderNodeCombineXYZ",
+      "inputs": {
+       "X": 1.0,
+       "Y": 1.0
+      }
+     },
+     {
+      "name": "Size",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Min": [
+        0.4,
+        0.4,
+        0.4
+       ]
+      }
+     },
+     {
+      "name": "Blades",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "GrassMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Grass"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Index",
+      "output": "Index",
+      "to": "Bend",
+      "input": 0
+     },
+     {
+      "from": "Group Input",
+      "output": "Bending",
+      "to": "Bend",
+      "input": 1
+     },
+     {
+      "from": "Position",
+      "output": "Position",
+      "to": "Rotate",
+      "input": "Vector"
+     },
+     {
+      "from": "Bend",
+      "output": "Value",
+      "to": "Rotate",
+      "input": "Angle"
+     },
+     {
+      "from": "Line",
+      "output": "Mesh",
+      "to": "Curl",
+      "input": "Geometry"
+     },
+     {
+      "from": "Rotate",
+      "output": "Vector",
+      "to": "Curl",
+      "input": "Position"
+     },
+     {
+      "from": "Curl",
+      "output": "Geometry",
+      "to": "ToCurve",
+      "input": "Mesh"
+     },
+     {
+      "from": "Param",
+      "output": "Factor",
+      "to": "Taper",
+      "input": "Value"
+     },
+     {
+      "from": "ToCurve",
+      "output": "Curve",
+      "to": "Radius",
+      "input": "Curve"
+     },
+     {
+      "from": "Taper",
+      "output": "Result",
+      "to": "Radius",
+      "input": "Radius"
+     },
+     {
+      "from": "Radius",
+      "output": "Curve",
+      "to": "ToMesh",
+      "input": "Curve"
+     },
+     {
+      "from": "Width",
+      "output": "Curve",
+      "to": "ToMesh",
+      "input": "Profile Curve"
+     },
+     {
+      "from": "Group Input",
+      "output": "Grass Patch Size",
+      "to": "Patch",
+      "input": "Radius"
+     },
+     {
+      "from": "Patch",
+      "output": "Mesh",
+      "to": "Spots",
+      "input": "Mesh"
+     },
+     {
+      "from": "Group Input",
+      "output": "Density",
+      "to": "Spots",
+      "input": "Density"
+     },
+     {
+      "from": "Group Input",
+      "output": "Rotate Z",
+      "to": "TurnMax",
+      "input": "Z"
+     },
+     {
+      "from": "TurnMax",
+      "output": "Vector",
+      "to": "Turn",
+      "input": "Max"
+     },
+     {
+      "from": "Group Input",
+      "output": "Height",
+      "to": "SizeMax",
+      "input": "Z"
+     },
+     {
+      "from": "SizeMax",
+      "output": "Vector",
+      "to": "Size",
+      "input": "Max"
+     },
+     {
+      "from": "Spots",
+      "output": "Points",
+      "to": "Blades",
+      "input": "Points"
+     },
+     {
+      "from": "ToMesh",
+      "output": "Mesh",
+      "to": "Blades",
+      "input": "Instance"
+     },
+     {
+      "from": "Turn",
+      "output": "Value",
+      "to": "Blades",
+      "input": "Rotation"
+     },
+     {
+      "from": "Size",
+      "output": "Value",
+      "to": "Blades",
+      "input": "Scale"
+     },
+     {
+      "from": "Blades",
+      "output": "Instances",
+      "to": "GrassMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "GrassMat",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "one blade: a Mesh Line (20 points, offset in Z) curled by Set Position with a Vector Rotate (X axis) of each point by Index x Bending; Mesh to Curve, Set Curve Radius from the Spline Parameter through a Map Range reversed (1 at the root, 0.05 at the tip), Curve to Mesh with a Curve Line as the profile for its width. A patch: a Mesh Circle (filled with triangles), Distribute Points on Faces and Instance on Points of the blade with a Random Value vector rotation (Z only, via Combine XYZ) and random scale (0.4..1, the Z max = Height); Set Material. Density, patch size, Rotate Z, Height and Bending are Group Input sockets in the modifier",
+   "video_time": "527:25"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GrassB",
+    "size": 1,
+    "location": [
+     -1.5,
+     30,
+     0
+    ]
+   },
+   "note": "Shift+D: two more patches with other settings (shorter and denser, taller and bent more)",
+   "video_time": "528:08"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "GrassB",
+    "group": "GrassPatch",
+    "modifier_inputs": {
+     "Density": 650.0,
+     "Grass Patch Size": 0.2,
+     "Rotate Z": 6.28,
+     "Height": 0.65,
+     "Bending": -0.02
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "GrassC",
+    "size": 1,
+    "location": [
+     0.0,
+     30,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "GrassC",
+    "group": "GrassPatch",
+    "modifier_inputs": {
+     "Density": 520.0,
+     "Grass Patch Size": 0.14,
+     "Rotate Z": 6.28,
+     "Height": 1.3,
+     "Bending": 0.05
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "move_to_collection",
+   "args": {
+    "names": [
+     "GrassA",
+     "GrassB",
+     "GrassC"
+    ],
+    "collection": "GrassKinds"
+   },
+   "note": "Ctrl+G: the three patches in a collection, Grass",
+   "video_time": "528:49"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Landscape",
+    "remove": [
+     "Marker"
+    ],
+    "nodes": [
+     {
+      "name": "Kinds",
+      "type": "GeometryNodeCollectionInfo",
+      "inputs": {
+       "Collection": "GrassKinds",
+       "Separate Children": true,
+       "Reset Children": true
+      }
+     },
+     {
+      "name": "Scatter",
+      "props": {
+       "distribute_method": "RANDOM"
+      },
+      "inputs": {
+       "Density": 2.5,
+       "Seed": 4
+      }
+     },
+     {
+      "name": "Spin",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Max": [
+        0.0,
+        0.0,
+        6.28
+       ]
+      }
+     },
+     {
+      "name": "Grow",
+      "type": "FunctionNodeRandomValue",
+      "inputs": {
+       "Min": 0.7,
+       "Max": 1.3,
+       "Seed": 9
+      }
+     },
+     {
+      "name": "OnPoints",
+      "inputs": {
+       "Pick Instance": true
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Kinds",
+      "output": "Instances",
+      "to": "OnPoints",
+      "input": "Instance"
+     },
+     {
+      "from": "Spin",
+      "output": "Value",
+      "to": "OnPoints",
+      "input": "Rotation"
+     },
+     {
+      "from": "Grow",
+      "output": "Value",
+      "to": "OnPoints",
+      "input": "Scale"
+     }
+    ]
+   },
+   "note": "on the landscape the cubes are replaced by a Collection Info of the grass (Separate and Reset Children; beyond the tutorial Pick Instance, so each spot gets one of the three kinds, turned and sized at random), the points denser",
+   "video_time": "529:31"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.5,
+     -16.0,
+     4.2
+    ],
+    "look_at": [
+     0,
+     -3.0,
+     0.2
+    ],
+    "lens": 30
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

@@ -1,0 +1,943 @@
+{
+ "title": "Geometry nodes 8: donuts",
+ "summary": "Procedural donuts from drawn curves: Set Spline Cyclic closes each curve, Curve to Mesh with a Curve Circle profile makes the ring, the upward faces (Compare normal with an epsilon) are extruded as frosting, Subdivision Surface; Set Material dough, then chocolate (hex 411900, noise bump) on the top; sprinkles (a modelled capsule via Object Info) distributed on the top only with random rotations, a random colour stored per instance with Store Named Attribute, realized, and read by an Attribute node into a constant five-colour ramp. Beyond the tutorial: a third, smaller donut whose curve radius thins its tube.",
+ "objects": [
+  {
+   "name": "Donuts",
+   "description": "the donuts"
+  }
+ ],
+ "expected_result": "Three glazed chocolate donuts with colourful sprinkles on a dark purple table, one leaning on another, a small one in front.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Lawn",
+     "House",
+     "HouseLong",
+     "HouseTall"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "DonutBoard",
+    "size": 40,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "DonutBoard",
+    "name": "TableTop",
+    "base_color": "#3A2440",
+    "roughness": 0.6
+   },
+   "note": "a dark purple base",
+   "video_time": "632:15"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Sprinkle",
+    "radius": 0.1,
+    "depth": 0.7,
+    "vertices": 12,
+    "location": [
+     6,
+     0,
+     0.5
+    ]
+   },
+   "note": "a sprinkle: a cylinder stretched in Z ...",
+   "video_time": "616:04"
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Sprinkle",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "... its ends inset so the subdivision leaves them flat ...",
+   "video_time": "616:47"
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Sprinkle",
+    "thickness": 0.04
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Sprinkle",
+    "direction": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "inset",
+   "args": {
+    "object": "Sprinkle",
+    "thickness": 0.04
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Sprinkle"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "Sprinkle",
+    "axis": "x",
+    "angle_deg": 90,
+    "pivot": "origin"
+   },
+   "note": "... laid down (R X 90)",
+   "video_time": "617:28"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Sprinkle",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Sprinkle",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Sprinkle"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Chocolate",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Melt",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 2.0,
+       "Detail": 4.0
+      }
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#411900",
+       "Roughness": 0.25
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Melt",
+      "input": "Vector"
+     },
+     {
+      "from": "Melt",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Chocolate: hex 411900, a noise through a bump (0.5) like melted chocolate",
+   "video_time": "627:45"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Dough",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Bake",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 4.0,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Golden",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.3,
+        "#9A4A14"
+       ],
+       [
+        0.7,
+        "#CF8634"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.05
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.2
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Bake",
+      "input": "Vector"
+     },
+     {
+      "from": "Bake",
+      "output": "Fac",
+      "to": "Golden",
+      "input": "Fac"
+     },
+     {
+      "from": "Golden",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Bake",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Donut: a noise through an orange-to-golden ramp, a faint bump, roughness 0.2",
+   "video_time": "629:46"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Sprinkles",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Paint",
+      "type": "ShaderNodeAttribute",
+      "text": {
+       "attribute_name": "sprinkle_col"
+      }
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#2DBE4B"
+       ],
+       [
+        0.3,
+        "#FFD21A"
+       ],
+       [
+        0.45,
+        "#FF5FB8"
+       ],
+       [
+        0.6,
+        "#E0141E"
+       ],
+       [
+        0.75,
+        "#F5F5F5"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.35
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Paint",
+      "output": "Color",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Sprinkles: an Attribute node reading 'sprinkle_col' into a constant colour ramp of five colours",
+   "video_time": "623:02"
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "Donuts",
+    "splines": [
+     {
+      "points": [
+       [
+        -0.294,
+        0.0,
+        0.45
+       ],
+       [
+        -0.407,
+        0.612,
+        0.45
+       ],
+       [
+        -0.931,
+        0.981,
+        0.45
+       ],
+       [
+        -1.55,
+        0.923,
+        0.45
+       ],
+       [
+        -2.059,
+        0.587,
+        0.45
+       ],
+       [
+        -2.244,
+        0.0,
+        0.45
+       ],
+       [
+        -2.074,
+        -0.598,
+        0.45
+       ],
+       [
+        -1.57,
+        -0.984,
+        0.45
+       ],
+       [
+        -0.956,
+        -0.905,
+        0.45
+       ],
+       [
+        -0.487,
+        -0.555,
+        0.45
+       ]
+      ]
+     },
+     {
+      "points": [
+       [
+        2.281,
+        0.35,
+        0.455
+       ],
+       [
+        2.103,
+        0.969,
+        0.55
+       ],
+       [
+        1.608,
+        1.25,
+        0.813
+       ],
+       [
+        1.091,
+        1.254,
+        1.088
+       ],
+       [
+        0.607,
+        0.961,
+        1.345
+       ],
+       [
+        0.442,
+        0.35,
+        1.433
+       ],
+       [
+        0.621,
+        -0.25,
+        1.338
+       ],
+       [
+        1.083,
+        -0.579,
+        1.092
+       ],
+       [
+        1.626,
+        -0.613,
+        0.803
+       ],
+       [
+        2.073,
+        -0.245,
+        0.565
+       ]
+      ]
+     },
+     {
+      "points": [
+       [
+        0.584,
+        -1.9,
+        0.26
+       ],
+       [
+        0.455,
+        -1.545,
+        0.26
+       ],
+       [
+        0.1,
+        -1.408,
+        0.26
+       ],
+       [
+        -0.258,
+        -1.542,
+        0.26
+       ],
+       [
+        -0.408,
+        -1.9,
+        0.26
+       ],
+       [
+        -0.235,
+        -2.235,
+        0.26
+       ],
+       [
+        0.1,
+        -2.371,
+        0.26
+       ],
+       [
+        0.468,
+        -2.268,
+        0.26
+       ]
+      ],
+      "radius": [
+       0.55,
+       0.55,
+       0.55,
+       0.55,
+       0.55,
+       0.55,
+       0.55,
+       0.55
+      ]
+     }
+    ]
+   },
+   "note": "Bezier curves drawn with the Draw tool (the tutor keeps two, one leaning on the other); beyond the tutorial a third, smaller one whose curve radius makes its tube thinner",
+   "video_time": "630:28"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Donuts",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Cyclic",
+      "type": "GeometryNodeSetSplineCyclic",
+      "inputs": {
+       "Cyclic": true
+      }
+     },
+     {
+      "name": "Tube",
+      "type": "GeometryNodeCurvePrimitiveCircle",
+      "inputs": {
+       "Resolution": 16,
+       "Radius": 0.45
+      }
+     },
+     {
+      "name": "ToMesh",
+      "type": "GeometryNodeCurveToMesh"
+     },
+     {
+      "name": "Normal",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "IsTop",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      },
+      "inputs": {
+       "B": [
+        0.1,
+        0.1,
+        1.0
+       ],
+       "Epsilon": 0.78
+      }
+     },
+     {
+      "name": "Frosting",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.08,
+       "Individual": false
+      }
+     },
+     {
+      "name": "Smooth",
+      "type": "GeometryNodeSubdivisionSurface",
+      "inputs": {
+       "Level": 2
+      }
+     },
+     {
+      "name": "DoughMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Dough"
+      }
+     },
+     {
+      "name": "Normal2",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "IsTop2",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      },
+      "inputs": {
+       "B": [
+        0.1,
+        0.1,
+        1.0
+       ],
+       "Epsilon": 0.78
+      }
+     },
+     {
+      "name": "ChocMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Chocolate"
+      }
+     },
+     {
+      "name": "Spots",
+      "type": "GeometryNodeDistributePointsOnFaces",
+      "inputs": {
+       "Density": 260.0
+      }
+     },
+     {
+      "name": "Sprinkle",
+      "type": "GeometryNodeObjectInfo",
+      "inputs": {
+       "Object": "Sprinkle"
+      }
+     },
+     {
+      "name": "Tumble",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Max": [
+        6.28,
+        6.28,
+        6.28
+       ]
+      }
+     },
+     {
+      "name": "Scatter",
+      "type": "GeometryNodeInstanceOnPoints",
+      "inputs": {
+       "Scale": [
+        0.13,
+        0.13,
+        0.13
+       ]
+      }
+     },
+     {
+      "name": "Hue",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "FLOAT_VECTOR"
+      },
+      "inputs": {
+       "Seed": 5
+      }
+     },
+     {
+      "name": "Store",
+      "type": "GeometryNodeStoreNamedAttribute",
+      "props": {
+       "data_type": "FLOAT_COLOR",
+       "domain": "INSTANCE"
+      },
+      "inputs": {
+       "Name": "sprinkle_col"
+      }
+     },
+     {
+      "name": "Realize",
+      "type": "GeometryNodeRealizeInstances"
+     },
+     {
+      "name": "SprinkleMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Sprinkles"
+      }
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Cyclic",
+      "input": "Geometry"
+     },
+     {
+      "from": "Cyclic",
+      "output": "Geometry",
+      "to": "ToMesh",
+      "input": "Curve"
+     },
+     {
+      "from": "Tube",
+      "output": "Curve",
+      "to": "ToMesh",
+      "input": "Profile Curve"
+     },
+     {
+      "from": "Normal",
+      "output": "Normal",
+      "to": "IsTop",
+      "input": "A"
+     },
+     {
+      "from": "ToMesh",
+      "output": "Mesh",
+      "to": "Frosting",
+      "input": "Mesh"
+     },
+     {
+      "from": "IsTop",
+      "output": "Result",
+      "to": "Frosting",
+      "input": "Selection"
+     },
+     {
+      "from": "Frosting",
+      "output": "Mesh",
+      "to": "Smooth",
+      "input": "Mesh"
+     },
+     {
+      "from": "Smooth",
+      "output": "Mesh",
+      "to": "DoughMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Normal2",
+      "output": "Normal",
+      "to": "IsTop2",
+      "input": "A"
+     },
+     {
+      "from": "DoughMat",
+      "output": "Geometry",
+      "to": "ChocMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "IsTop2",
+      "output": "Result",
+      "to": "ChocMat",
+      "input": "Selection"
+     },
+     {
+      "from": "ChocMat",
+      "output": "Geometry",
+      "to": "Spots",
+      "input": "Mesh"
+     },
+     {
+      "from": "IsTop2",
+      "output": "Result",
+      "to": "Spots",
+      "input": "Selection"
+     },
+     {
+      "from": "Spots",
+      "output": "Points",
+      "to": "Scatter",
+      "input": "Points"
+     },
+     {
+      "from": "Sprinkle",
+      "output": "Geometry",
+      "to": "Scatter",
+      "input": "Instance"
+     },
+     {
+      "from": "Tumble",
+      "output": "Value",
+      "to": "Scatter",
+      "input": "Rotation"
+     },
+     {
+      "from": "Scatter",
+      "output": "Instances",
+      "to": "Store",
+      "input": "Geometry"
+     },
+     {
+      "from": "Hue",
+      "output": "Value",
+      "to": "Store",
+      "input": "Value"
+     },
+     {
+      "from": "Store",
+      "output": "Geometry",
+      "to": "Realize",
+      "input": "Geometry"
+     },
+     {
+      "from": "Realize",
+      "output": "Geometry",
+      "to": "SprinkleMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "ChocMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "SprinkleMat",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "Geometry Nodes on the curve: Set Spline Cyclic (a drawn curve closes itself), Curve to Mesh with a Curve Circle profile -- the ring; the top faces (Compare: Normal equal to (0.1, 0.1, 1) within an epsilon) extruded 0.08 as the frosting, Subdivision Surface; Set Material Dough then Chocolate on the top; Distribute Points on Faces on the top only, Instance on Points of the sprinkle (Object Info) with a random rotation, a random colour stored per instance (Store Named Attribute 'sprinkle_col', instance domain), Realize Instances, Set Material Sprinkles; Join",
+   "video_time": "625:44"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SPOT",
+    "name": "PinkSpot",
+    "location": [
+     4.0,
+     -3.0,
+     4.5
+    ],
+    "look_at": [
+     0,
+     0,
+     0.4
+    ],
+    "power": 350,
+    "color": "#FFB0D8",
+    "spot_size": 55
+   },
+   "note": "a pink spot light besides the sun",
+   "video_time": "631:50"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     0.8,
+     -6.4,
+     3.6
+    ],
+    "look_at": [
+     0.05,
+     -0.2,
+     0.45
+    ],
+    "lens": 38
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

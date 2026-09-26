@@ -1,0 +1,556 @@
+{
+ "title": "Geometry nodes 3: a fence along curves",
+ "summary": "A fence piece modelled from cubes (a post and two rails) with a wood material (a stretched noise on its UVs through a brown ramp, bump, rough), then Geometry Nodes on a Bezier curve: Resample Curve by length, Delete Geometry with a random boolean selection (probability 0.15) for missing pieces, Instance on Points with the piece from Object Info, aligned to the curve by Align Euler to Vector on the Curve Tangent. Drawing more curves draws more fence: a winding run, a short run and (beyond the tutorial) a closed square pen.",
+ "objects": [
+  {
+   "name": "FenceLine",
+   "description": "the fences"
+  }
+ ],
+ "expected_result": "Wooden post-and-rail fences on a green field: a long winding one, a short curved one and a square pen, each with a few pieces missing.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "City",
+     "CityGround"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "FenceField",
+    "size": 40,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "FenceField",
+    "name": "Field",
+    "base_color": "#5E7A3A",
+    "roughness": 0.9
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "FencePart",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.55
+    ]
+   },
+   "note": "one piece of fence: a cube scaled thin in X and Y and raised -- the post ...",
+   "video_time": "480:36"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "FencePart",
+    "dimensions": [
+     0.12,
+     0.12,
+     1.1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "FencePart",
+    "location": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RailTop",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.82
+    ]
+   },
+   "note": "... a copy turned 90 on Y and thinned into a rail, and another moved down",
+   "video_time": "481:12"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "RailTop",
+    "dimensions": [
+     1.0,
+     0.05,
+     0.12
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "RailTop",
+    "location": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "RailLow",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0.42
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "RailLow",
+    "dimensions": [
+     1.0,
+     0.05,
+     0.12
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "RailLow",
+    "location": true,
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "join_objects",
+   "args": {
+    "names": [
+     "FencePart",
+     "RailTop",
+     "RailLow"
+    ],
+    "into": "FencePart"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "FencePart",
+    "location": [
+     0,
+     9,
+     0
+    ]
+   },
+   "note": "the piece moved aside (the fence instances it)",
+   "video_time": null
+  },
+  {
+   "action": "uv_unwrap",
+   "args": {
+    "object": "FencePart",
+    "method": "SMART_PROJECT"
+   },
+   "note": "for the wood: Smart UV Project",
+   "video_time": "489:42"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "FencePart",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Wood",
+    "object": "FencePart",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Stretch",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        1.0,
+        0.15,
+        1.0
+       ]
+      }
+     },
+     {
+      "name": "Grain",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 50.0,
+       "Detail": 10.0
+      }
+     },
+     {
+      "name": "Browns",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.35,
+        "#4A2A12"
+       ],
+       [
+        0.65,
+        "#8A5A2E"
+       ]
+      ]
+     },
+     {
+      "name": "Bump",
+      "type": "ShaderNodeBump",
+      "inputs": {
+       "Strength": 0.5
+      }
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.9
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "UV",
+      "to": "Stretch",
+      "input": "Vector"
+     },
+     {
+      "from": "Stretch",
+      "output": "Vector",
+      "to": "Grain",
+      "input": "Vector"
+     },
+     {
+      "from": "Grain",
+      "output": "Fac",
+      "to": "Browns",
+      "input": "Fac"
+     },
+     {
+      "from": "Browns",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Grain",
+      "output": "Fac",
+      "to": "Bump",
+      "input": "Height"
+     },
+     {
+      "from": "Bump",
+      "output": "Normal",
+      "to": "Surface",
+      "input": "Normal"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "Wood: a noise texture (scale 50, detail up) on the UVs stretched by a mapping (Y 0.15), through a brown-to-lighter-brown ramp, a bump 0.5 from the noise, roughness 0.9",
+   "video_time": "491:55"
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "FenceLine",
+    "splines": [
+     {
+      "points": [
+       [
+        -7,
+        -2,
+        0
+       ],
+       [
+        -4,
+        -3.5,
+        0
+       ],
+       [
+        -1,
+        -2.5,
+        0
+       ],
+       [
+        2,
+        -3.8,
+        0
+       ],
+       [
+        5,
+        -2.6,
+        0
+       ],
+       [
+        7.5,
+        -3.4,
+        0
+       ]
+      ]
+     },
+     {
+      "points": [
+       [
+        -7,
+        1.5,
+        0
+       ],
+       [
+        -5,
+        3.5,
+        0
+       ],
+       [
+        -3,
+        5.5,
+        0
+       ]
+      ]
+     },
+     {
+      "points": [
+       [
+        1.5,
+        1.0,
+        0
+       ],
+       [
+        5.5,
+        1.0,
+        0
+       ],
+       [
+        5.5,
+        4.5,
+        0
+       ],
+       [
+        1.5,
+        4.5,
+        0
+       ]
+      ],
+      "type": "POLY",
+      "cyclic": true
+     }
+    ]
+   },
+   "note": "the fence's path: Bezier curves drawn from the top view (the Draw tool) -- a winding fence, a second run, and (beyond the tutorial) a closed pen",
+   "video_time": "484:06"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "FenceLine",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Resample",
+      "type": "GeometryNodeResampleCurve",
+      "inputs": {
+       "Mode": "Length",
+       "Length": 1.0
+      }
+     },
+     {
+      "name": "Broken",
+      "type": "FunctionNodeRandomValue",
+      "props": {
+       "data_type": "BOOLEAN"
+      },
+      "inputs": {
+       "Probability": 0.15,
+       "Seed": 7
+      }
+     },
+     {
+      "name": "Delete",
+      "type": "GeometryNodeDeleteGeometry"
+     },
+     {
+      "name": "Piece",
+      "type": "GeometryNodeObjectInfo",
+      "inputs": {
+       "Object": "FencePart"
+      }
+     },
+     {
+      "name": "Tangent",
+      "type": "GeometryNodeInputTangent"
+     },
+     {
+      "name": "Align",
+      "type": "FunctionNodeAlignEulerToVector",
+      "props": {
+       "axis": "X"
+      }
+     },
+     {
+      "name": "OnPoints",
+      "type": "GeometryNodeInstanceOnPoints"
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Resample",
+      "input": "Curve"
+     },
+     {
+      "from": "Resample",
+      "output": "Curve",
+      "to": "Delete",
+      "input": "Geometry"
+     },
+     {
+      "from": "Broken",
+      "output": "Value",
+      "to": "Delete",
+      "input": "Selection"
+     },
+     {
+      "from": "Delete",
+      "output": "Geometry",
+      "to": "OnPoints",
+      "input": "Points"
+     },
+     {
+      "from": "Piece",
+      "output": "Geometry",
+      "to": "OnPoints",
+      "input": "Instance"
+     },
+     {
+      "from": "Tangent",
+      "output": "Tangent",
+      "to": "Align",
+      "input": "Vector"
+     },
+     {
+      "from": "Align",
+      "output": "Rotation",
+      "to": "OnPoints",
+      "input": "Rotation"
+     },
+     {
+      "from": "OnPoints",
+      "output": "Instances",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "Geometry Nodes on the curve: Resample Curve (mode Length: a point every metre, however long the curve) -> Delete Geometry with a Random Value (boolean, probability 0.15) as the selection: some pieces missing -> Instance on Points with the piece from an Object Info node, turned along the curve by Align Euler to Vector (X axis to the Curve Tangent)",
+   "video_time": "486:56"
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "FencePart"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     1.5,
+     -13.5,
+     7.0
+    ],
+    "look_at": [
+     0.2,
+     0.8,
+     0.2
+    ],
+    "lens": 28
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

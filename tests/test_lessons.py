@@ -1350,3 +1350,36 @@ def test_capture_attribute_items_carry_face_normals_to_points(tmp_path):
         with pytest.raises(Exception, match="items"):
             ex("edit_nodes", tree="geometry", object="Box", nodes=[{"name": "Pts", "items": [
                 {"type": "VECTOR", "name": "X"}]}])
+
+
+def test_string_node_text_sets_the_words_string_to_curves_draws(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(cmd, **args):
+            return bridge.execute(cmd, args, timeout=600)["result"]
+
+        def width(name):
+            return next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == name)["dimensions"][0]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="plane", name="Sign")
+
+        def write(text):
+            ex("edit_nodes", tree="geometry", object="Sign", group="SignText", clear=True, nodes=[
+                {"name": "Group Input", "type": "NodeGroupInput"}, {"name": "Group Output", "type": "NodeGroupOutput"},
+                {"name": "Words", "type": "FunctionNodeInputString", "text": {"string": text}},
+                {"name": "Curves", "type": "GeometryNodeStringToCurves", "inputs": {"Size": 1.0}},
+                {"name": "Fill", "type": "GeometryNodeFillCurve"},
+                {"name": "Real", "type": "GeometryNodeRealizeInstances"}],
+                links=[{"from": "Words", "to": "Curves", "input": "String"},
+                       {"from": "Curves", "output": "Curve Instances", "to": "Fill", "input": "Curve"},
+                       {"from": "Fill", "to": "Real", "input": "Geometry"},
+                       {"from": "Real", "to": "Group Output", "input": "Geometry"}])
+            return width("Sign")
+
+        short, long = write("HI"), write("HELLO WORLD")
+        assert 0 < short < long                  # the typed text is what String to Curves draws
+        with pytest.raises(Exception, match="500"):
+            write("A" * 501)

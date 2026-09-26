@@ -1,0 +1,544 @@
+{
+ "title": "Geometry nodes 2: a city of buildings",
+ "summary": "Extrude Mesh (faces, individual or not, offset), Instance on Points (a cube on every vertex of a Grid), a Group Input socket exposed in the modifier (Height), Combine XYZ, a Math divide to lift each building onto the ground, Random Value into the instances' Z scale for random heights, Index + Compare to pick faces, and Set Material with a window material: a Chebychev voronoi through a constant ramp mixing glass and black frames, the glass coloured per building by a noise on Object Info > Location. Beyond the tutorial: set-back rooftops (top faces picked by normal, extruded, scaled, extruded again).",
+ "objects": [
+  {
+   "name": "City",
+   "description": "the geometry-nodes city"
+  }
+ ],
+ "expected_result": "A 7 x 7 block of glass towers of random heights, each a different colour with black window frames and a smaller block on its roof, on dark asphalt.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Snowman"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "CityGround",
+    "size": 40,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "CityGround",
+    "name": "Asphalt",
+    "base_color": "#1E2126",
+    "roughness": 0.85
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Windows",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Stretch",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        1.0,
+        1.5,
+        1.0
+       ]
+      }
+     },
+     {
+      "name": "Cells",
+      "type": "ShaderNodeTexVoronoi",
+      "props": {
+       "distance": "CHEBYCHEV"
+      },
+      "inputs": {
+       "Scale": 12.0,
+       "Randomness": 0.0
+      }
+     },
+     {
+      "name": "Frames",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.36,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Info",
+      "type": "ShaderNodeObjectInfo"
+     },
+     {
+      "name": "PerBuilding",
+      "type": "ShaderNodeTexNoise",
+      "props": {
+       "normalize": false
+      },
+      "inputs": {
+       "Scale": 0.9,
+       "Detail": 2.0
+      }
+     },
+     {
+      "name": "Palette",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#C0392B"
+       ],
+       [
+        0.3,
+        "#2E86DE"
+       ],
+       [
+        0.55,
+        "#27AE60"
+       ],
+       [
+        0.8,
+        "#F1C40F"
+       ],
+       [
+        1.0,
+        "#ECF0F1"
+       ]
+      ]
+     },
+     {
+      "name": "Glass",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.0
+      }
+     },
+     {
+      "name": "Frame",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#0D0D0D",
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Stretch",
+      "input": "Vector"
+     },
+     {
+      "from": "Stretch",
+      "output": "Vector",
+      "to": "Cells",
+      "input": "Vector"
+     },
+     {
+      "from": "Cells",
+      "output": "Distance",
+      "to": "Frames",
+      "input": "Fac"
+     },
+     {
+      "from": "Frames",
+      "output": "Color",
+      "to": "Mix",
+      "input": "Fac"
+     },
+     {
+      "from": "Info",
+      "output": "Location",
+      "to": "PerBuilding",
+      "input": "Vector"
+     },
+     {
+      "from": "PerBuilding",
+      "output": "Fac",
+      "to": "Palette",
+      "input": "Fac"
+     },
+     {
+      "from": "Palette",
+      "output": "Color",
+      "to": "Glass",
+      "input": "Base Color"
+     },
+     {
+      "from": "Glass",
+      "output": "BSDF",
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "Frame",
+      "output": "BSDF",
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": "Shader",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the windows: a voronoi texture (Chebychev, randomness 0, scale 12) on Object coordinates stretched 1.5 in Y by a mapping, through a Constant colour ramp as the factor of a Mix Shader between two Principled BSDFs -- shiny windows and black frames; the windows' colour from a noise texture (Normalize off, i.e. Musgrave) on Object Info > Location through a colour ramp, so each building gets its own",
+   "video_time": "473:54"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "City",
+    "size": 1,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "the object for the Geometry Nodes",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "City",
+    "clear": true,
+    "interface": [
+     {
+      "name": "Height",
+      "in_out": "INPUT",
+      "type": "NodeSocketFloat",
+      "default": 1.3,
+      "min": 0.0,
+      "max": 10.0
+     }
+    ],
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Grid",
+      "type": "GeometryNodeMeshGrid",
+      "inputs": {
+       "Size X": 3.0,
+       "Size Y": 3.0,
+       "Vertices X": 7,
+       "Vertices Y": 7
+      }
+     },
+     {
+      "name": "SizeXYZ",
+      "type": "ShaderNodeCombineXYZ",
+      "inputs": {
+       "X": 0.32,
+       "Y": 0.32
+      }
+     },
+     {
+      "name": "Building",
+      "type": "GeometryNodeMeshCube"
+     },
+     {
+      "name": "Half",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "DIVIDE"
+      },
+      "inputs": {
+       "1": 2.0
+      }
+     },
+     {
+      "name": "LiftXYZ",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "Lift",
+      "type": "GeometryNodeTransform"
+     },
+     {
+      "name": "SetMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Windows"
+      }
+     },
+     {
+      "name": "Random",
+      "type": "FunctionNodeRandomValue",
+      "inputs": {
+       "Min": 0.2,
+       "Max": 1.0,
+       "Seed": 3
+      }
+     },
+     {
+      "name": "ScaleXYZ",
+      "type": "ShaderNodeCombineXYZ",
+      "inputs": {
+       "X": 1.0,
+       "Y": 1.0
+      }
+     },
+     {
+      "name": "OnPoints",
+      "type": "GeometryNodeInstanceOnPoints"
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Height",
+      "to": "SizeXYZ",
+      "input": "Z"
+     },
+     {
+      "from": "SizeXYZ",
+      "output": "Vector",
+      "to": "Building",
+      "input": "Size"
+     },
+     {
+      "from": "Group Input",
+      "output": "Height",
+      "to": "Half",
+      "input": 0
+     },
+     {
+      "from": "Half",
+      "output": "Value",
+      "to": "LiftXYZ",
+      "input": "Z"
+     },
+     {
+      "from": "LiftXYZ",
+      "output": "Vector",
+      "to": "Lift",
+      "input": "Translation"
+     },
+     {
+      "from": "Building",
+      "output": "Mesh",
+      "to": "Lift",
+      "input": "Geometry"
+     },
+     {
+      "from": "Lift",
+      "output": "Geometry",
+      "to": "SetMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "SetMat",
+      "output": "Geometry",
+      "to": "OnPoints",
+      "input": "Instance"
+     },
+     {
+      "from": "Grid",
+      "output": "Mesh",
+      "to": "OnPoints",
+      "input": "Points"
+     },
+     {
+      "from": "Random",
+      "output": "Value",
+      "to": "ScaleXYZ",
+      "input": "Z"
+     },
+     {
+      "from": "ScaleXYZ",
+      "output": "Vector",
+      "to": "OnPoints",
+      "input": "Scale"
+     },
+     {
+      "from": "OnPoints",
+      "output": "Instances",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "a Grid (7 x 7 vertices, 3 m) and Instance on Points with a Cube as the instance: a building on every point; the cube's size from a Combine XYZ whose Z is a new Group Input socket, Height (float, set in the modifier panel); a Math node divides the height by 2 into a Transform's Z translation so buildings grow up from the ground (the tutor finds ~1.89 by eye); a Random Value (0.2..1, seed 3) into the Z of the instances' scale: every building a different height; Set Material (Windows) on the cube",
+   "video_time": "462:01"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "City",
+    "nodes": [
+     {
+      "name": "Normal",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "SplitN",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "IsTop",
+      "type": "FunctionNodeCompare",
+      "props": {
+       "data_type": "FLOAT",
+       "operation": "GREATER_THAN"
+      },
+      "inputs": {
+       "B": 0.5
+      }
+     },
+     {
+      "name": "Rim",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.0,
+       "Individual": false
+      }
+     },
+     {
+      "name": "Setback",
+      "type": "GeometryNodeScaleElements",
+      "inputs": {
+       "Scale": 0.7
+      }
+     },
+     {
+      "name": "Penthouse",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.14,
+       "Individual": false
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Normal",
+      "output": "Normal",
+      "to": "SplitN",
+      "input": "Vector"
+     },
+     {
+      "from": "SplitN",
+      "output": "Z",
+      "to": "IsTop",
+      "input": "A"
+     },
+     {
+      "from": "Lift",
+      "output": "Geometry",
+      "to": "Rim",
+      "input": "Mesh"
+     },
+     {
+      "from": "IsTop",
+      "output": "Result",
+      "to": "Rim",
+      "input": "Selection"
+     },
+     {
+      "from": "Rim",
+      "output": "Mesh",
+      "to": "Setback",
+      "input": "Geometry"
+     },
+     {
+      "from": "Rim",
+      "output": "Top",
+      "to": "Setback",
+      "input": "Selection"
+     },
+     {
+      "from": "Setback",
+      "output": "Geometry",
+      "to": "Penthouse",
+      "input": "Mesh"
+     },
+     {
+      "from": "Rim",
+      "output": "Top",
+      "to": "Penthouse",
+      "input": "Selection"
+     },
+     {
+      "from": "Penthouse",
+      "output": "Mesh",
+      "to": "SetMat",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "beyond the tutorial: rooftops -- the top face picked (Normal > Separate XYZ > Compare Z > 0.5, the way the tutor picks faces by Index + Compare), extruded in place, its new top scaled to 0.7 (Scale Elements) and extruded up again: a set-back block on every roof",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     4.6,
+     -5.4,
+     3.6
+    ],
+    "look_at": [
+     0,
+     0,
+     0.45
+    ],
+    "lens": 35
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

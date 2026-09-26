@@ -1,0 +1,1448 @@
+{
+ "title": "Geometry nodes 7: a house",
+ "summary": "A house generator in geometry nodes, on a cube whose top face is extruded into a roof: walls found by comparing face normals (not up, not down, Boolean Math AND) take the house material; a window modelled in nodes (a subdivided cube, its front and back faces inset with Extrude Mesh + Scale Elements and pushed in) is instanced on every wall face (Capture Attribute of the normal, Mesh to Points on faces, Align Euler to Vector) and cut into the walls with Mesh Boolean; roof tiles (a half circle extruded and solidified) are instanced on a grid above the house raycast down onto the roof. Beyond the tutorial: the same node group on a long house and a two-storey one, tiles running down each slope, a stone plinth from the Bounding Box.",
+ "objects": [
+  {
+   "name": "House",
+   "description": ""
+  },
+  {
+   "name": "HouseLong",
+   "description": ""
+  },
+  {
+   "name": "HouseTall",
+   "description": ""
+  }
+ ],
+ "expected_result": "Three cream houses on a lawn -- a square one, a long one and a tall two-storey one -- with blue window frames on every wall, dark glass, orange tiled hip roofs and stone plinths.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Landscape",
+     "FenceLine",
+     "Rocks",
+     "GrassA",
+     "GrassB",
+     "GrassC"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Lawn",
+    "size": 80,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "Lawn",
+    "name": "LawnGreen",
+    "base_color": "#4F7A2E",
+    "roughness": 0.9
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "HouseWalls",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#E8D29A",
+       "Roughness": 0.7,
+       "Metallic": 0.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the materials: house, roof tiles, window frame, window glass (dark and glossy here: the tutor uses a glass BSDF with a transparent wall behind it for Eevee)",
+   "video_time": "598:51"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "RoofTiles",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#8E2F16",
+       "Roughness": 0.6,
+       "Metallic": 0.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "WindowFrame",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#2E5AAC",
+       "Roughness": 0.4,
+       "Metallic": 0.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "WindowGlass",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#0F1A26",
+       "Roughness": 0.05,
+       "Metallic": 0.4
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Stone",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Base Color": "#8A857C",
+       "Roughness": 0.9,
+       "Metallic": 0.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "RoofTile",
+    "radius": 0.5,
+    "vertices": 16,
+    "location": [
+     0,
+     20,
+     0
+    ]
+   },
+   "note": "a roof tile: a circle with its lower half deleted ...",
+   "video_time": "567:24"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "RoofTile",
+    "element": "VERT",
+    "max": [
+     null,
+     0.45,
+     null
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "RoofTile",
+    "what": "VERTS"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "RoofTile"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "RoofTile",
+    "factor": [
+     1,
+     0.5,
+     1
+    ],
+    "pivot": "origin"
+   },
+   "note": "... squashed in Y ...",
+   "video_time": null
+  },
+  {
+   "action": "rotate_selection",
+   "args": {
+    "object": "RoofTile",
+    "axis": "x",
+    "angle_deg": 90,
+    "pivot": "origin"
+   },
+   "note": "... turned 90 on X about the 3D cursor ...",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "RoofTile",
+    "offset": [
+     0,
+     1.3,
+     0
+    ]
+   },
+   "note": "... extruded into a tile ...",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "RoofTile"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "RoofTile",
+    "offset": [
+     0,
+     -0.65,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "RoofTile",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "RoofTile",
+    "type": "SOLIDIFY",
+    "props": {
+     "thickness": 0.12
+    }
+   },
+   "note": "... and a Solidify modifier for thickness",
+   "video_time": "568:09"
+  },
+  {
+   "action": "set_material",
+   "args": {
+    "object": "RoofTile",
+    "name": "RoofTiles",
+    "assign": "replace"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "RoofTile"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "House",
+    "size": 1,
+    "location": [
+     -5.8,
+     0,
+     0
+    ]
+   },
+   "note": "the house: a cube ...",
+   "video_time": "564:36"
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "House",
+    "dimensions": [
+     2,
+     2,
+     2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "House",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "House"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "House",
+    "offset": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "House",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "... its top face extruded up and scaled down into a roof",
+   "video_time": "566:02"
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "House",
+    "offset": [
+     0,
+     0,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "House",
+    "factor": [
+     0.4,
+     0.4,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "House",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "House",
+    "group": "HouseGen",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "NormalW",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "NotUp",
+      "type": "FunctionNodeCompare",
+      "inputs": {
+       "B": [
+        0,
+        0,
+        1
+       ],
+       "Epsilon": 0.95
+      },
+      "props": {
+       "data_type": "VECTOR",
+       "mode": "ELEMENT",
+       "operation": "NOT_EQUAL"
+      }
+     },
+     {
+      "name": "NotDown",
+      "type": "FunctionNodeCompare",
+      "inputs": {
+       "B": [
+        0,
+        0,
+        -1
+       ],
+       "Epsilon": 0.95
+      },
+      "props": {
+       "data_type": "VECTOR",
+       "mode": "ELEMENT",
+       "operation": "NOT_EQUAL"
+      }
+     },
+     {
+      "name": "IsWall",
+      "type": "FunctionNodeBooleanMath",
+      "props": {
+       "operation": "AND"
+      }
+     },
+     {
+      "name": "RoofMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "RoofTiles"
+      }
+     },
+     {
+      "name": "WallMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "HouseWalls"
+      }
+     },
+     {
+      "name": "WinCube",
+      "type": "GeometryNodeMeshCube",
+      "inputs": {
+       "Size": [
+        0.8,
+        0.26,
+        0.9
+       ]
+      }
+     },
+     {
+      "name": "WinSub",
+      "type": "GeometryNodeSubdivideMesh",
+      "inputs": {
+       "Level": 1
+      }
+     },
+     {
+      "name": "WinN",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "Front",
+      "type": "FunctionNodeCompare",
+      "inputs": {
+       "B": [
+        0,
+        1,
+        0
+       ]
+      },
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      }
+     },
+     {
+      "name": "Back",
+      "type": "FunctionNodeCompare",
+      "inputs": {
+       "B": [
+        0,
+        -1,
+        0
+       ]
+      },
+      "props": {
+       "data_type": "VECTOR",
+       "operation": "EQUAL"
+      }
+     },
+     {
+      "name": "Faces",
+      "type": "FunctionNodeBooleanMath",
+      "props": {
+       "operation": "OR"
+      }
+     },
+     {
+      "name": "Inset",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": 0.0,
+       "Individual": true
+      }
+     },
+     {
+      "name": "Shrink",
+      "type": "GeometryNodeScaleElements",
+      "inputs": {
+       "Scale": 0.78
+      }
+     },
+     {
+      "name": "Recess",
+      "type": "GeometryNodeExtrudeMesh",
+      "inputs": {
+       "Offset Scale": -0.08,
+       "Individual": true
+      }
+     },
+     {
+      "name": "FrameMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "WindowFrame"
+      }
+     },
+     {
+      "name": "GlassMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "WindowGlass"
+      }
+     },
+     {
+      "name": "CapN",
+      "type": "GeometryNodeCaptureAttribute",
+      "props": {
+       "domain": "FACE"
+      },
+      "items": [
+       {
+        "type": "VECTOR",
+        "name": "Normal"
+       }
+      ]
+     },
+     {
+      "name": "NormalC",
+      "type": "GeometryNodeInputNormal"
+     },
+     {
+      "name": "FacePoints",
+      "type": "GeometryNodeMeshToPoints",
+      "props": {
+       "mode": "FACES"
+      }
+     },
+     {
+      "name": "FaceOut",
+      "type": "FunctionNodeAlignEulerToVector",
+      "props": {
+       "axis": "Y",
+       "pivot_axis": "Z"
+      }
+     },
+     {
+      "name": "Windows",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "Openings",
+      "type": "GeometryNodeMeshBoolean",
+      "props": {
+       "operation": "DIFFERENCE"
+      }
+     },
+     {
+      "name": "Grid",
+      "type": "GeometryNodeMeshGrid",
+      "inputs": {
+       "Size X": 8.0,
+       "Size Y": 8.0,
+       "Vertices X": 125,
+       "Vertices Y": 125
+      }
+     },
+     {
+      "name": "Lift",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Translation": [
+        0,
+        0,
+        8.0
+       ]
+      }
+     },
+     {
+      "name": "Rays",
+      "type": "GeometryNodeRaycast",
+      "inputs": {
+       "Ray Length": 20.0
+      }
+     },
+     {
+      "name": "OnRoof",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "HitFlat",
+      "type": "FunctionNodeCompare",
+      "inputs": {
+       "B": [
+        0,
+        0,
+        1
+       ],
+       "Epsilon": 0.15
+      },
+      "props": {
+       "data_type": "VECTOR",
+       "mode": "ELEMENT",
+       "operation": "NOT_EQUAL"
+      }
+     },
+     {
+      "name": "TileHere",
+      "type": "FunctionNodeBooleanMath",
+      "props": {
+       "operation": "AND"
+      }
+     },
+     {
+      "name": "Tile",
+      "type": "GeometryNodeObjectInfo",
+      "inputs": {
+       "Object": "RoofTile"
+      }
+     },
+     {
+      "name": "TileSize",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Scale": [
+        0.12,
+        0.12,
+        0.12
+       ]
+      }
+     },
+     {
+      "name": "SplitN",
+      "type": "ShaderNodeSeparateXYZ"
+     },
+     {
+      "name": "Downhill",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "LieFlat",
+      "type": "FunctionNodeAlignEulerToVector",
+      "props": {
+       "axis": "Z",
+       "pivot_axis": "AUTO"
+      }
+     },
+     {
+      "name": "RunDown",
+      "type": "FunctionNodeAlignEulerToVector",
+      "props": {
+       "axis": "Y",
+       "pivot_axis": "Z"
+      }
+     },
+     {
+      "name": "Tiles",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "Box",
+      "type": "GeometryNodeBoundBox"
+     },
+     {
+      "name": "Plinth",
+      "type": "GeometryNodeTransform",
+      "inputs": {
+       "Scale": [
+        1.12,
+        1.12,
+        0.03
+       ]
+      }
+     },
+     {
+      "name": "StoneMat",
+      "type": "GeometryNodeSetMaterial",
+      "inputs": {
+       "Material": "Stone"
+      }
+     },
+     {
+      "name": "All",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "NormalW",
+      "output": "Normal",
+      "to": "NotUp",
+      "input": "A"
+     },
+     {
+      "from": "NormalW",
+      "output": "Normal",
+      "to": "NotDown",
+      "input": "A"
+     },
+     {
+      "from": "NotUp",
+      "output": "Result",
+      "to": "IsWall",
+      "input": 0
+     },
+     {
+      "from": "NotDown",
+      "output": "Result",
+      "to": "IsWall",
+      "input": 1
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "RoofMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "RoofMat",
+      "output": "Geometry",
+      "to": "WallMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "IsWall",
+      "output": "Boolean",
+      "to": "WallMat",
+      "input": "Selection"
+     },
+     {
+      "from": "WinCube",
+      "output": "Mesh",
+      "to": "WinSub",
+      "input": "Mesh"
+     },
+     {
+      "from": "WinN",
+      "output": "Normal",
+      "to": "Front",
+      "input": "A"
+     },
+     {
+      "from": "WinN",
+      "output": "Normal",
+      "to": "Back",
+      "input": "A"
+     },
+     {
+      "from": "Front",
+      "output": "Result",
+      "to": "Faces",
+      "input": 0
+     },
+     {
+      "from": "Back",
+      "output": "Result",
+      "to": "Faces",
+      "input": 1
+     },
+     {
+      "from": "WinSub",
+      "output": "Mesh",
+      "to": "Inset",
+      "input": "Mesh"
+     },
+     {
+      "from": "Faces",
+      "output": "Boolean",
+      "to": "Inset",
+      "input": "Selection"
+     },
+     {
+      "from": "Inset",
+      "output": "Mesh",
+      "to": "Shrink",
+      "input": "Geometry"
+     },
+     {
+      "from": "Inset",
+      "output": "Top",
+      "to": "Shrink",
+      "input": "Selection"
+     },
+     {
+      "from": "Shrink",
+      "output": "Geometry",
+      "to": "Recess",
+      "input": "Mesh"
+     },
+     {
+      "from": "Inset",
+      "output": "Top",
+      "to": "Recess",
+      "input": "Selection"
+     },
+     {
+      "from": "Recess",
+      "output": "Mesh",
+      "to": "FrameMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "FrameMat",
+      "output": "Geometry",
+      "to": "GlassMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Recess",
+      "output": "Top",
+      "to": "GlassMat",
+      "input": "Selection"
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "CapN",
+      "input": "Geometry"
+     },
+     {
+      "from": "NormalC",
+      "output": "Normal",
+      "to": "CapN",
+      "input": "Normal"
+     },
+     {
+      "from": "CapN",
+      "output": "Geometry",
+      "to": "FacePoints",
+      "input": "Mesh"
+     },
+     {
+      "from": "IsWall",
+      "output": "Boolean",
+      "to": "FacePoints",
+      "input": "Selection"
+     },
+     {
+      "from": "CapN",
+      "output": "Normal",
+      "to": "FaceOut",
+      "input": "Vector"
+     },
+     {
+      "from": "FacePoints",
+      "output": "Points",
+      "to": "Windows",
+      "input": "Points"
+     },
+     {
+      "from": "GlassMat",
+      "output": "Geometry",
+      "to": "Windows",
+      "input": "Instance"
+     },
+     {
+      "from": "FaceOut",
+      "output": "Rotation",
+      "to": "Windows",
+      "input": "Rotation"
+     },
+     {
+      "from": "WallMat",
+      "output": "Geometry",
+      "to": "Openings",
+      "input": "Mesh 1"
+     },
+     {
+      "from": "Windows",
+      "output": "Instances",
+      "to": "Openings",
+      "input": "Mesh 2"
+     },
+     {
+      "from": "Grid",
+      "output": "Mesh",
+      "to": "Lift",
+      "input": "Geometry"
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Rays",
+      "input": "Target Geometry"
+     },
+     {
+      "from": "Lift",
+      "output": "Geometry",
+      "to": "OnRoof",
+      "input": "Geometry"
+     },
+     {
+      "from": "Rays",
+      "output": "Hit Position",
+      "to": "OnRoof",
+      "input": "Position"
+     },
+     {
+      "from": "Rays",
+      "output": "Hit Normal",
+      "to": "HitFlat",
+      "input": "A"
+     },
+     {
+      "from": "Rays",
+      "output": "Is Hit",
+      "to": "TileHere",
+      "input": 0
+     },
+     {
+      "from": "HitFlat",
+      "output": "Result",
+      "to": "TileHere",
+      "input": 1
+     },
+     {
+      "from": "Tile",
+      "output": "Geometry",
+      "to": "TileSize",
+      "input": "Geometry"
+     },
+     {
+      "from": "Rays",
+      "output": "Hit Normal",
+      "to": "SplitN",
+      "input": "Vector"
+     },
+     {
+      "from": "SplitN",
+      "output": "X",
+      "to": "Downhill",
+      "input": "X"
+     },
+     {
+      "from": "SplitN",
+      "output": "Y",
+      "to": "Downhill",
+      "input": "Y"
+     },
+     {
+      "from": "Rays",
+      "output": "Hit Normal",
+      "to": "LieFlat",
+      "input": "Vector"
+     },
+     {
+      "from": "LieFlat",
+      "output": "Rotation",
+      "to": "RunDown",
+      "input": "Rotation"
+     },
+     {
+      "from": "Downhill",
+      "output": "Vector",
+      "to": "RunDown",
+      "input": "Vector"
+     },
+     {
+      "from": "OnRoof",
+      "output": "Geometry",
+      "to": "Tiles",
+      "input": "Points"
+     },
+     {
+      "from": "TileHere",
+      "output": "Boolean",
+      "to": "Tiles",
+      "input": "Selection"
+     },
+     {
+      "from": "TileSize",
+      "output": "Geometry",
+      "to": "Tiles",
+      "input": "Instance"
+     },
+     {
+      "from": "RunDown",
+      "output": "Rotation",
+      "to": "Tiles",
+      "input": "Rotation"
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "Box",
+      "input": "Geometry"
+     },
+     {
+      "from": "Box",
+      "output": "Bounding Box",
+      "to": "Plinth",
+      "input": "Geometry"
+     },
+     {
+      "from": "Plinth",
+      "output": "Geometry",
+      "to": "StoneMat",
+      "input": "Geometry"
+     },
+     {
+      "from": "Openings",
+      "output": "Mesh",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "Windows",
+      "output": "Instances",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "Tiles",
+      "output": "Instances",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "StoneMat",
+      "output": "Geometry",
+      "to": "All",
+      "input": "Geometry"
+     },
+     {
+      "from": "All",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "the house's Geometry Nodes: walls picked by their normals (Compare vectors, not up and not down, epsilon wide enough to drop the sloping roof faces, Boolean Math AND) get the house material, the rest the roof's; a window built from a cube (Subdivide Mesh, its front and back faces picked by Normal == +Y OR -Y, Extrude Mesh at 0 and Scale Elements on the Top: an inset, then extruded -0.08 into the frame, frame and glass materials) is instanced on every wall face (Capture Attribute of the face Normal, Mesh to Points in Faces mode, Align Euler to Vector) and subtracted from the walls with Mesh Boolean; the roof tiles are instanced on a Grid raised above the house and Raycast down onto it (Set Position to the Hit Position, only where Is Hit and the face isn't flat), laid on the roof by the Hit Normal. Beyond the tutorial: the tiles also turn to run down each slope, and a stone plinth comes from the house's Bounding Box",
+   "video_time": "606:44"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "HouseLong",
+    "size": 1,
+    "location": [
+     0.0,
+     0,
+     0
+    ]
+   },
+   "note": "beyond the tutorial: other house shapes get the same node group -- a long one (a loop cut splits its long walls) and a two-storey one (a loop cut halfway up)",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "HouseLong",
+    "dimensions": [
+     4.4,
+     2.2,
+     2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "HouseLong",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "HouseLong"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "HouseLong",
+    "offset": [
+     0,
+     0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "HouseLong",
+    "axis": "x",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "HouseLong",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "HouseLong",
+    "offset": [
+     0,
+     0,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "HouseLong",
+    "factor": [
+     0.75,
+     0.4,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "HouseLong",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "HouseLong",
+    "group": "HouseGen"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cube",
+    "name": "HouseTall",
+    "size": 1,
+    "location": [
+     5.8,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "HouseTall",
+    "dimensions": [
+     2.2,
+     2.2,
+     3.8
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "HouseTall",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "HouseTall"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "HouseTall",
+    "offset": [
+     0,
+     0,
+     1.9
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "HouseTall",
+    "axis": "z",
+    "positions": [
+     0.5
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "HouseTall",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.99
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "extrude",
+   "args": {
+    "object": "HouseTall",
+    "offset": [
+     0,
+     0,
+     0.95
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "HouseTall",
+    "factor": [
+     0.4,
+     0.4,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "HouseTall",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "HouseTall",
+    "group": "HouseGen"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     5.0,
+     -15.5,
+     6.2
+    ],
+    "look_at": [
+     0.0,
+     0,
+     1.8
+    ],
+    "lens": 32
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}

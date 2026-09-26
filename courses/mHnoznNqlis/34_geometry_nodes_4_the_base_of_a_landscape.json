@@ -1,0 +1,492 @@
+{
+ "title": "Geometry nodes 4: the base of a landscape",
+ "summary": "A 40 m plane subdivided 40 times turned into rolling hills with Set Position: the Position plus a Noise Texture's factor (scale 0.09) times a height Value (Math Multiply) on Z through Combine XYZ and Vector Math Add, and half the height subtracted (Math Divide, Vector Math Subtract) so the land stays at zero; Set Shade Smooth; Distribute Points on Faces (Poisson disk, minimum distance) with Instance on Points of small cubes as placeholders, joined with the land. Beyond the tutorial: last chapter's fence dropped onto the hills with a Raycast.",
+ "objects": [
+  {
+   "name": "Landscape",
+   "description": "the hills"
+  },
+  {
+   "name": "FenceLine",
+   "description": "the fence on them"
+  }
+ ],
+ "expected_result": "Rolling green hills dotted with small grey cubes, a wooden fence following the slopes.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "FenceField"
+    ],
+    "hide": true,
+    "render": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "Landscape",
+    "size": 40,
+    "location": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "a plane scaled up (S 10, later x2: 40 m) and subdivided with 40 cuts",
+   "video_time": "492:48"
+  },
+  {
+   "action": "subdivide",
+   "args": {
+    "object": "Landscape",
+    "cuts": 40
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Landscape",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Meadow",
+    "object": "Landscape",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Coords",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Patches",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 0.35,
+       "Detail": 6.0
+      }
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.3,
+        "#3E5E22"
+       ],
+       [
+        0.55,
+        "#6F8F34"
+       ],
+       [
+        0.75,
+        "#7A6440"
+       ]
+      ]
+     },
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.95
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Coords",
+      "output": "Object",
+      "to": "Patches",
+      "input": "Vector"
+     },
+     {
+      "from": "Patches",
+      "output": "Fac",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a meadow material: two greens and an earthy brown by a noise",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "Landscape",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Group Input",
+      "type": "NodeGroupInput"
+     },
+     {
+      "name": "Group Output",
+      "type": "NodeGroupOutput"
+     },
+     {
+      "name": "Position",
+      "type": "GeometryNodeInputPosition"
+     },
+     {
+      "name": "Hills",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 0.09,
+       "Detail": 3.0
+      }
+     },
+     {
+      "name": "Height",
+      "type": "ShaderNodeValue",
+      "outputs": {
+       "Value": 9.0
+      }
+     },
+     {
+      "name": "Multiply",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      }
+     },
+     {
+      "name": "Up",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "Add",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "ADD"
+      }
+     },
+     {
+      "name": "Half",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "DIVIDE"
+      },
+      "inputs": {
+       "1": 2.0
+      }
+     },
+     {
+      "name": "Down",
+      "type": "ShaderNodeCombineXYZ"
+     },
+     {
+      "name": "Subtract",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "SUBTRACT"
+      }
+     },
+     {
+      "name": "SetPos",
+      "type": "GeometryNodeSetPosition"
+     },
+     {
+      "name": "Smooth",
+      "type": "GeometryNodeSetShadeSmooth"
+     },
+     {
+      "name": "Scatter",
+      "type": "GeometryNodeDistributePointsOnFaces",
+      "props": {
+       "distribute_method": "POISSON"
+      },
+      "inputs": {
+       "Distance Min": 1.2,
+       "Density Max": 1.0,
+       "Seed": 4
+      }
+     },
+     {
+      "name": "Marker",
+      "type": "GeometryNodeMeshCube",
+      "inputs": {
+       "Size": [
+        0.25,
+        0.25,
+        0.25
+       ]
+      }
+     },
+     {
+      "name": "OnPoints",
+      "type": "GeometryNodeInstanceOnPoints"
+     },
+     {
+      "name": "Join",
+      "type": "GeometryNodeJoinGeometry"
+     }
+    ],
+    "links": [
+     {
+      "from": "Hills",
+      "output": "Fac",
+      "to": "Multiply",
+      "input": 0
+     },
+     {
+      "from": "Height",
+      "output": "Value",
+      "to": "Multiply",
+      "input": 1
+     },
+     {
+      "from": "Multiply",
+      "output": "Value",
+      "to": "Up",
+      "input": "Z"
+     },
+     {
+      "from": "Position",
+      "output": "Position",
+      "to": "Add",
+      "input": 0
+     },
+     {
+      "from": "Up",
+      "output": "Vector",
+      "to": "Add",
+      "input": 1
+     },
+     {
+      "from": "Height",
+      "output": "Value",
+      "to": "Half",
+      "input": 0
+     },
+     {
+      "from": "Half",
+      "output": "Value",
+      "to": "Down",
+      "input": "Z"
+     },
+     {
+      "from": "Add",
+      "output": "Vector",
+      "to": "Subtract",
+      "input": 0
+     },
+     {
+      "from": "Down",
+      "output": "Vector",
+      "to": "Subtract",
+      "input": 1
+     },
+     {
+      "from": "Group Input",
+      "output": "Geometry",
+      "to": "SetPos",
+      "input": "Geometry"
+     },
+     {
+      "from": "Subtract",
+      "output": "Vector",
+      "to": "SetPos",
+      "input": "Position"
+     },
+     {
+      "from": "SetPos",
+      "output": "Geometry",
+      "to": "Smooth",
+      "input": "Geometry"
+     },
+     {
+      "from": "Smooth",
+      "output": "Geometry",
+      "to": "Scatter",
+      "input": "Mesh"
+     },
+     {
+      "from": "Scatter",
+      "output": "Points",
+      "to": "OnPoints",
+      "input": "Points"
+     },
+     {
+      "from": "Marker",
+      "output": "Mesh",
+      "to": "OnPoints",
+      "input": "Instance"
+     },
+     {
+      "from": "Smooth",
+      "output": "Geometry",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "OnPoints",
+      "output": "Instances",
+      "to": "Join",
+      "input": "Geometry"
+     },
+     {
+      "from": "Join",
+      "output": "Geometry",
+      "to": "Group Output",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "Set Position on the plane's vertices: Position + (0, 0, noise x height) with a Vector Math Add through a Combine XYZ -- a Noise Texture (scale 0.09) lifts hills; a Math Multiply by a Value node (9) sets their height and a Vector Math Subtract of half that keeps the land at zero; Set Shade Smooth. Then Distribute Points on Faces (Poisson disk, minimum distance 1.2) with Instance on Points of small cubes, joined back with the land -- where grass and rocks will go",
+   "video_time": "504:31"
+  },
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "FenceLine"
+    ],
+    "hide": false,
+    "render": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "geometry",
+    "object": "FenceLine",
+    "nodes": [
+     {
+      "name": "Land",
+      "type": "GeometryNodeObjectInfo",
+      "props": {
+       "transform_space": "RELATIVE"
+      },
+      "inputs": {
+       "Object": "Landscape"
+      }
+     },
+     {
+      "name": "Here",
+      "type": "GeometryNodeInputPosition"
+     },
+     {
+      "name": "Above",
+      "type": "ShaderNodeVectorMath",
+      "props": {
+       "operation": "ADD"
+      },
+      "inputs": {
+       "1": [
+        0.0,
+        0.0,
+        50.0
+       ]
+      }
+     },
+     {
+      "name": "Drop",
+      "type": "GeometryNodeRaycast",
+      "inputs": {
+       "Ray Direction": [
+        0.0,
+        0.0,
+        -1.0
+       ],
+       "Ray Length": 100.0
+      }
+     },
+     {
+      "name": "OnGround",
+      "type": "GeometryNodeSetPosition"
+     }
+    ],
+    "links": [
+     {
+      "from": "Here",
+      "output": "Position",
+      "to": "Above",
+      "input": 0
+     },
+     {
+      "from": "Above",
+      "output": "Vector",
+      "to": "Drop",
+      "input": "Source Position"
+     },
+     {
+      "from": "Land",
+      "output": "Geometry",
+      "to": "Drop",
+      "input": "Target Geometry"
+     },
+     {
+      "from": "Resample",
+      "output": "Curve",
+      "to": "OnGround",
+      "input": "Geometry"
+     },
+     {
+      "from": "Drop",
+      "output": "Hit Position",
+      "to": "OnGround",
+      "input": "Position"
+     },
+     {
+      "from": "OnGround",
+      "output": "Geometry",
+      "to": "Delete",
+      "input": "Geometry"
+     }
+    ]
+   },
+   "note": "beyond the tutorial: the fence from the last chapter stands on the hills -- each resampled point is dropped onto the landscape with a Raycast (from 50 m above, straight down) and Set Position to the Hit Position",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     2.0,
+     -25.0,
+     11.0
+    ],
+    "look_at": [
+     0,
+     -1.0,
+     -0.5
+    ],
+    "lens": 32
+   },
+   "note": "",
+   "video_time": null
+  }
+ ]
+}
