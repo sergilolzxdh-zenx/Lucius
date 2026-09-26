@@ -1,0 +1,221 @@
+{
+ "title": "Smoke",
+ "summary": "Stylized smoke: a metaball rendered by an icosphere's particle system (little normal speed, speed up on Z, no gravity, long random lifetimes so puffs vanish at random), the copies melting into one billowing column; a diffuse -> Shader to RGB -> constant ramp smoke shader.",
+ "objects": [
+  {
+   "name": "Vent",
+   "description": "the emitter"
+  },
+  {
+   "name": "Puff",
+   "description": "the metaball"
+  }
+ ],
+ "expected_result": "A column of grey toon smoke puffs rising and merging, thinning out at the top.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Fire",
+     "Embers",
+     "Mono",
+     "Dona",
+     "Waterfall",
+     "Waterfall2",
+     "Explosion",
+     "Ring",
+     "EnergyLines",
+     "SmokeRing",
+     "Squirt",
+     "Squirt.L",
+     "Squirt.R",
+     "Drop"
+    ]
+   },
+   "note": "the finished effects hidden (H, and from renders) so the scene stays light",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "metaball",
+    "name": "Puff",
+    "radius": 0.34,
+    "location": [
+     38.0,
+     0,
+     -30
+    ]
+   },
+   "note": "a metaball: blobs that merge when they touch",
+   "video_time": "26:55"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "ico_sphere",
+    "name": "Vent",
+    "radius": 0.25,
+    "location": [
+     38.0,
+     0,
+     0.25
+    ]
+   },
+   "note": "an icosphere to emit from",
+   "video_time": "27:00"
+  },
+  {
+   "action": "add_particles",
+   "args": {
+    "object": "Vent",
+    "name": "Smoke",
+    "count": 190,
+    "frame_start": 1,
+    "frame_end": 90,
+    "lifetime": 50,
+    "lifetime_random": 0.6,
+    "normal_velocity": 0.22,
+    "velocity": [
+     0,
+     0,
+     1.2
+    ],
+    "random_velocity": 0.25,
+    "gravity": 0.0,
+    "instance": "Puff",
+    "size": 1.0,
+    "size_random": 0.5
+   },
+   "note": "a particle system rendering the metaball; little normal speed, speed up on Z, gravity's influence removed, a long life with random despawns",
+   "video_time": "27:05"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Puff",
+    "path": "render_resolution",
+    "value": 0.06
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "SmokePuff",
+    "object": "Puff",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Light",
+      "type": "ShaderNodeBsdfDiffuse"
+     },
+     {
+      "name": "LightToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#34343E"
+       ],
+       [
+        0.2,
+        "#5C5C6A"
+       ],
+       [
+        0.45,
+        "#8E8E9C"
+       ],
+       [
+        0.75,
+        "#C9C9D4"
+       ]
+      ]
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Light",
+      "output": "BSDF",
+      "to": "LightToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the shader: diffuse, Shader to RGB, a constant ramp of smoke colours",
+   "video_time": "27:35"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "SmokeSun",
+    "location": [
+     38.0,
+     -4,
+     6
+    ],
+    "rotation_deg": [
+     45,
+     0,
+     -40
+    ],
+    "power": 2.5
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 96
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     38.0,
+     -8.5,
+     1.9
+    ],
+    "look_at": [
+     38.0,
+     0,
+     1.75
+    ],
+    "lens": 36
+   },
+   "note": "the camera on the smoke",
+   "video_time": null
+  }
+ ]
+}

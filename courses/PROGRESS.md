@@ -98,3 +98,26 @@ moving the controls. `lucius teach course courses\Y2SWwZmwrwM` learns it on your
 Talk-only chapters (intro, skinning theory, extra tips, outro) have nothing to build and are skipped.
 Stand-ins: bones are drawn as thin shapes in the pictures (armatures don't render); the valve's driver
 reads the bone's local X rotation like the tutor's.
+
+## 7. Stylized 2D VFX (SharpWind): all 8 effects 9/10, rendered in Eevee
+
+[`ooF_vBB41xw/overview.jpg`](ooF_vBB41xw/overview.jpg), every effect's video in
+[`ooF_vBB41xw/videos`](ooF_vBB41xw/videos) and all of them in [`showreel.mp4`](ooF_vBB41xw/showreel.mp4):
+the flame (displacement and voronoi masks driven by `#frame`), the comic-book halftone shader (a reusable node
+group with the tutor's exposed controls, on Suzanne and a torus, dots following a circling sun), the anime
+waterfall, the toon explosion with its ring, energy lines and smoke ring, the blood squirt, metaball smoke,
+the spark impact and the energy-line ribbons.
+
+New abilities (usable by any course): the node editor (`edit_nodes`: shader, world, node-group and geometry-node
+graphs), keying any setting by its path (`set_property`), shape keys, curves, emitter particles, metaballs,
+Checker Deselect, the Skin modifier, frame drivers. Eevee: renders use it when a recipe picks it; on a Linux
+server without a GPU that needs Mesa's EGL (`apt install libegl1 libegl-mesa0`), otherwise Cycles is used.
+
+One substitution: the blood squirt is a fluid simulation in the video; Blender's fluid solver (Mantaflow) can't
+run inside the `bpy` Python module used here, so the same set-up is made with particles rendered as metaballs.
+`quick_liquid` and `bake_fluid` exist for a full Blender.
+
+## 8. Complete Blender Mastercourse part 1 (in progress)
+
+Chapters 3 (a Rubik's cube), 6 (a table scene), 7 (a computer), 8 (the editing tools, one object each) and 9
+(chair, treasure chest, grenade), 9/10 each so far. Interface/installation chapters have nothing to build.

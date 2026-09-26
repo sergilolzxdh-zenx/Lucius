@@ -18,10 +18,10 @@ from typing import Any
 PROPORTIONAL = (", proportional (O: radius in metres; nearby vertices follow, fading out), falloff "
                 "SMOOTH|SPHERE|ROOT|SHARP|LINEAR|CONSTANT")
 ACTION_DOCS: dict[str, tuple[str, str]] = {
-    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey|empty, "
+    "add_primitive": ("Shift+A > Mesh", "kind: cube|plane|cylinder|cone|uv_sphere|ico_sphere|torus|circle|monkey|empty|metaball, "
                       "name, location [x,y,z], rotation_deg [x,y,z], size (cube/plane edge, default 2), radius, "
                       "depth (cylinder/cone height), radius2 (cone top), vertices (cylinder/cone/circle/sphere "
-                      "segments, default 32), major_radius, minor_radius, major_segments, minor_segments (torus), "
+                      "segments, default 32), rings (UV sphere rings, default half the segments), major_radius, minor_radius, major_segments, minor_segments (torus), "
                       "fill (circle: true adds the face, like F), into (an existing mesh: Shift+A in edit mode, the shape joins that object, selected)"),
     "delete_objects": ("X in object mode", "names [..]"),
     "hide_objects": ("H / Alt+H, and the camera icon", "names [..], hide (false shows them again), render (also "
@@ -43,9 +43,13 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                    "where faces meet at >= this angle, plus open rims), boundary (edges of holes and open rims; on a "
                    "closed mesh it falls back to the sharp edges in the box, like Alt+click on a rim loop), "
                    "extend (add to the selection). Fails if nothing is inside the box."),
-    "extrude": ("E", "object, offset [x,y,z] (move the new region by this vector) OR distance (along the faces' "
-                "normal). Extrudes the selected faces (else edges, else vertices); the new cap stays selected."),
-    "inset": ("I", "object, thickness (metres, must stay below half the face width), depth"),
+    "extrude": ("E (Alt+E > Individual Faces)", "object, offset [x,y,z] (move the new region by this vector) OR "
+                "distance (along the faces' normal); individual (each selected face out along its own normal, "
+                "with distance). Extrudes the selected faces (else edges, else vertices); the new cap stays "
+                "selected."),
+    "inset": ("I (I twice: individual faces)", "object, thickness (metres, must stay below half the face width), "
+              "depth (raises or sinks the inner faces), individual (each selected face gets its own rim: tiles, "
+              "stickers, panels)"),
     "bevel": ("Ctrl+B", "object, offset (metres), segments (1 = chamfer, 3+ = rounded), affect: EDGES|VERTICES "
               "(bevels the selected edges)"),
     "loop_cut_axis": ("Ctrl+R", "object, axis: x|y|z (cuts perpendicular to it), positions [0..1 of the object's "
@@ -62,7 +66,9 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "delete_elements": ("X in edit mode", "object, what: VERTS|EDGES|FACES|ONLY_FACES (ONLY_FACES keeps the rim "
                         "edges, which is what bridging needs)"),
     "bridge_edge_loops": ("Edge > Bridge Edge Loops", "object, cuts (extra loops along the bridge). Joins two "
-                          "selected edge loops / holes (select them with select_box boundary=true)."),
+                          "selected edge loops / holes (select them with select_box boundary=true); with two "
+                          "facing faces selected (a front and a back) it removes them and tunnels through: a clean "
+                          "hole, e.g. the gaps between a chair back's slats."),
     "fill": ("F", "object, grid (grid fill instead of one face). Makes faces from the selected boundary."),
     "subdivide": ("Edge > Subdivide", "object, cuts, smoothness"),
     "merge_by_distance": ("M > By Distance", "object, distance"),
@@ -81,7 +87,8 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
                      "<object>_<kind>, e.g. Fire_voronoi: its settings via set_property target texture), "
                      "SMOOTH {factor, iterations}, "
                      "CAST {factor, cast_type}, DECIMATE {ratio}, WEIGHTED_NORMAL {}, TRIANGULATE {}, SKIN "
-                     "{use_smooth_shade}, WAVE {height, width, speed}"),
+                     "{use_smooth_shade}, WAVE {height, width, speed}, COLLISION {} (particles bounce off it; its "
+                     "settings via set_property path collision.damping_factor, collision.friction_factor)"),
     "apply_modifier": ("Ctrl+A over the modifier", "object, modifier (its name)"),
     "remove_modifier": ("X on the modifier", "object, modifier (its name)"),
     "shade": ("right click > Shade Smooth / Flat (Auto Smooth)", "object, smooth (true|false), auto_smooth_deg "
@@ -148,10 +155,37 @@ ACTION_DOCS: dict[str, tuple[str, str]] = {
     "key_constraint": ("hover the constraint's influence (an IK/FK switch), I", "object, bone, constraint (its name), "
                        "influence 0..1, frame, interpolation (CONSTANT by default: the switch happens on that frame)"),
     "set_interpolation": ("graph editor: select keys (A), T / V, or an ease add-on", "object, bones [..] and channels "
-                          "[location|rotation|scale|influence] and axes (optional: only those curves), start/end "
+                          "[location|rotation|scale|influence|shape|other] and axes (the object's keys, its data's, shape keys' and materials') (optional: only those curves), start/end "
                           "frames (optional), interpolation CONSTANT (blocking: poses pop) | BEZIER | LINEAR, handle "
                           "AUTO_CLAMPED | VECTOR (no slowing down: take-off, landing, free fall), ease_in / ease_out "
                           "(0..100 % of the gap to the neighbouring key, flat handles: a gentle arrival / departure)"),
+    "add_particles": ("Particle properties > + (Emitter)", "object (the emitter mesh), name, count, frame_start, "
+                      "frame_end, lifetime, lifetime_random 0..1, emit_from FACE|VERT|VOLUME, normal_velocity, "
+                      "velocity [x,y,z] (object-aligned, e.g. [0,0,2] rises), random_velocity, gravity 0..1 (Field "
+                      "weights), size, size_random, instance (render each particle as that object, e.g. a metaball), "
+                      "show_emitter; other settings via set_property target particles"),
+    "quick_liquid": ("F3 > Quick Liquid", "objects [meshes that emit liquid], domain (name of the new domain box). "
+                     "Then set_property target object on the flows (path modifiers[\"Fluid\"].flow_settings."
+                     "use_initial_velocity true, ...velocity_coord [x,y,z]) and the domain (modifiers[\"Fluid\"]."
+                     "domain_settings.use_mesh true, .particle_radius, .use_flip_particles false); scale the domain "
+                     "so the liquid fits (it can't leave it)"),
+    "bake_fluid": ("Domain > Cache: type All, Bake All", "domain, resolution (voxel divisions: 64 to try, 100-150 "
+                   "final), frame_start, frame_end: the simulation is computed once and replayed"),
+    "knife_cut": ("K (knife), C to cut through", "object, start [x,y,z], end [x,y,z] (the two clicks), view (the "
+                  "direction you look along, e.g. [0,-1,0] from the front), through (cut every face behind too; "
+                  "otherwise only the selected faces), space local|world: the new edges are selected"),
+    "bisect": ("the Bisect tool", "object, point, normal (the cutting plane), clear_inner / clear_outer (delete the "
+               "side behind / in front of the normal), fill (a face over the cut), space"),
+    "spin": ("the Spin tool", "object, axis x|y|z, center (the pivot, where the 3D cursor would be), angle (degrees), "
+             "steps: the selection swept round (a pipe bend, a lathe profile)"),
+    "slide_selection": ("G G (edge / vertex slide)", "object, toward [x,y,z] (which way), factor 0..1 of the "
+                        "neighbouring edges: moves the selection along the surface instead of off it"),
+    "shrink_fatten": ("Alt+S (shrink / fatten)", "object, distance: the selection pushed along its normals (negative "
+                      "shrinks)"),
+    "skin_radius": ("Ctrl+A in edit mode (Skin modifier)", "object, radius: the skin's thickness at the selected "
+                    "vertices"),
+    "select_nth": ("Select > Checker Deselect", "object, skip, nth, offset: of the selection keep every nth element "
+                   "walking along the mesh (e.g. every other vertex of a circle, then scale them out: a spiky star)"),
     "edit_nodes": ("the shader / geometry node editor: Shift+A, drag links", "tree material|world|group|geometry, "
                    "material (made if new; copy_from another = the single-user copy), object (gets the material; "
                    "geometry: its Geometry Nodes modifier), group + group_type + interface [{name, in_out, type "

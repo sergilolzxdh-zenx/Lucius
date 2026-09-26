@@ -36,7 +36,7 @@ PRIMITIVES = {
         vertices=p["vertices"], radius1=_radius(p), radius2=p.get("radius2") or 0.0, depth=_depth(p),
         location=p["location"], rotation=p["rotation"]),
     "uv_sphere": lambda p: bpy.ops.mesh.primitive_uv_sphere_add(
-        segments=max(3, p["vertices"]), ring_count=max(3, p["vertices"] // 2), radius=_radius(p),
+        segments=max(3, p["vertices"]), ring_count=max(3, p.get("rings") or p["vertices"] // 2), radius=_radius(p),
         location=p["location"], rotation=p["rotation"]),
     "ico_sphere": lambda p: bpy.ops.mesh.primitive_ico_sphere_add(radius=_radius(p), location=p["location"]),
     "torus": lambda p: bpy.ops.mesh.primitive_torus_add(
@@ -45,6 +45,9 @@ PRIMITIVES = {
         location=p["location"], rotation=p["rotation"]),
     "monkey": lambda p: bpy.ops.mesh.primitive_monkey_add(
         size=p["size"], location=p["location"], rotation=p["rotation"]),
+    # A metaball: a blob that melts into other metaballs near it (smoke puffs, liquids).
+    "metaball": lambda p: bpy.ops.object.metaball_add(type="BALL", radius=_radius(p), location=p["location"],
+                                                      rotation=p["rotation"]),
     # An empty: an object with no geometry, a handle to move, scale or parent things with.
     "empty": lambda p: bpy.ops.object.empty_add(type="PLAIN_AXES", radius=p["size"] / 2, location=p["location"],
                                                 rotation=p["rotation"]),
@@ -67,6 +70,7 @@ MODIFIER_PROPS = {
                  "texture_scale": "float", "texture_coords": ("LOCAL", "GLOBAL", "OBJECT", "UV"),
                  "texture_coords_object": "object", "direction": ("X", "Y", "Z", "NORMAL", "RGB_TO_XYZ")},
     "SKIN": {"use_smooth_shade": "bool", "branch_smoothing": "float"},
+    "COLLISION": {},
     "WAVE": {"height": "float", "width": "float", "speed": "float", "narrowness": "float"},
     "SMOOTH": {"factor": "float", "iterations": "int"},
     "CAST": {"factor": "float", "cast_type": ("SPHERE", "CYLINDER", "CUBOID")},
@@ -475,6 +479,164 @@ def select_elements(p):
             "faces": sum(f.select for f in bm.faces)}
 
 
+def _to_local(obj, co, space):
+    return obj.matrix_world.inverted() @ Vector(co) if space == "world" else Vector(co)
+
+
+def knife_cut(p):
+    """K (knife) for a straight cut: from ``start`` to ``end`` as seen along ``view`` (e.g. [0,-1,0] = from the
+    front); only the selected faces are cut unless ``through`` (C: cut through, every face behind as well). The
+    new edges are selected."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    a, b = _to_local(obj, p["start"], p["space"]), _to_local(obj, p["end"], p["space"])
+    view = obj.matrix_world.inverted().to_3x3() @ Vector(p["view"]) if p["space"] == "world" else Vector(p["view"])
+    normal = (b - a).cross(view)
+    if normal.length < 1e-9:
+        raise BridgeCommandError("invalid_param", "the cut can't run along the view direction", param="view")
+    faces = list(bm.faces) if p["through"] else [f for f in bm.faces if f.select]
+    if not faces:
+        raise BridgeCommandError("empty_selection", "select the faces to cut (or cut through)", param="through")
+    lo, hi = min(a, b, key=lambda v: v.dot(b - a)), max(a, b, key=lambda v: v.dot(b - a))
+    edges = list({e for f in faces for e in f.edges})
+    geom = list({v for e in edges for v in e.verts}) + edges + faces
+    result = bmesh.ops.bisect_plane(bm, geom=geom, plane_co=a, plane_no=normal.normalized())
+    cut = [g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge)]
+    # a knife stroke ends where it ends: keep only the new edges between the two clicks
+    along = (b - a).normalized()
+    inside = [e for e in cut if all(lo.dot(along) - 1e-5 <= v.co.dot(along) <= hi.dot(along) + 1e-5
+                                    for v in e.verts)]
+    _select_only(bm, inside)
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "new_edges": len(inside)}
+
+
+def bisect(p):
+    """Bisect: cut the whole mesh (or the selection) with a plane through ``point`` facing ``normal``; clear the
+    inner side (behind the normal) or the outer side, and fill the cut with a face."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    selected = [f for f in bm.faces if f.select]
+    faces = selected or list(bm.faces)
+    edges = list({e for f in faces for e in f.edges})
+    geom = list({v for e in edges for v in e.verts}) + edges + faces
+    co = _to_local(obj, p["point"], p["space"])
+    no = (obj.matrix_world.inverted().to_3x3() @ Vector(p["normal"])) if p["space"] == "world" else Vector(p["normal"])
+    result = bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no.normalized(),
+                                    clear_inner=p["clear_inner"], clear_outer=p["clear_outer"])
+    cut = [g for g in result["geom_cut"] if isinstance(g, bmesh.types.BMEdge) and g.is_valid]
+    filled = 0
+    if p["fill"] and cut:
+        made = bmesh.ops.contextual_create(bm, geom=cut)
+        filled = len(made.get("faces", []))
+    _select_only(bm, cut)
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "cut_edges": len(cut), "filled_faces": filled}
+
+
+def spin(p):
+    """The spin tool: the selected edges or faces swept round an axis through ``center`` by ``angle`` degrees in
+    ``steps`` segments (a pipe bend, a vase from a profile)."""
+    import math
+
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    verts = [v for v in bm.verts if v.select]
+    if not verts:
+        raise BridgeCommandError("empty_selection", "select the profile to spin")
+    geom = verts + [e for e in bm.edges if e.select] + [f for f in bm.faces if f.select]
+    axis = Vector({"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}[p["axis"]])
+    center = _to_local(obj, p["center"], p["space"])
+    result = bmesh.ops.spin(bm, geom=geom, cent=center, axis=axis, angle=math.radians(p["angle"]),
+                            steps=max(1, p["steps"]), use_duplicate=False)
+    if any(isinstance(g, bmesh.types.BMFace) for g in geom):
+        bmesh.ops.delete(bm, geom=[f for f in geom if isinstance(f, bmesh.types.BMFace) and f.is_valid],
+                         context="FACES_ONLY")
+    _select_only(bm, result["geom_last"])
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "steps": p["steps"], "verts": len(bm.verts)}
+
+
+def slide_selection(p):
+    """G G: slide the selected vertices (an edge, a loop) along the edges leading away from them, towards
+    ``toward`` (a direction), by ``factor`` of those edges' length -- the shape keeps its surface."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    verts = [v for v in bm.verts if v.select]
+    if not verts:
+        raise BridgeCommandError("empty_selection", "select the edge or vertices to slide")
+    if not 0 <= p["factor"] <= 1:
+        raise BridgeCommandError("invalid_param", "factor 0..1", param="factor")
+    toward = obj.matrix_world.inverted().to_3x3() @ Vector(p["toward"])
+    selected = set(verts)
+    moves = []
+    for v in verts:
+        options = [e.other_vert(v) for e in v.link_edges if e.other_vert(v) not in selected]
+        if not options:
+            continue
+        target = max(options, key=lambda o: (o.co - v.co).normalized().dot(toward))
+        if (target.co - v.co).dot(toward) <= 0:
+            continue
+        moves.append((v, v.co.lerp(target.co, p["factor"])))
+    for v, co in moves:
+        v.co = co
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "slid": len(moves)}
+
+
+def shrink_fatten(p):
+    """Alt+S (shrink/fatten): the selected vertices pushed out along their normals (positive) or in."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    verts = [v for v in bm.verts if v.select]
+    if not verts:
+        raise BridgeCommandError("empty_selection", "select faces to shrink or fatten")
+    bm.normal_update()
+    moves = [(v, v.co + v.normal * p["distance"]) for v in verts]
+    for v, co in moves:
+        v.co = co
+    bm.normal_update()
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "moved": len(moves)}
+
+
+def skin_radius(p):
+    """Ctrl+A in edit mode with a Skin modifier: the thickness the skin gives the selected vertices."""
+    obj = _obj(p["object"])
+    if not any(m.type == "SKIN" for m in obj.modifiers):
+        raise BridgeCommandError("invalid_param", f"{obj.name} has no Skin modifier", param="object")
+    if not 0 < p["radius"] <= 100:
+        raise BridgeCommandError("invalid_param", "radius must be positive", param="radius")
+    bm = _edit_bmesh(obj)
+    layer = bm.verts.layers.skin.verify()
+    verts = [v for v in bm.verts if v.select]
+    for v in verts:
+        v[layer].radius = (p["radius"], p["radius"])
+    bmesh.update_edit_mesh(obj.data)
+    return {"object": obj.name, "vertices": len(verts), "radius": p["radius"]}
+
+
+def select_nth(p):
+    """Select > Checker Deselect: of the selected elements, keep every nth (``skip`` deselected, ``nth`` kept,
+    starting at ``offset``), walking along the mesh from the active element -- e.g. every other vertex of a circle."""
+    obj = _obj(p["object"])
+    bm = _edit_bmesh(obj)
+    selected = [v for v in bm.verts if v.select]
+    if not selected:
+        raise BridgeCommandError("invalid_param", "select something first", param="object")
+    if not bm.select_history:
+        bm.select_history.add(selected[0])   # the walk starts at the active element
+    bmesh.update_edit_mesh(obj.data)
+    with bpy.context.temp_override(**_context_override(obj)):
+        _op_result(bpy.ops.mesh.select_nth(skip=p["skip"], nth=p["nth"], offset=p["offset"]), "select_nth")
+    bm = _edit_bmesh(obj)
+    return {"object": obj.name, "selected_verts": sum(1 for v in bm.verts if v.select)}
+
+
 def select_faces_by_normal(p):
     obj = _obj(p["object"])
     bm = _edit_bmesh(obj)
@@ -532,6 +694,17 @@ def extrude(p):
     else:
         raise BridgeCommandError("missing_param", "extrude needs offset or distance", param="offset")
     before = len(bm.verts)
+    if faces and p["individual"]:
+        # Extrude Individual Faces (Alt+E): each face pushed out along its own normal by ``distance``.
+        if p["distance"] is None:
+            raise BridgeCommandError("missing_param", "individual extrusion needs a distance", param="distance")
+        ret = bmesh.ops.extrude_discrete_faces(bm, faces=faces)
+        for face in ret["faces"]:
+            bmesh.ops.translate(bm, vec=face.normal * p["distance"], verts=list(face.verts))
+        _select_only(bm, ret["faces"])   # (the originals are replaced by the extruded ones)
+        bm.normal_update()
+        bmesh.update_edit_mesh(obj.data)
+        return {"object": obj.name, "new_verts": len(bm.verts) - before, "mode": "individual faces"}
     if faces:
         region = set(faces)
         # Blender's rule: the original faces go only when the region is attached to other faces (a cylinder's
@@ -651,8 +824,13 @@ def inset(p):
         raise BridgeCommandError("empty_selection", "no faces selected")
     # Blender's I key insets open borders too and keeps the rim even; bmesh's own defaults do neither
     # (a lone face -- a filled circle, a plane -- would not inset at all).
-    result = bmesh.ops.inset_region(bm, faces=faces, thickness=p["thickness"], depth=p["depth"], use_boundary=True,
-                                    use_even_offset=True)
+    if p["individual"]:
+        # I pressed twice: every face inset on its own (tiles, stickers, panels), each with its own rim.
+        result = bmesh.ops.inset_individual(bm, faces=faces, thickness=p["thickness"], depth=p["depth"],
+                                            use_even_offset=True)
+    else:
+        result = bmesh.ops.inset_region(bm, faces=faces, thickness=p["thickness"], depth=p["depth"],
+                                        use_boundary=True, use_even_offset=True)
     _select_only(bm, [f for f in faces if f.is_valid])   # like I: the inner faces stay selected
     bmesh.update_edit_mesh(obj.data)
     return {"object": obj.name, "new_faces": len(result.get("faces", []))}
@@ -856,10 +1034,17 @@ def bridge_edge_loops(p):
     """Join two selected edge loops (or two holes) with a band of faces."""
     obj = _obj(p["object"])
     bm = _edit_bmesh(obj)
-    edges = [e for e in bm.edges if e.select]
-    if len(edges) < 2:
-        raise BridgeCommandError("empty_selection", "select two edge loops to bridge")
+    faces = [f for f in bm.faces if f.select]
     before = len(bm.faces)
+    if faces:
+        # Two faces selected (a slat's front and back): Blender removes them and bridges their rims -- a clean
+        # hole through the mesh, walls included.
+        edges = list({e for f in faces for e in f.edges if sum(1 for g in e.link_faces if g.select) == 1})
+        bmesh.ops.delete(bm, geom=faces, context="FACES_ONLY")
+    else:
+        edges = [e for e in bm.edges if e.select]
+    if len(edges) < 2:
+        raise BridgeCommandError("empty_selection", "select two edge loops (or two faces) to bridge")
     result = bmesh.ops.bridge_loops(bm, edges=edges)
     if p["cuts"]:
         inner = [e for e in result.get("edges", []) if e not in edges]
@@ -1281,7 +1466,7 @@ ACTIONS = {
         "vertices": ("int", 32), "name": ("name", None), "radius": ("float", None), "radius2": ("float", None),
         "depth": ("float", None), "major_radius": ("float", None), "minor_radius": ("float", None),
         "major_segments": ("int", None), "minor_segments": ("int", None), "fill": ("bool", False),
-        "into": ("name", None)}),
+        "into": ("name", None), "rings": ("int", None)}),
     "duplicate_selection": (duplicate_selection, {"object": OBJ, "offset": V3}),
     "select_linked": (select_linked, {"object": OBJ}),
     "select_objects": (select_objects, {"names": ("names", REQUIRED), "active": OBJ, "deselect_others": ("bool", True)}),
@@ -1304,12 +1489,25 @@ ACTIONS = {
     "select_faces_by_normal": (select_faces_by_normal, {
         "object": OBJ, "direction": ("vec3", REQUIRED), "min_dot": ("float", 0.9), "extend": ("bool", False)}),
     "select_all": (select_all, {"object": OBJ, "action": (("SELECT", "DESELECT"), "SELECT")}),
+    "skin_radius": (skin_radius, {"object": OBJ, "radius": ("float", REQUIRED)}),
+    "knife_cut": (knife_cut, {"object": OBJ, "start": ("vec3", REQUIRED), "end": ("vec3", REQUIRED),
+                              "view": ("vec3", [0.0, -1.0, 0.0]), "through": ("bool", False),
+                              "space": (("local", "world"), "local")}),
+    "bisect": (bisect, {"object": OBJ, "point": ("vec3", [0.0, 0.0, 0.0]), "normal": ("vec3", [0.0, 0.0, 1.0]),
+                        "clear_inner": ("bool", False), "clear_outer": ("bool", False), "fill": ("bool", False),
+                        "space": (("local", "world"), "local")}),
+    "spin": (spin, {"object": OBJ, "axis": (("x", "y", "z"), "z"), "center": ("vec3", [0.0, 0.0, 0.0]),
+                    "angle": ("float", 90.0), "steps": ("int", 8), "space": (("local", "world"), "local")}),
+    "slide_selection": (slide_selection, {"object": OBJ, "toward": ("vec3", REQUIRED), "factor": ("float", 0.5)}),
+    "shrink_fatten": (shrink_fatten, {"object": OBJ, "distance": ("float", REQUIRED)}),
+    "select_nth": (select_nth, {"object": OBJ, "skip": ("int", 1), "nth": ("int", 1), "offset": ("int", 0)}),
     "select_box": (select_box, {
         "object": OBJ, "min": ("bounds3", [None, None, None]), "max": ("bounds3", [None, None, None]),
         "element": (("VERT", "EDGE", "FACE"), "FACE"), "space": (("normalized", "local", "world"), "normalized"),
         "facing": ("vec3", None), "min_dot": ("float", 0.7), "sharp_deg": ("float", None), "boundary": ("bool", False),
         "extend": ("bool", False)}),
-    "extrude": (extrude, {"object": OBJ, "offset": ("vec3", None), "distance": ("float", None)}),
+    "extrude": (extrude, {"object": OBJ, "offset": ("vec3", None), "distance": ("float", None),
+                          "individual": ("bool", False)}),
     "rotate_selection": (rotate_selection, {
         "object": OBJ, "axis": (tuple(AXES), REQUIRED), "angle": ("float", REQUIRED),
         "pivot": (("median", "bbox_center", "origin"), "median"), "proportional": ("float", None), "falloff": (tuple(FALLOFFS), "SMOOTH")}),
@@ -1327,7 +1525,8 @@ ACTIONS = {
     "taper_selection": (taper_selection, {
         "object": OBJ, "along": (tuple(AXES), REQUIRED), "affect": (("x", "y", "z", "xy", "xz", "yz"), "x"),
         "amount": ("float", REQUIRED), "start": ("float", 0.0), "reverse": ("bool", False)}),
-    "inset": (inset, {"object": OBJ, "thickness": ("float", REQUIRED), "depth": ("float", 0.0)}),
+    "inset": (inset, {"object": OBJ, "thickness": ("float", REQUIRED), "depth": ("float", 0.0),
+                      "individual": ("bool", False)}),
     "bevel": (bevel, {"object": OBJ, "offset": ("float", REQUIRED), "segments": ("int", 1),
                       "affect": (("EDGES", "VERTICES"), "EDGES")}),
     "loop_cut_axis": (loop_cut_axis, {"object": OBJ, "axis": (tuple(AXES), REQUIRED), "positions": ("positions", REQUIRED)}),
@@ -1361,9 +1560,9 @@ GUI_ONLY = {"set_view", "orbit_view", "frame_selected", "undo", "redo"}
 
 def registry():
     """Every allowlisted action: these plus materials, lights, camera and rendering (their own module)."""
-    from . import anim, nodes, rig, scene
+    from . import anim, nodes, physics, rig, scene
 
-    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS, **nodes.ACTIONS}
+    return {**ACTIONS, **scene.ACTIONS, **anim.ACTIONS, **rig.ACTIONS, **nodes.ACTIONS, **physics.ACTIONS}
 
 
 def execute_action(name, args):

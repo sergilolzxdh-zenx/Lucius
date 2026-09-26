@@ -1,0 +1,643 @@
+{
+ "title": "Comic Shader",
+ "summary": "A comic-book shader as a reusable node group: a principled BSDF through Shader to RGB (Eevee) multiplied by a dot mask -- a grid voronoi (randomness 0) on window coordinates compared (greater than) with a threshold that comes from the light (a diffuse BSDF through Shader to RGB and a flipped map range), so shadows fill with ever bigger hatching dots; a fresnel edge (thickness remapped to its IOR, multiplied) added to the threshold for a dotted outline; glossy highlights clamped by a constant ramp and added in the highlight colour. Grouped (Ctrl+G) with its controls exposed, used on Suzanne and on a torus with other colours; a circling sun shows the dots follow the light.",
+ "objects": [
+  {
+   "name": "Mono",
+   "description": "Suzanne with the comic shader"
+  },
+  {
+   "name": "Dona",
+   "description": "a torus with the same group"
+  }
+ ],
+ "expected_result": "An orange Suzanne and a blue torus in a flat comic style: halftone dots growing into the shadows, dotted dark outlines, white highlights; the dots move as the sun circles.",
+ "steps": [
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "interface": [
+     {
+      "name": "Color",
+      "type": "NodeSocketColor",
+      "default": "#F4A33A"
+     },
+     {
+      "name": "Dot Resolution",
+      "type": "NodeSocketFloat",
+      "default": 60
+     },
+     {
+      "name": "Outline Thickness",
+      "type": "NodeSocketFloat",
+      "default": 0.5,
+      "min": 0,
+      "max": 1
+     },
+     {
+      "name": "Hatching Color",
+      "type": "NodeSocketColor",
+      "default": "#1B1030"
+     },
+     {
+      "name": "Hatching Opacity",
+      "type": "NodeSocketFloat",
+      "default": 1.0,
+      "min": 0,
+      "max": 1
+     },
+     {
+      "name": "Highlight Color",
+      "type": "NodeSocketColor",
+      "default": "#FFFFFF"
+     },
+     {
+      "name": "Highlight Opacity",
+      "type": "NodeSocketFloat",
+      "default": 1.0,
+      "min": 0,
+      "max": 1
+     },
+     {
+      "name": "Color",
+      "in_out": "OUTPUT",
+      "type": "NodeSocketColor"
+     }
+    ]
+   },
+   "note": "the node group (selected nodes, Ctrl+G), named, with the controls exposed on its input: the colour, dot resolution, outline thickness, hatching and highlight colours and their opacities",
+   "video_time": "9:31"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "nodes": [
+     {
+      "name": "Window",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Dots",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Randomness": 0.0
+      }
+     },
+     {
+      "name": "DotMask",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "GREATER_THAN"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Window",
+      "output": "Window",
+      "to": "Dots",
+      "input": "Vector"
+     },
+     {
+      "from": "Group Input",
+      "output": "Dot Resolution",
+      "to": "Dots",
+      "input": "Scale"
+     },
+     {
+      "from": "Dots",
+      "output": "Distance",
+      "to": "DotMask",
+      "input": 0
+     }
+    ]
+   },
+   "note": "the dots: a voronoi with randomness 0 (a grid) on window coordinates (projected from the view, like a printed comic), greater than a threshold: moving the threshold scales the dots",
+   "video_time": "5:05"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "nodes": [
+     {
+      "name": "LightCatcher",
+      "type": "ShaderNodeBsdfDiffuse"
+     },
+     {
+      "name": "LightToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "Flip",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "From Max": 0.55,
+       "To Min": 0.75,
+       "To Max": 0.02
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "LightCatcher",
+      "output": "BSDF",
+      "to": "LightToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Flip",
+      "input": "Value"
+     }
+    ]
+   },
+   "note": "light drives the threshold: a diffuse BSDF as the light catcher, Shader to RGB (Eevee only), a map range flipped (to 1..0: the dark gets the big dots; to min = the biggest dots, from max = how light-sensitive the grid is)",
+   "video_time": "6:10"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "nodes": [
+     {
+      "name": "Thickness",
+      "type": "ShaderNodeMapRange",
+      "inputs": {
+       "To Min": 1.0,
+       "To Max": 1.45
+      }
+     },
+     {
+      "name": "Edge",
+      "type": "ShaderNodeFresnel"
+     },
+     {
+      "name": "EdgeBoost",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      },
+      "inputs": {
+       "1": 5.0
+      }
+     },
+     {
+      "name": "Threshold",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "ADD"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Outline Thickness",
+      "to": "Thickness",
+      "input": "Value"
+     },
+     {
+      "from": "Thickness",
+      "output": "Result",
+      "to": "Edge",
+      "input": "IOR"
+     },
+     {
+      "from": "Edge",
+      "output": "Fac",
+      "to": "EdgeBoost",
+      "input": 0
+     },
+     {
+      "from": "Flip",
+      "output": "Result",
+      "to": "Threshold",
+      "input": 0
+     },
+     {
+      "from": "EdgeBoost",
+      "output": 0,
+      "to": "Threshold",
+      "input": 1
+     },
+     {
+      "from": "Threshold",
+      "output": 0,
+      "to": "DotMask",
+      "input": 1
+     }
+    ]
+   },
+   "note": "the outline: a fresnel mask (its IOR from a map range of the thickness slider: 1 = no line), multiplied up so the edge beats the dots, added to the threshold (a wavy, dotted edge)",
+   "video_time": "7:35"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "nodes": [
+     {
+      "name": "Surface",
+      "type": "ShaderNodeBsdfPrincipled",
+      "inputs": {
+       "Roughness": 0.5
+      }
+     },
+     {
+      "name": "SurfaceToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "Hatch",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "LIGHTEN"
+      },
+      "inputs": {
+       "Factor": 1.0
+      }
+     },
+     {
+      "name": "Shade",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Group Input",
+      "output": "Color",
+      "to": "Surface",
+      "input": "Base Color"
+     },
+     {
+      "from": "Surface",
+      "output": "BSDF",
+      "to": "SurfaceToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "DotMask",
+      "output": 0,
+      "to": "Hatch",
+      "input": "A"
+     },
+     {
+      "from": "Group Input",
+      "output": "Hatching Color",
+      "to": "Hatch",
+      "input": "B"
+     },
+     {
+      "from": "Group Input",
+      "output": "Hatching Opacity",
+      "to": "Shade",
+      "input": "Factor"
+     },
+     {
+      "from": "SurfaceToRGB",
+      "output": "Color",
+      "to": "Shade",
+      "input": "A"
+     },
+     {
+      "from": "Hatch",
+      "output": "Result",
+      "to": "Shade",
+      "input": "B"
+     }
+    ]
+   },
+   "note": "the colour: a principled BSDF through Shader to RGB, multiplied by the dot mask (the factor is the dots' opacity); a lighten mix gives the dots the hatching colour",
+   "video_time": "6:48"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "tree": "group",
+    "group": "Comic Shader",
+    "nodes": [
+     {
+      "name": "Shine",
+      "type": "ShaderNodeBsdfAnisotropic",
+      "inputs": {
+       "Roughness": 0.25
+      }
+     },
+     {
+      "name": "ShineToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "ShineClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.55,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "ShineOpacity",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "A": "#000000"
+      }
+     },
+     {
+      "name": "Highlights",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "ADD"
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "Shine",
+      "output": "BSDF",
+      "to": "ShineToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "ShineToRGB",
+      "output": "Color",
+      "to": "ShineClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Group Input",
+      "output": "Highlight Opacity",
+      "to": "ShineOpacity",
+      "input": "Factor"
+     },
+     {
+      "from": "ShineClamp",
+      "output": "Color",
+      "to": "ShineOpacity",
+      "input": "B"
+     },
+     {
+      "from": "ShineOpacity",
+      "output": "Result",
+      "to": "Highlights",
+      "input": "Factor"
+     },
+     {
+      "from": "Shade",
+      "output": "Result",
+      "to": "Highlights",
+      "input": "A"
+     },
+     {
+      "from": "Group Input",
+      "output": "Highlight Color",
+      "to": "Highlights",
+      "input": "B"
+     },
+     {
+      "from": "Highlights",
+      "output": "Result",
+      "to": "Group Output",
+      "input": "Color"
+     }
+    ]
+   },
+   "note": "specular highlights: a glossy BSDF as another light catcher, Shader to RGB, a constant colour ramp to clamp it, a mix with black as its opacity, then an add mix with the highlight colour",
+   "video_time": "8:30"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "monkey",
+    "name": "Mono",
+    "size": 1.6,
+    "location": [
+     4.2,
+     0,
+     1.1
+    ],
+    "rotation_deg": [
+     -8,
+     0,
+     0
+    ]
+   },
+   "note": "the test subject: Suzanne",
+   "video_time": "5:05"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Mono",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Mono",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "ComicMono",
+    "object": "Mono",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Comic",
+      "type": "ShaderNodeGroup",
+      "group": "Comic Shader",
+      "inputs": {
+       "Color": "#F4A33A",
+       "Dot Resolution": 70,
+       "Outline Thickness": 0.55
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Comic",
+      "output": "Color",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "its material: the group from the Add menu > Group, the colour into it, out to the surface",
+   "video_time": "10:45"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "Dona",
+    "location": [
+     6.4,
+     0.4,
+     0.75
+    ],
+    "rotation_deg": [
+     70,
+     0,
+     20
+    ]
+   },
+   "note": "reused on another object: a torus with its own colours (set from outside the group)",
+   "video_time": "10:49"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Dona",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "ComicDona",
+    "object": "Dona",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Comic",
+      "type": "ShaderNodeGroup",
+      "group": "Comic Shader",
+      "inputs": {
+       "Color": "#3C8DF0",
+       "Dot Resolution": 45,
+       "Hatching Color": "#0B1A40",
+       "Outline Thickness": 0.7,
+       "Highlight Opacity": 0.8
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Comic",
+      "output": "Color",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "ComicSun",
+    "location": [
+     5,
+     -3,
+     5
+    ],
+    "rotation_deg": [
+     50,
+     0,
+     -60
+    ],
+    "power": 2.0
+   },
+   "note": "a sun, circling so the dots follow the light",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "ComicSun",
+    "frame": 1,
+    "rotation": [
+     0.87,
+     0,
+     -1.05
+    ],
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "ComicSun",
+    "frame": 90,
+    "rotation": [
+     0.87,
+     0,
+     1.05
+    ],
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     5.2,
+     -6.2,
+     1.6
+    ],
+    "look_at": [
+     5.2,
+     0,
+     1.0
+    ],
+    "lens": 48
+   },
+   "note": "the camera on the comic objects",
+   "video_time": null
+  }
+ ]
+}

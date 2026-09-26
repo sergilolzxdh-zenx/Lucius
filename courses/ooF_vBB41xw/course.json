@@ -1,0 +1,147 @@
+{
+ "video_id": "ooF_vBB41xw",
+ "url": "https://www.youtube.com/watch?v=ooF_vBB41xw",
+ "title": "How to Make Stylized 2D VFX in Blender - IT'S EASY!",
+ "duration": 1940,
+ "language": "en-US",
+ "channel": "SharpWind",
+ "chapters": [
+  {
+   "title": "Intro",
+   "start_time": 0,
+   "end_time": 20
+  },
+  {
+   "title": "Fire",
+   "start_time": 20,
+   "end_time": 295
+  },
+  {
+   "title": "Comic Shader",
+   "start_time": 295,
+   "end_time": 665
+  },
+  {
+   "title": "Waterfall",
+   "start_time": 665,
+   "end_time": 919
+  },
+  {
+   "title": "Explosion",
+   "start_time": 919,
+   "end_time": 1226
+  },
+  {
+   "title": "Blood Squirt",
+   "start_time": 1226,
+   "end_time": 1607
+  },
+  {
+   "title": "Smoke",
+   "start_time": 1607,
+   "end_time": 1667
+  },
+  {
+   "title": "Impact",
+   "start_time": 1667,
+   "end_time": 1779
+  },
+  {
+   "title": "Energy Lines",
+   "start_time": 1779,
+   "end_time": 1940
+  }
+ ],
+ "teacher": "claude-code",
+ "about": "What Lucius kept from this tutorial: one recipe per chapter, each continuing from the scene of the one before. Replay with `lucius teach course courses/ooF_vBB41xw` (no API needed).",
+ "lessons": [
+  {
+   "chapter": 2,
+   "title": "Fire",
+   "recipe": "02_fire.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/02.jpg",
+   "frame_at": "04:23",
+   "note": "The tutor's flame step by step: sphere, subdivision applied, the top pulled up with soft selection, a Voronoi Displace on an empty driven by #frame/10, the gradient-ramp emission, the voronoi mask on a second empty (#frame/8) plus the flipped gradient (greater than -> transparent mix), and the embers copy (own material, #frame/6+5, multiply, thin threshold). Voronoi stretched upward so the holes read as tongues. Rendered in Eevee (software EGL here).",
+   "video": "videos/02.mp4"
+  },
+  {
+   "chapter": 3,
+   "title": "Comic Shader",
+   "recipe": "03_comic_shader.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/03.jpg",
+   "frame_at": "06:50",
+   "note": "The tutor's comic shader node for node (Eevee): grid voronoi on window coordinates vs a light threshold from a diffuse light catcher (Shader to RGB, flipped map range tuned for light sensitivity), fresnel outline added to the threshold, principled colour multiplied with the lightened dot mask, glossy highlights clamped and added; grouped with his exposed controls and reused on a second object with other colours. A circling sun shows the dots following the light.",
+   "video": "videos/03.mp4"
+  },
+  {
+   "chapter": 4,
+   "title": "Waterfall",
+   "recipe": "04_waterfall.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/04.jpg",
+   "frame_at": "15:10",
+   "note": "The tutor's waterfall: capless cylinder sheet, loop cuts, subdivision, Musgrave Displace on an empty driven down; emission shader in layers on UVs: two noises through water ramps flowing at their own #frame speeds mixed by a clamped mask, voronoi foam, glossy reflections and diffuse shading via Shader to RGB, driven wave-texture foam lines, a falling alpha mask; a bigger copy behind with its own material and speeds.",
+   "video": "videos/04.mp4"
+  },
+  {
+   "chapter": 5,
+   "title": "Explosion",
+   "recipe": "05_explosion.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/05.jpg",
+   "frame_at": "16:50",
+   "note": "The tutor's explosion: mushroom-shaped sphere growing on a shape key (range to -1) after scaling up, Voronoi distance-squared negative Displace on an empty keyed with an ease out plus #frame/90 rotation and growing scale, toon shader (Shader to RGB ramp, fresnel-masked hot core above 1), eaten from the dark parts by keying an inverted constant ramp's handle (Blended, no transparency overlap), scaled to zero at the end; plus the collapsing white ring, energy-line curves drawn in by animating start/end mapping, and the smoke ring on a shape key with spinning displacement and its own vanishing ramp.",
+   "video": "videos/05.mp4"
+  },
+  {
+   "chapter": 6,
+   "title": "Blood Squirt",
+   "recipe": "06_blood_squirt.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/06.jpg",
+   "frame_at": "25:40",
+   "note": "Same set-up as the tutor (stretched icosphere squirt with initial velocity, a flat collider in front, two side squirts aimed inward, a floor like the domain's bottom) but the liquid is emitter particles rendered as metaballs, because Mantaflow can't run in the bpy module here (bake_fluid exists for a full Blender). His blood shader exactly: fresnel edge ramp mixing dark and bright red, glossy highlights via Shader to RGB, and the second fresnel ramp keyed 0 -> 1 -> 1 -> 0 so it grows in and shrinks away from the edges (Blended, no overlap).",
+   "video": "videos/06.mp4"
+  },
+  {
+   "chapter": 7,
+   "title": "Smoke",
+   "recipe": "07_smoke.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/07.jpg",
+   "frame_at": "27:40",
+   "note": "The tutor's metaball smoke: a metaball rendered by an icosphere's emitter particles (little normal speed, speed up on Z, gravity influence 0, random lifetimes so puffs despawn at random), melting into a column; diffuse -> Shader to RGB -> constant ramp of smoke colours.",
+   "video": "videos/07.mp4"
+  },
+  {
+   "chapter": 8,
+   "title": "Impact",
+   "recipe": "08_impact.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/08.jpg",
+   "frame_at": "29:30",
+   "note": "The tutor's impact: one curve object of tapering spark paths (radius down at the ends), start/end mapping keyed linear, a turned copy one frame late; the spiky circle (Checker Deselect, points scaled out, bottom half deleted, Skin modifier with Ctrl+A radius) scaling up and away; glowing emission.",
+   "video": "videos/08.mp4"
+  },
+  {
+   "chapter": 9,
+   "title": "Energy Lines",
+   "recipe": "09_energy_lines.json",
+   "score": 9.0,
+   "teacher": "claude-code",
+   "frame": "frames/09.jpg",
+   "frame_at": "31:55",
+   "note": "The tutor's energy lines: extruded (flat) Bezier ribbons with a varying point radius, his UV shader (offset quadratic-sphere gradient with contrast, multiplied by a gradient along the curve, mixed with noise, constant alpha ramp and pink-purple colour ramp, emission strength from the mask times a multiplier, over transparent), drawn on and off with the start/end mapping.",
+   "video": "videos/09.mp4"
+  }
+ ]
+}

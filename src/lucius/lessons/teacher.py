@@ -351,7 +351,8 @@ class Teacher:
 
     def export_course(self, video_id: str, dest: str | Path) -> Path:
         """Write the chapters kept for a tutorial as a course pack (see ``install_course``): the recipes, the
-        scores and teachers, each chapter's tutorial frame, the final render and the overview."""
+        scores and teachers, each chapter's tutorial frame (and video, when it is animated), the final render and
+        the overview."""
         from PIL import Image
 
         video = self.video(video_id)
@@ -382,6 +383,9 @@ class Teacher:
                 last_render = project.path(project.data["final_render"])
             if project.data.get("video") and project.path(project.data["video"]).exists():
                 last_video = project.path(project.data["video"])
+                (dest / "videos").mkdir(exist_ok=True)
+                shutil.copyfile(last_video, dest / "videos" / f"{chapter:02d}.mp4")   # this chapter's animation
+                lesson["video"] = f"videos/{chapter:02d}.mp4"
         info = json.loads(Path(video.info_path).read_text())
         course = {"video_id": video.video_id, "url": video.url, "title": video.title,
                   "duration": info.get("duration") or video.duration, "language": video.language,

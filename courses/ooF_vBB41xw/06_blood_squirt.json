@@ -1,0 +1,591 @@
+{
+ "title": "Blood Squirt",
+ "summary": "A blood squirt. The tutor simulates it with Quick Liquid (a stretched icosphere emitter with initial velocity, a flat collider in front, two side emitters shooting inward, a baked domain meshed with a small particle radius); the fluid solver can't run in this headless build, so the same set-up is made with emitter particles (initial velocity, gravity) rendered as metaballs that melt into liquid where they touch, colliding with the flat plate. The tutor's blood shader: a fresnel edge mask mixing a dark inside and a brighter red rim, glossy highlights through Shader to RGB and a constant ramp, and a second fresnel ramp keyed so the blood grows in and shrinks away from the edges (Blended).",
+ "objects": [
+  {
+   "name": "Squirt",
+   "description": "the main emitter"
+  },
+  {
+   "name": "Drop",
+   "description": "the metaball"
+  }
+ ],
+ "expected_result": "A red cartoon liquid squirting sideways, hitting a hidden plate and breaking into blobs and drops that arc down, then shrinking away.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "ico_sphere",
+    "name": "Squirt",
+    "radius": 0.12,
+    "location": [
+     32.2,
+     0,
+     1.2
+    ]
+   },
+   "note": "an icosphere, scaled up on Z then down: the squirt",
+   "video_time": "21:00"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Squirt",
+    "scale": [
+     1,
+     1,
+     1.6
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "metaball",
+    "name": "Drop",
+    "radius": 0.15,
+    "location": [
+     31.0,
+     0,
+     -30
+    ]
+   },
+   "note": "the blob every drop is drawn with: a metaball (copies that touch melt into one liquid surface; it waits out of sight)",
+   "video_time": "26:52"
+  },
+  {
+   "action": "add_particles",
+   "args": {
+    "object": "Squirt",
+    "name": "Spray",
+    "count": 420,
+    "frame_start": 1,
+    "frame_end": 10,
+    "lifetime": 80,
+    "velocity": [
+     -4.0,
+     0,
+     1.8
+    ],
+    "normal_velocity": 0.25,
+    "random_velocity": 0.3,
+    "gravity": 1.0,
+    "instance": "Drop",
+    "size": 1.0,
+    "size_random": 0.6
+   },
+   "note": "the fluid simulator can't run here, so the squirt is emitter particles rendered as metaballs: shot out along -X and up (initial velocity), under gravity",
+   "video_time": "22:05"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "ico_sphere",
+    "name": "Plate",
+    "radius": 0.35,
+    "location": [
+     30.6,
+     0,
+     1.0999999999999999
+    ]
+   },
+   "note": "a flat one in front: the stream hits it and breaks up",
+   "video_time": "21:30"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Plate",
+    "scale": [
+     0.12,
+     1.2,
+     1.2
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Plate",
+    "type": "COLLISION"
+   },
+   "note": "it collides",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Plate",
+    "path": "collision.damping_factor",
+    "value": 0.4
+   },
+   "note": "a soft collision: the liquid splashes off it, it doesn't bounce like a ball",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "plane",
+    "name": "BloodFloor",
+    "size": 8,
+    "location": [
+     31.0,
+     0,
+     0
+    ]
+   },
+   "note": "and a floor, like the bottom of the tutor's domain",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "BloodFloor",
+    "type": "COLLISION"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "BloodFloor",
+    "path": "collision.damping_factor",
+    "value": 0.9
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "BloodFloor",
+    "path": "collision.friction_factor",
+    "value": 0.6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "BloodFloor",
+    "path": "hide_render",
+    "value": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Plate",
+    "path": "hide_render",
+    "value": true
+   },
+   "note": "the plate itself doesn't render (the camera icon)",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Squirt",
+    "new_name": "Squirt.L",
+    "offset": [
+     -0.5,
+     0.55,
+     -0.15
+    ]
+   },
+   "note": "two more on the sides, shooting towards the middle, less intense and a bit up",
+   "video_time": "21:45"
+  },
+  {
+   "action": "add_particles",
+   "args": {
+    "object": "Squirt.L",
+    "name": "Spray",
+    "count": 200,
+    "frame_start": 2,
+    "frame_end": 9,
+    "lifetime": 80,
+    "velocity": [
+     -2.6,
+     -1.4,
+     2.0
+    ],
+    "normal_velocity": 0.2,
+    "random_velocity": 0.2,
+    "gravity": 1.0,
+    "instance": "Drop",
+    "size": 0.85,
+    "size_random": 0.6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Squirt",
+    "new_name": "Squirt.R",
+    "offset": [
+     -0.5,
+     -0.55,
+     -0.15
+    ]
+   },
+   "note": "",
+   "video_time": "21:45"
+  },
+  {
+   "action": "add_particles",
+   "args": {
+    "object": "Squirt.R",
+    "name": "Spray",
+    "count": 200,
+    "frame_start": 2,
+    "frame_end": 9,
+    "lifetime": 80,
+    "velocity": [
+     -2.6,
+     1.4,
+     2.0
+    ],
+    "normal_velocity": 0.2,
+    "random_velocity": 0.2,
+    "gravity": 1.0,
+    "instance": "Drop",
+    "size": 0.85,
+    "size_random": 0.6
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Blood",
+    "object": "Drop",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Edge",
+      "type": "ShaderNodeFresnel",
+      "inputs": {
+       "IOR": 1.35
+      }
+     },
+     {
+      "name": "EdgeMask",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.14,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Bloody",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "A": "#5A0308",
+       "B": "#C0101A"
+      }
+     },
+     {
+      "name": "Shine",
+      "type": "ShaderNodeBsdfAnisotropic",
+      "inputs": {
+       "Roughness": 0.15
+      }
+     },
+     {
+      "name": "ShineToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "ShineClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.5,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Highlights",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "B": "#FF9C9C"
+      }
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission"
+     },
+     {
+      "name": "Shrink",
+      "type": "ShaderNodeFresnel",
+      "inputs": {
+       "IOR": 1.35
+      }
+     },
+     {
+      "name": "ShrinkMask",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.02,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "See",
+      "type": "ShaderNodeBsdfTransparent"
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Edge",
+      "output": "Fac",
+      "to": "EdgeMask",
+      "input": "Fac"
+     },
+     {
+      "from": "EdgeMask",
+      "output": "Color",
+      "to": "Bloody",
+      "input": "Factor"
+     },
+     {
+      "from": "Shine",
+      "output": "BSDF",
+      "to": "ShineToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "ShineToRGB",
+      "output": "Color",
+      "to": "ShineClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Bloody",
+      "output": "Result",
+      "to": "Highlights",
+      "input": "A"
+     },
+     {
+      "from": "ShineClamp",
+      "output": "Color",
+      "to": "Highlights",
+      "input": "Factor"
+     },
+     {
+      "from": "Highlights",
+      "output": "Result",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "Shrink",
+      "output": "Fac",
+      "to": "ShrinkMask",
+      "input": "Fac"
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "See",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "ShrinkMask",
+      "output": "Color",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the blood shader: a fresnel through a constant colour ramp as the edge mask, mixing a darker inside with a brighter red edge; a glossy BSDF through Shader to RGB and a constant ramp adds highlights",
+   "video_time": "24:58"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Blood",
+    "path": "nodes[\"ShrinkMask\"].color_ramp.elements[1].position",
+    "value": 0.0,
+    "frame": 1
+   },
+   "note": "fading in and out from the edges: the white handle keyed all the way down, up, then down again as the splat ends",
+   "video_time": "26:11"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Blood",
+    "path": "nodes[\"ShrinkMask\"].color_ramp.elements[1].position",
+    "value": 1.0,
+    "frame": 5
+   },
+   "note": "",
+   "video_time": "26:11"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Blood",
+    "path": "nodes[\"ShrinkMask\"].color_ramp.elements[1].position",
+    "value": 1.0,
+    "frame": 40
+   },
+   "note": "",
+   "video_time": "26:11"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Blood",
+    "path": "nodes[\"ShrinkMask\"].color_ramp.elements[1].position",
+    "value": 0.0,
+    "frame": 58
+   },
+   "note": "",
+   "video_time": "26:11"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Blood",
+    "path": "surface_render_method",
+    "value": "BLENDED"
+   },
+   "note": "render method Blended, no transparency overlap",
+   "video_time": "25:50"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Blood",
+    "path": "use_transparency_overlap",
+    "value": false
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Drop",
+    "path": "render_resolution",
+    "value": 0.05
+   },
+   "note": "a finer metaball surface",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "BloodSun",
+    "location": [
+     31.0,
+     -4,
+     5
+    ],
+    "rotation_deg": [
+     45,
+     0,
+     -25
+    ],
+    "power": 2.5
+   },
+   "note": "a sun for the highlights",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     30.5,
+     -7.0,
+     1.5
+    ],
+    "look_at": [
+     30.6,
+     0,
+     0.8
+    ],
+    "lens": 55
+   },
+   "note": "the camera on the squirt",
+   "video_time": null
+  }
+ ]
+}

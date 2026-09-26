@@ -862,3 +862,62 @@ def test_node_editor_properties_shape_keys_curves_and_geometry_nodes(tmp_path):
         shot = ex("render_image", path=str(tmp_path / "fire.png"), camera="scene", width=64, height=48, samples=2,
                   lights="scene")
         assert Path(shot["path"]).exists()
+
+
+def test_checker_deselect_particles_and_metaballs(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=600)["result"]
+
+        ex("reset_scene", keep_camera_light=True)
+        ex("add_primitive", kind="circle", name="Star", vertices=16, radius=1)
+        ex("select_all", object="Star")
+        assert ex("select_nth", object="Star", skip=1, nth=1)["selected_verts"] == 8   # every other vertex
+        ex("scale_selection", object="Star", factor=[1.5, 1.5, 1.5], pivot="origin")
+        ex("set_mode", object="Star", mode="OBJECT")
+        star = next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Star")
+        assert star["dimensions"][0] == pytest.approx(3 * math.cos(math.pi / 8), abs=0.01)   # every other point out
+        # smoke: metaball copies rising from an icosphere
+        ex("add_primitive", kind="metaball", name="Puff", radius=0.4, location=[0, 0, -5])
+        ex("add_primitive", kind="ico_sphere", name="Vent", radius=0.3, location=[3, 0, 0])
+        made = ex("add_particles", object="Vent", name="Smoke", count=30, frame_start=1, frame_end=20, lifetime=40,
+                  lifetime_random=0.5, normal_velocity=0.1, velocity=[0, 0, 1.5], gravity=0, instance="Puff",
+                  size=0.6)
+        assert made["count"] == 30 and made["instance"] == "Puff"
+        assert ex("set_property", target="particles", name="Vent", path="lifetime_random",
+                  value=0.3)["value"] == pytest.approx(0.3)
+        ex("set_frames", start=1, end=40, current=25)
+        shot = ex("render_image", path=str(tmp_path / "smoke.png"), camera="auto", width=64, height=48, samples=2)
+        assert Path(shot["path"]).exists()
+
+
+def test_quick_liquid_is_baked_into_the_allowed_folder(tmp_path):
+    pytest.importorskip("bpy")
+    from lucius.blender.headless import HeadlessBlender
+
+    with HeadlessBlender(allowed_save_dirs=[str(tmp_path)]) as bridge:
+        def ex(action, **args):
+            return bridge.execute(action, args, timeout=900)["result"]
+
+        ex("reset_scene", keep_camera_light=False)
+        ex("add_primitive", kind="ico_sphere", name="Squirt", radius=0.2, location=[0.6, 0, 0.3])
+        made = ex("quick_liquid", objects=["Squirt"], domain="Tank")
+        assert made["domain"] == "Tank" and made["flows"] == ["Squirt"]
+        ex("set_property", target="object", name="Squirt", path='modifiers["Fluid"].flow_settings.use_initial_velocity',
+           value=True)
+        ex("set_property", target="object", name="Squirt", path='modifiers["Fluid"].flow_settings.velocity_coord',
+           value=[-3, 0, 1])
+        ex("set_property", target="object", name="Tank", path='modifiers["Fluid"].domain_settings.use_mesh', value=True)
+        try:
+            baked = ex("bake_fluid", domain="Tank", resolution=24, frame_start=1, frame_end=8)
+        except Exception as exc:   # the pip bpy module can't run Mantaflow: refused, not crashed
+            assert "doesn't run inside the bpy Python module" in str(exc)
+            assert bridge.request("scene_summary")["objects"]
+            return
+        assert baked["cache_files"] > 0 and (tmp_path / "caches").is_dir()
+        ex("set_frames", start=1, end=8, current=8)
+        liquid = next(o for o in bridge.request("scene_summary")["objects"] if o["name"] == "Tank")
+        assert liquid["counts"]["verts"] > 0   # the domain now shows the liquid's mesh

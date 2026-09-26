@@ -214,15 +214,31 @@ def render_animation(p):
     return {"path": path, "frames": frames, "bytes": os.path.getsize(path)}
 
 
-CHANNELS = ("location", "rotation", "scale", "influence")
+CHANNELS = ("location", "rotation", "scale", "influence", "shape", "other")
 _BONE_PATH = re.compile(r'^pose\.bones\["((?:[^"\\]|\\.)*)"\]\.(.+)$')
 
 
 def _channel(prop):
     if prop.startswith("constraints["):
         return "influence" if prop.endswith(".influence") else None
+    if prop.startswith("key_blocks["):
+        return "shape"
     return {"location": "location", "rotation_euler": "rotation", "rotation_quaternion": "rotation",
-            "scale": "scale"}.get(prop)
+            "scale": "scale"}.get(prop, "other")
+
+
+def _object_blocks(obj):
+    """Everything the graph editor lists under an object: the object, its data, its shape keys, its materials."""
+    blocks = [obj, obj.data, getattr(obj.data, "shape_keys", None)]
+    for slot in obj.material_slots:
+        if slot.material is not None:
+            blocks += [slot.material, slot.material.node_tree]
+    seen, out = set(), []
+    for block in blocks:
+        if block is not None and id(block) not in seen:
+            seen.add(id(block))
+            out.append(block)
+    return out
 
 
 def _select_curves(obj, bones, channels, axes):
@@ -237,7 +253,7 @@ def _select_curves(obj, bones, channels, axes):
             raise BridgeCommandError("invalid_param", f"channel must be one of {CHANNELS}", param="channels")
     indexes = {AXIS_INDEX[a] for a in axes}
     chosen = []
-    for curve in _fcurves(obj):
+    for curve in [c for block in _object_blocks(obj) for c in _fcurves(block)]:
         match = _BONE_PATH.match(curve.data_path)
         bone, prop = (match.group(1), match.group(2)) if match else (None, curve.data_path)
         if bones and bone not in bones:

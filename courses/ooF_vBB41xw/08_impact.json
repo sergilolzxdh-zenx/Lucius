@@ -1,0 +1,575 @@
+{
+ "title": "Impact",
+ "summary": "A spark impact: one curve object of eight tapering spark paths flying out from a point (start and end mapping keyed, linear), a copy turned a little and one frame late, and a spiky half-star (a circle, Checker Deselect, every other point scaled out, the bottom half deleted, a Skin modifier with a small radius) popping up and vanishing; all a glowing emission.",
+ "objects": [
+  {
+   "name": "Sparks",
+   "description": "the spark paths"
+  },
+  {
+   "name": "Spikes",
+   "description": "the spiky crown"
+  }
+ ],
+ "expected_result": "Orange-yellow sparks bursting out along arcs from a point on the floor with a glowing spiky crown flashing behind them.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Vent",
+     "Puff"
+    ]
+   },
+   "note": "the finished effects hidden (H, and from renders) so the scene stays light",
+   "video_time": null
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "Sparks",
+    "location": [
+     44.0,
+     0,
+     0
+    ],
+    "splines": [
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        0.6878422721704364,
+        0.21277454879616448,
+        0.55
+       ],
+       [
+        1.5285383826009697,
+        0.4728323306581433,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        0.44089973644605335,
+        0.8358423430299525,
+        0.65
+       ],
+       [
+        0.9797771921023407,
+        1.85742742895545,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        -0.3457586417937673,
+        1.117743692276959,
+        0.55
+       ],
+       [
+        -0.7683525373194828,
+        2.4838748717265755,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        -0.6368322613561542,
+        0.33592360872080274,
+        0.65
+       ],
+       [
+        -1.415182803013676,
+        0.7464969082684505,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        -0.9027929822236979,
+        -0.2792665952949656,
+        0.55
+       ],
+       [
+        -2.006206627163773,
+        -0.6205924339888125,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        -0.5458758641713045,
+        -1.0348524247037505,
+        0.65
+       ],
+       [
+        -1.2130574759362323,
+        -2.2996720548972234,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        0.21277454879616425,
+        -0.6878422721704364,
+        0.55
+       ],
+       [
+        0.4728323306581428,
+        -1.5285383826009697,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     },
+     {
+      "points": [
+       [
+        0,
+        0,
+        0.05
+       ],
+       [
+        0.8358423430299524,
+        -0.4408997364460537,
+        0.65
+       ],
+       [
+        1.8574274289554498,
+        -0.9797771921023415,
+        0.05
+       ]
+      ],
+      "radius": [
+       1.0,
+       0.8,
+       0.12
+      ]
+     }
+    ],
+    "bevel_depth": 0.03
+   },
+   "note": "a Bezier curve shaped into a spark's flight, duplicated in edit mode around the 3D cursor (pivot): one object of many paths; given thickness, the last points' radius scaled down (Alt+S) so they taper",
+   "video_time": "27:52"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "SparkGlow",
+    "object": "Sparks",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#FFC64A",
+       "Strength": 4.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a glowing material",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_end",
+    "value": 0.0,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "the start and end mapping animated: flying out, then gone; linear in the graph editor",
+   "video_time": "28:20"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_start",
+    "value": 0.0,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 9,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "28:20"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_start",
+    "value": 0.35,
+    "frame": 9,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 15,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "28:20"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Sparks",
+    "path": "bevel_factor_start",
+    "value": 1.0,
+    "frame": 15,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Sparks",
+    "new_name": "Sparks2",
+    "rotation": [
+     0,
+     0,
+     0.35
+    ]
+   },
+   "note": "duplicated and turned a little around the same centre",
+   "video_time": "28:35"
+  },
+  {
+   "action": "retime_keys",
+   "args": {
+    "object": "Sparks2",
+    "offset": 1
+   },
+   "note": "its animation offset by a frame: not uniform",
+   "video_time": "28:40"
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "circle",
+    "name": "Spikes",
+    "vertices": 24,
+    "radius": 0.45,
+    "location": [
+     44.0,
+     0,
+     0.02
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "a mesh circle turned to the camera",
+   "video_time": "28:45"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Spikes"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "select_nth",
+   "args": {
+    "object": "Spikes",
+    "skip": 1,
+    "nth": 1
+   },
+   "note": "Select > Checker Deselect: every other point",
+   "video_time": "28:55"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Spikes",
+    "factor": [
+     2.1,
+     2.1,
+     2.1
+    ],
+    "pivot": "origin",
+    "proportional": 0.2
+   },
+   "note": "those points scaled out (soft selection): a spiky star",
+   "video_time": "29:00"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Spikes",
+    "element": "VERT",
+    "max": [
+     null,
+     -0.02,
+     null
+    ],
+    "space": "local"
+   },
+   "note": "the effect is on the floor: the bottom half removed",
+   "video_time": "29:04"
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Spikes",
+    "what": "VERTS"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Spikes",
+    "type": "SKIN"
+   },
+   "note": "a Skin modifier gives the lines thickness",
+   "video_time": "29:08"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Spikes"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "skin_radius",
+   "args": {
+    "object": "Spikes",
+    "radius": 0.025
+   },
+   "note": "Ctrl+A: the radius down",
+   "video_time": "29:12"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Spikes",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "SparkGlow",
+    "object": "Spikes"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Spikes",
+    "frame": 1,
+    "scale": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "note": "scaled up as the impact starts, back down to nothing at the end",
+   "video_time": "29:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Spikes",
+    "frame": 5,
+    "scale": [
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "note": "",
+   "video_time": "29:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Spikes",
+    "frame": 13,
+    "scale": [
+     1.25,
+     1.25,
+     1.25
+    ]
+   },
+   "note": "",
+   "video_time": "29:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Spikes",
+    "frame": 17,
+    "scale": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "note": "",
+   "video_time": "29:20"
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 30
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     44.0,
+     -6.5,
+     1.4
+    ],
+    "look_at": [
+     44.0,
+     0,
+     0.45
+    ],
+    "lens": 40
+   },
+   "note": "the camera on the impact",
+   "video_time": null
+  }
+ ]
+}

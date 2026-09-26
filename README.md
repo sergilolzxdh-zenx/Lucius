@@ -304,6 +304,7 @@ Lucius built. The scores are the teacher's judgement from those comparisons, not
 | Pack | Tutorial | What Lucius builds |
 |---|---|---|
 | [`courses/O-tV7uBf5LI`](courses/O-tV7uBf5LI) | LA GUÍA DEFINITIVA DE BLENDER 4.0 (Spanish, 77 min) | a Mario scene: warp pipe (hard surface), mushroom (organic, one subdivided object), Bob-omb (joined parts, boolean key), grass blades scattered as a collection over a lawn, materials with node spots, a sky-lit shot, a keyframed camera move with shake and rack focus, rendered to `final.mp4` |
+| [`courses/ooF_vBB41xw`](courses/ooF_vBB41xw) | How to Make Stylized 2D VFX in Blender (32 min, Eevee) | a flame (displacement and voronoi masks driven by #frame), a comic-book halftone shader as a reusable node group, an anime waterfall (layered noise, foam, driven wave lines, alpha), a toon explosion burning away from the dark side with a ring, energy lines and a smoke ring, a blood squirt, metaball smoke, a spark impact and energy-line ribbons; each chapter's video in the pack |
 | [`courses/Y2SWwZmwrwM`](courses/Y2SWwZmwrwM) | How to Rig ANYTHING in Blender! (38 min) | armatures (extrude chains, Symmetrize), a rigid robot (Ctrl+P > Bone), a mannequin skinned with automatic weights and fixed weights, IK legs with poles, drivers, then a mechanical bacteriophage rigged end to end: bound parts, weighted cables, IK controls with poles, body/root split, custom control shapes and colours, a material driven by a leg, and an animation driven only by the controls (`final.mp4`) |
 | [`courses/JQT9sT1YuAI`](courses/JQT9sT1YuAI) | How to Animate ANYTHING in Blender (44 min) | keyframes, the graph editor's ease curve (X = 3.38 at frame 10, as the tutor reads it), the bouncing ball (Vector contacts, 60% bounces, spin from distance, squash on an empty parent), and a backflip on a rigged mannequin: blocked pose to pose with constant keys and an IK/FK switch, then polished (Bezier, vector take-off and landing, eased wind-up, overlapping elbows, retimed); [`final.mp4`](courses/JQT9sT1YuAI/final.mp4), [`backflip_frames.jpg`](courses/JQT9sT1YuAI/backflip_frames.jpg) |
 
@@ -333,7 +334,12 @@ viewport-only steps such as camera clipping). What the Gemini runs taught about 
   constraints (IK with measured pole angles, Child Of, Copy/Limit/Track), and drivers on objects, bones
   and material nodes. The backflip added character animation tools: an IK/FK switch keyed on a frame,
   Apply Visual Transform (FK matched to IK), graph-editor interpolation, handle types and ease by
-  bone, channel, axis and frame range, and retiming keys (scale around a frame, move by frames).
+  bone, channel, axis and frame range, and retiming keys (scale around a frame, move by frames). The VFX
+  course added the node editor (`edit_nodes`: any shader, world, node-group or geometry-node graph, with
+  settings checked against Blender's own definitions), keying any setting by its path (`set_property`: colour
+  ramp handles, curve bevel start/end, modifier strengths, material blend modes), shape keys, curves, emitter
+  particles and metaballs, Checker Deselect, the Skin modifier, frame drivers (`#frame/10`), and Eevee
+  renders where Eevee can run (on a headless Linux server that needs Mesa's EGL; elsewhere Cycles).
 
 ## Make something new, or from a reference image
 

@@ -729,6 +729,56 @@ def add_scatter(p):
             "children": p["children"]}
 
 
+def add_particles(p):
+    """An emitter particle system (Particle properties > +): particles born over a frame range from the object's
+    faces, flying out along the normals and/or a fixed velocity, living a while (randomly shorter), under some
+    gravity, rendered as copies of an object (e.g. a metaball: touching copies melt into one blob of smoke)."""
+    _leave_edit_mode()
+    obj = _obj(p["object"])
+    if obj.type != "MESH":
+        raise BridgeCommandError("invalid_param", f"{obj.name} is not a mesh", param="object")
+    name = p["name"] or "Emitter"
+    modifier = obj.modifiers.get(name)
+    if modifier is None or modifier.type != "PARTICLE_SYSTEM":
+        modifier = obj.modifiers.new(name=name, type="PARTICLE_SYSTEM")
+    system = modifier.particle_system
+    settings = system.settings
+    if settings.users > 1:
+        # A duplicated emitter shares its settings with the original: this one gets its own (the users number).
+        settings = settings.copy()
+        system.settings = settings
+    settings.name = name
+    settings.type = "EMITTER"
+    if not 1 <= p["count"] <= 100000:
+        raise BridgeCommandError("invalid_param", "count 1..100000", param="count")
+    settings.count = p["count"]
+    if p["frame_end"] < p["frame_start"]:
+        raise BridgeCommandError("invalid_param", "frame_end before frame_start", param="frame_end")
+    settings.frame_start, settings.frame_end = p["frame_start"], p["frame_end"]
+    settings.lifetime = p["lifetime"]
+    settings.lifetime_random = p["lifetime_random"]
+    settings.emit_from = p["emit_from"]
+    settings.normal_factor = p["normal_velocity"]
+    settings.object_align_factor = p["velocity"]
+    settings.factor_random = p["random_velocity"]
+    settings.effector_weights.gravity = p["gravity"]
+    settings.particle_size = p["size"]
+    settings.size_random = p["size_random"]
+    system.seed = p["seed"]
+    if p["instance"]:
+        instance = _obj(p["instance"])
+        if instance == obj:
+            raise BridgeCommandError("invalid_param", "an object cannot emit copies of itself", param="instance")
+        settings.render_type = "OBJECT"
+        settings.instance_object = instance
+    else:
+        settings.render_type = "HALO"
+    obj.show_instancer_for_render = p["show_emitter"]
+    obj.show_instancer_for_viewport = p["show_emitter"]
+    return {"object": obj.name, "system": name, "count": settings.count,
+            "frames": [settings.frame_start, settings.frame_end], "instance": p["instance"]}
+
+
 def _unlink_collection(collection):
     for parent in [bpy.context.scene.collection, *bpy.data.collections]:
         if collection.name in parent.children:
@@ -791,6 +841,13 @@ ACTIONS = {
         "scene_settings": ("bool", False), "lights": (("studio", "scene"), "studio"), "frame_number": ("int", None),
         "bones": (("auto", "show", "hide"), "auto")}),
     "move_to_collection": (move_to_collection, {"names": ("names", REQUIRED), "collection": ("name", REQUIRED)}),
+    "add_particles": (add_particles, {
+        "object": OBJ, "name": ("name", None), "count": ("int", 100), "frame_start": ("float", 1.0),
+        "frame_end": ("float", 100.0), "lifetime": ("float", 50.0), "lifetime_random": ("float", 0.0),
+        "emit_from": (("VERT", "FACE", "VOLUME"), "FACE"), "normal_velocity": ("float", 1.0),
+        "velocity": ("vec3", [0.0, 0.0, 0.0]), "random_velocity": ("float", 0.0), "gravity": ("float", 1.0),
+        "size": ("float", 0.05), "size_random": ("float", 0.0), "instance": ("name", None),
+        "show_emitter": ("bool", False), "seed": ("int", 0)}),
     "add_scatter": (add_scatter, {
         "object": OBJ, "instance": ("name", None), "collection": ("name", None), "name": ("name", None),
         "count": ("int", 300), "children": ("int", 0),

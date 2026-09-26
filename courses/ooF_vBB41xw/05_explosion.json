@@ -1,0 +1,1385 @@
+{
+ "title": "Explosion",
+ "summary": "A stylized explosion: a sphere roughly modelled into a mushroom cloud that grows through a shape key (range down to -1, keyed -1 to 1) after scaling up from nothing; a Voronoi Displace with distance squared and negative strength (a cloud of puffs) whose empty rises with an ease out, grows, and turns with #frame/90; a toon shader (diffuse -> Shader to RGB -> constant ramp from yellow to dark orange, a fresnel mask mixing a hot yellow above 1 into the middle) that is eaten away from the dark parts by keying an inverted ramp's handle (emission/transparent mix, Blended, no transparency overlap), scaled to zero at the end. Around it: a white ring collapsing into the centre, energy lines (one curve object, vector points) drawn in by animating their start and end mapping, and a smoke ring rushing out on a shape key with its own spinning displacement and vanishing smoke shader.",
+ "objects": [
+  {
+   "name": "Explosion",
+   "description": "the cloud"
+  },
+  {
+   "name": "SmokeRing",
+   "description": "the ring of smoke"
+  },
+  {
+   "name": "EnergyLines",
+   "description": "lines rushing in"
+  }
+ ],
+ "expected_result": "Energy lines and a white ring rush into a point, a yellow-orange cartoon explosion puffs up with a smoke ring spreading at its base, then burns away from the dark side.",
+ "steps": [
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 96
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "uv_sphere",
+    "name": "Explosion",
+    "radius": 1.0,
+    "location": [
+     20.0,
+     0,
+     1.9
+    ]
+   },
+   "note": "a UV sphere, roughly modelled into an explosion",
+   "video_time": "15:22"
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Explosion",
+    "element": "VERT",
+    "max": [
+     null,
+     null,
+     -0.15
+    ],
+    "space": "local"
+   },
+   "note": "the lower half",
+   "video_time": "15:25"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Explosion",
+    "factor": [
+     0.42,
+     0.42,
+     1.0
+    ],
+    "pivot": "median"
+   },
+   "note": "narrowed into a stem",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Explosion",
+    "offset": [
+     0,
+     0,
+     -0.75
+    ],
+    "proportional": 0.9
+   },
+   "note": "pulled down (soft selection)",
+   "video_time": null
+  },
+  {
+   "action": "select_box",
+   "args": {
+    "object": "Explosion",
+    "element": "VERT",
+    "min": [
+     null,
+     null,
+     0.3
+    ],
+    "space": "local"
+   },
+   "note": "the top",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Explosion",
+    "factor": [
+     1.25,
+     1.25,
+     0.9
+    ],
+    "pivot": "median",
+    "proportional": 0.6
+   },
+   "note": "a wider cap",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Explosion",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Explosion",
+    "smooth": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "Explosion",
+    "name": "Grow",
+    "slider_min": -1.0
+   },
+   "note": "a new shape key: the explosion growing (not scale: a shape key can evolve); range minimum down to -1",
+   "video_time": "15:30"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "Explosion"
+   },
+   "note": "edit mode: everything bigger and higher",
+   "video_time": "15:33"
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "Explosion",
+    "factor": [
+     1.55,
+     1.55,
+     1.45
+    ],
+    "pivot": "origin"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "translate_selection",
+   "args": {
+    "object": "Explosion",
+    "offset": [
+     0,
+     0,
+     0.35
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Explosion",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Explosion",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "a subdivision so the displacement has something to push",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "BlastAnim",
+    "location": [
+     20.0,
+     0,
+     1.9
+    ],
+    "size": 0.6
+   },
+   "note": "an empty for the texture",
+   "video_time": "16:10"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Explosion",
+    "type": "DISPLACE",
+    "props": {
+     "texture": "VORONOI",
+     "texture_scale": 0.5,
+     "strength": -0.45,
+     "texture_coords": "OBJECT",
+     "texture_coords_object": "BlastAnim"
+    }
+   },
+   "note": "a Displace with a Voronoi texture, scaled up, strength negative: a puffy cloud of spheres",
+   "video_time": "15:50"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "texture",
+    "name": "Explosion_voronoi",
+    "path": "distance_metric",
+    "value": "DISTANCE_SQUARED"
+   },
+   "note": "the texture's distance: distance squared",
+   "video_time": "15:58"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Explosion",
+    "frame": 10,
+    "scale": [
+     0.01,
+     0.01,
+     0.01
+    ],
+    "interpolation": "BEZIER",
+    "handle": "VECTOR"
+   },
+   "note": "at the start the scale animated up so it appears from nothing",
+   "video_time": "15:45"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Explosion",
+    "frame": 13,
+    "scale": [
+     1,
+     1,
+     1
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "Explosion",
+    "name": "Grow",
+    "value": -1.0,
+    "frame": 10
+   },
+   "note": "the shape key from -1 to 1",
+   "video_time": "15:40"
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "Explosion",
+    "name": "Grow",
+    "value": 1.0,
+    "frame": 60
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "BlastAnim",
+    "frame": 10,
+    "location": [
+     20.0,
+     0,
+     1.9
+    ],
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "interpolation": "BEZIER",
+    "handle": "VECTOR"
+   },
+   "note": "the empty animated by hand (not a driver) so it can ease out: the puffs roll up",
+   "video_time": "16:12"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "BlastAnim",
+    "frame": 80,
+    "location": [
+     20.0,
+     0,
+     3.5
+    ],
+    "scale": [
+     1.5,
+     1.5,
+     1.5
+    ]
+   },
+   "note": "and the texture grows with it (the empty's scale)",
+   "video_time": "16:22"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "BlastAnim",
+    "path": "rotation_euler",
+    "index": 1,
+    "expression": "frame / 90"
+   },
+   "note": "#frame / 90 on its Y rotation: the blobs slowly evolve",
+   "video_time": "16:15"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Explosion",
+    "path": "modifiers[\"Displace\"].strength",
+    "value": -0.35,
+    "frame": 10
+   },
+   "note": "the displacement strength follows the new size",
+   "video_time": "16:25"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "object",
+    "name": "Explosion",
+    "path": "modifiers[\"Displace\"].strength",
+    "value": -0.6,
+    "frame": 60
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "BlastSun",
+    "location": [
+     20.0,
+     -4,
+     6
+    ],
+    "rotation_deg": [
+     40,
+     0,
+     -35
+    ],
+    "power": 2.5
+   },
+   "note": "a sun, to see the shading",
+   "video_time": "16:36"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Explosion",
+    "object": "Explosion",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Light",
+      "type": "ShaderNodeBsdfDiffuse"
+     },
+     {
+      "name": "LightToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#5E1604"
+       ],
+       [
+        0.25,
+        "#A8340A"
+       ],
+       [
+        0.5,
+        "#E25E10"
+       ],
+       [
+        0.75,
+        "#FF9A1C"
+       ],
+       [
+        0.92,
+        "#FFD23A"
+       ]
+      ]
+     },
+     {
+      "name": "Rim",
+      "type": "ShaderNodeFresnel",
+      "inputs": {
+       "IOR": 1.3
+      }
+     },
+     {
+      "name": "RimClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.035,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Core",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "A": [
+        3.0,
+        2.3,
+        0.5
+       ]
+      }
+     },
+     {
+      "name": "Vanish",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#FFFFFF"
+       ],
+       [
+        0.01,
+        "#000000"
+       ]
+      ]
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission"
+     },
+     {
+      "name": "See",
+      "type": "ShaderNodeBsdfTransparent"
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Light",
+      "output": "BSDF",
+      "to": "LightToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Rim",
+      "output": "Fac",
+      "to": "RimClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Core",
+      "input": "B"
+     },
+     {
+      "from": "RimClamp",
+      "output": "Color",
+      "to": "Core",
+      "input": "Factor"
+     },
+     {
+      "from": "Core",
+      "output": "Result",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Vanish",
+      "input": "Fac"
+     },
+     {
+      "from": "Vanish",
+      "output": "Color",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "See",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the shader: a diffuse through Shader to RGB and a constant ramp, yellow in the light to dark orange; a fresnel mask (a clamped ramp) mixes an intense yellow (value above 1) into the middle; another constant ramp from the light, inverted, is the mask that eats it (emission / transparent mix)",
+   "video_time": "16:34"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Explosion",
+    "frame": 50,
+    "value": 0.01,
+    "path": "nodes[\"Vanish\"].color_ramp.elements[1].position"
+   },
+   "note": "the black handle's position keyed (hover, I): from the left ... to the right, the dark parts vanish first",
+   "video_time": "17:58"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Explosion",
+    "frame": 84,
+    "value": 1.0,
+    "path": "nodes[\"Vanish\"].color_ramp.elements[1].position"
+   },
+   "note": "",
+   "video_time": "17:58"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Explosion",
+    "path": "surface_render_method",
+    "value": "BLENDED"
+   },
+   "note": "material settings: render method Blended",
+   "video_time": "17:48"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Explosion",
+    "path": "use_transparency_overlap",
+    "value": false
+   },
+   "note": "transparency overlap off (no back faces showing through, flatter)",
+   "video_time": "17:52"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Explosion",
+    "frame": 86,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "interpolation": "CONSTANT"
+   },
+   "note": "what the shader can't eat: scaled to zero in the end",
+   "video_time": "18:20"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Explosion",
+    "frame": 87,
+    "scale": [
+     0,
+     0,
+     0
+    ],
+    "interpolation": "CONSTANT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "Ring",
+    "major_radius": 1.0,
+    "minor_radius": 0.025,
+    "location": [
+     20.0,
+     0,
+     1.9
+    ],
+    "rotation_deg": [
+     90,
+     0,
+     0
+    ]
+   },
+   "note": "support: a thin torus",
+   "video_time": "18:35"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "WhiteGlow",
+    "object": "Ring",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Color": "#FFFFFF",
+       "Strength": 4
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "a pure white emission",
+   "video_time": "18:40"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Ring",
+    "frame": 1,
+    "scale": [
+     3.2,
+     3.2,
+     3.2
+    ]
+   },
+   "note": "scaling down into the centre of the explosion",
+   "video_time": "18:38"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "Ring",
+    "frame": 10,
+    "scale": [
+     0,
+     0,
+     0
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "EnergyLines",
+    "splines": [
+     {
+      "points": [
+       [
+        26.37043275596807,
+        0.28232123669751774,
+        2.6946773231802448
+       ],
+       [
+        22.84770625424732,
+        0.2,
+        2.5291331212322357
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        24.049970415283877,
+        0.21622018623115727,
+        5.028656759111844
+       ],
+       [
+        21.57487108894407,
+        0.2,
+        3.602257462340082
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        19.834481906880875,
+        -0.49854142292867487,
+        5.898702926308274
+       ],
+       [
+        19.565136238381356,
+        0.2,
+        3.8788766183346306
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        15.696441153777014,
+        0.2823212366975174,
+        4.897711553652254
+       ],
+       [
+        17.758878974852372,
+        0.2,
+        3.229557411846555
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        13.572083413549848,
+        0.216220186231157,
+        2.4940576291894616
+       ],
+       [
+        17.00126714627575,
+        0.2,
+        1.9581235159707766
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        14.455419282458088,
+        -0.4985414229286749,
+        -0.18756246218621175
+       ],
+       [
+        17.646795747160073,
+        0.2,
+        0.6594929810013466
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        17.933126090254913,
+        0.28232123669751735,
+        -1.892388876832499
+       ],
+       [
+        19.393414770900304,
+        0.2,
+        -0.05869053307879035
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        22.377946171166275,
+        0.2162201862311579,
+        -1.8227143883013066
+       ],
+       [
+        21.42386176478018,
+        0.2,
+        0.13961902168914042
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     },
+     {
+      "points": [
+       [
+        25.710098810661037,
+        -0.4985414229286749,
+        -0.011140464122063154
+       ],
+       [
+        22.788068014458574,
+        0.2,
+        1.1616304006640221
+       ],
+       [
+        20.0,
+        0,
+        1.9
+       ]
+      ],
+      "handle": "VECTOR"
+     }
+    ],
+    "bevel_depth": 0.035
+   },
+   "note": "a Bezier curve with vector points, duplicated in edit mode and rotated round the 3D cursor: one object, every curve ending in the centre; made thicker",
+   "video_time": "18:48"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "WhiteGlow",
+    "object": "EnergyLines"
+   },
+   "note": "the same white emission",
+   "video_time": "19:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_end",
+    "value": 0.0,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "the start and end mapping animated: the lines draw in, then cut off",
+   "video_time": "19:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_start",
+    "value": 0.0,
+    "frame": 1,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 7,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "19:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_start",
+    "value": 0.2,
+    "frame": 7,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 11,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": "19:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "EnergyLines",
+    "path": "bevel_factor_start",
+    "value": 1.0,
+    "frame": 11,
+    "interpolation": "LINEAR"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "torus",
+    "name": "SmokeRing",
+    "major_radius": 0.9,
+    "minor_radius": 0.3,
+    "location": [
+     20.0,
+     0,
+     0.35
+    ]
+   },
+   "note": "another torus: a ring of smoke",
+   "video_time": "19:24"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SmokeRing",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 2,
+     "render_levels": 2
+    }
+   },
+   "note": "some subdivisions",
+   "video_time": null
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "SmokeRing",
+    "name": "Out"
+   },
+   "note": "a shape key: rushing out",
+   "video_time": "19:28"
+  },
+  {
+   "action": "select_all",
+   "args": {
+    "object": "SmokeRing"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "scale_selection",
+   "args": {
+    "object": "SmokeRing",
+    "factor": [
+     2.5,
+     2.5,
+     1.3
+    ],
+    "pivot": "origin"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "SmokeRing",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "SmokeRing",
+    "name": "Out",
+    "value": 0.0,
+    "frame": 10,
+    "interpolation": "BEZIER"
+   },
+   "note": "out extremely fast, then slowing down",
+   "video_time": "19:30"
+  },
+  {
+   "action": "shape_key",
+   "args": {
+    "object": "SmokeRing",
+    "name": "Out",
+    "value": 1.0,
+    "frame": 40
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_interpolation",
+   "args": {
+    "object": "SmokeRing",
+    "handle": "VECTOR",
+    "start": 10,
+    "end": 10
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "SmokeAnim",
+    "location": [
+     20.0,
+     0,
+     0.35
+    ],
+    "size": 0.4
+   },
+   "note": "an empty that spins",
+   "video_time": "19:40"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "SmokeAnim",
+    "path": "rotation_euler",
+    "index": 2,
+    "expression": "frame / 6"
+   },
+   "note": "#frame / 6 on its Z rotation",
+   "video_time": "19:42"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "SmokeRing",
+    "type": "DISPLACE",
+    "props": {
+     "texture": "VORONOI",
+     "texture_scale": 0.4,
+     "strength": -0.3,
+     "texture_coords": "OBJECT",
+     "texture_coords_object": "SmokeAnim"
+    }
+   },
+   "note": "a displacement: voronoi, distance squared, scaled up, strength inverted",
+   "video_time": "19:36"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "texture",
+    "name": "SmokeRing_voronoi",
+    "path": "distance_metric",
+    "value": "DISTANCE_SQUARED"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Smoke",
+    "object": "SmokeRing",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "Light",
+      "type": "ShaderNodeBsdfDiffuse"
+     },
+     {
+      "name": "LightToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "Colors",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#2A2422"
+       ],
+       [
+        0.3,
+        "#4E4541"
+       ],
+       [
+        0.6,
+        "#7A6D65"
+       ],
+       [
+        0.85,
+        "#A89A8E"
+       ]
+      ]
+     },
+     {
+      "name": "Vanish",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#FFFFFF"
+       ],
+       [
+        0.01,
+        "#000000"
+       ]
+      ]
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission"
+     },
+     {
+      "name": "See",
+      "type": "ShaderNodeBsdfTransparent"
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "Light",
+      "output": "BSDF",
+      "to": "LightToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Colors",
+      "input": "Fac"
+     },
+     {
+      "from": "Colors",
+      "output": "Color",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "Vanish",
+      "input": "Fac"
+     },
+     {
+      "from": "Vanish",
+      "output": "Color",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "See",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the smoke shader: diffuse, Shader to RGB, a constant ramp of smoke colours; a second ramp for the vanishing trick",
+   "video_time": "19:47"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Smoke",
+    "frame": 38,
+    "value": 0.01,
+    "path": "nodes[\"Vanish\"].color_ramp.elements[1].position"
+   },
+   "note": "the black handle's position keyed (hover, I): from the left ... to the right, the dark parts vanish first",
+   "video_time": "20:00"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "nodes",
+    "name": "Smoke",
+    "frame": 70,
+    "value": 1.0,
+    "path": "nodes[\"Vanish\"].color_ramp.elements[1].position"
+   },
+   "note": "",
+   "video_time": "20:00"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Smoke",
+    "path": "surface_render_method",
+    "value": "BLENDED"
+   },
+   "note": "material settings: render method Blended",
+   "video_time": "17:48"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "material",
+    "name": "Smoke",
+    "path": "use_transparency_overlap",
+    "value": false
+   },
+   "note": "transparency overlap off (no back faces showing through, flatter)",
+   "video_time": "17:52"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "SmokeRing",
+    "frame": 71,
+    "scale": [
+     1,
+     1,
+     1
+    ],
+    "interpolation": "CONSTANT"
+   },
+   "note": "and scaled away at the end",
+   "video_time": "20:08"
+  },
+  {
+   "action": "insert_keyframe",
+   "args": {
+    "object": "SmokeRing",
+    "frame": 72,
+    "scale": [
+     0,
+     0,
+     0
+    ],
+    "interpolation": "CONSTANT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     20.0,
+     -11,
+     2.6
+    ],
+    "look_at": [
+     20.0,
+     0,
+     2.2
+    ],
+    "lens": 36
+   },
+   "note": "the camera on the explosion",
+   "video_time": null
+  }
+ ]
+}

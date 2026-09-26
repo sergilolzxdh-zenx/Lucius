@@ -1,0 +1,987 @@
+{
+ "title": "Waterfall",
+ "summary": "An anime waterfall: a cylinder without caps scaled into a wide sheet, loop cuts, subdivision, a Musgrave Displace on an empty driven down (#-frame); an emission shader built in layers on the cylinder's UVs: two noises through water-colour ramps flowing down at their own #frame speeds, mixed by a clamped mask; voronoi foam; glossy reflections and diffuse shading through Shader to RGB, clamped and added / multiplied; foam lines from a distorted wave texture whose phase is driven; a falling noise as the alpha mask for a transparent mix. A bigger copy behind with its own material (smaller, sharper alpha, other speeds).",
+ "objects": [
+  {
+   "name": "Waterfall",
+   "description": "the front sheet"
+  },
+  {
+   "name": "Waterfall2",
+   "description": "the back sheet"
+  }
+ ],
+ "expected_result": "Two layers of stylized blue water falling, with white foam specks, horizontal foam lines moving down, and gaps where it is transparent.",
+ "steps": [
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "cylinder",
+    "name": "Waterfall",
+    "radius": 0.5,
+    "depth": 2,
+    "vertices": 32,
+    "location": [
+     13.0,
+     0,
+     2.1
+    ]
+   },
+   "note": "a cylinder",
+   "video_time": "11:12"
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Waterfall",
+    "direction": [
+     0,
+     0,
+     1
+    ],
+    "min_dot": 0.95
+   },
+   "note": "edit mode: the caps",
+   "video_time": "11:14"
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Waterfall",
+    "what": "FACES"
+   },
+   "note": "deleted",
+   "video_time": null
+  },
+  {
+   "action": "select_faces_by_normal",
+   "args": {
+    "object": "Waterfall",
+    "direction": [
+     0,
+     0,
+     -1
+    ],
+    "min_dot": 0.95
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "delete_elements",
+   "args": {
+    "object": "Waterfall",
+    "what": "FACES"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Waterfall",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_dimensions",
+   "args": {
+    "object": "Waterfall",
+    "dimensions": [
+     1.5,
+     0.55,
+     4.2
+    ]
+   },
+   "note": "scaled up and wide, like a sheet of falling water",
+   "video_time": "11:16"
+  },
+  {
+   "action": "apply_transform",
+   "args": {
+    "object": "Waterfall",
+    "scale": true
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "loop_cut_axis",
+   "args": {
+    "object": "Waterfall",
+    "axis": "z",
+    "positions": [
+     0.08333333333333333,
+     0.16666666666666666,
+     0.25,
+     0.3333333333333333,
+     0.4166666666666667,
+     0.5,
+     0.5833333333333334,
+     0.6666666666666666,
+     0.75,
+     0.8333333333333334,
+     0.9166666666666666
+    ]
+   },
+   "note": "horizontal subdivisions",
+   "video_time": "11:20"
+  },
+  {
+   "action": "set_mode",
+   "args": {
+    "object": "Waterfall",
+    "mode": "OBJECT"
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Waterfall",
+    "type": "SUBSURF",
+    "props": {
+     "levels": 1,
+     "render_levels": 2
+    }
+   },
+   "note": "a subdivision surface",
+   "video_time": "11:22"
+  },
+  {
+   "action": "shade",
+   "args": {
+    "object": "Waterfall",
+    "smooth": true
+   },
+   "note": "and shade smooth",
+   "video_time": null
+  },
+  {
+   "action": "add_primitive",
+   "args": {
+    "kind": "empty",
+    "name": "WaterDisplace",
+    "location": [
+     13.0,
+     0,
+     0
+    ],
+    "size": 0.5
+   },
+   "note": "an empty for the displacement",
+   "video_time": "11:30"
+  },
+  {
+   "action": "add_modifier",
+   "args": {
+    "object": "Waterfall",
+    "type": "DISPLACE",
+    "props": {
+     "texture": "MUSGRAVE",
+     "texture_scale": 0.6,
+     "strength": 0.18,
+     "texture_coords": "OBJECT",
+     "texture_coords_object": "WaterDisplace"
+    }
+   },
+   "note": "a Displace with a Musgrave texture, scaled up; the empty as its coordinates",
+   "video_time": "11:25"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "object": "WaterDisplace",
+    "path": "location",
+    "index": 2,
+    "expression": "-frame / 12"
+   },
+   "note": "#-frame: the displacement moves down",
+   "video_time": "11:40"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Waterfall",
+    "object": "Waterfall",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "UV",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Map1",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        7,
+        1,
+        1
+       ]
+      }
+     },
+     {
+      "name": "Noise1",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 2.5,
+       "Detail": 3
+      }
+     },
+     {
+      "name": "Ramp1",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.35,
+        "#1B4F9C"
+       ],
+       [
+        0.5,
+        "#2F86D0"
+       ],
+       [
+        0.65,
+        "#63B8EC"
+       ]
+      ]
+     },
+     {
+      "name": "Map2",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        5,
+        1.3,
+        1
+       ]
+      }
+     },
+     {
+      "name": "Noise2",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 3.0,
+       "Detail": 3
+      }
+     },
+     {
+      "name": "Ramp2",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.35,
+        "#4FA9E8"
+       ],
+       [
+        0.55,
+        "#9ED9F7"
+       ],
+       [
+        0.7,
+        "#E4F6FF"
+       ]
+      ]
+     },
+     {
+      "name": "Ramp3",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.52,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Layers",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      }
+     },
+     {
+      "name": "Water",
+      "type": "ShaderNodeEmission",
+      "inputs": {
+       "Strength": 1.0
+      }
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Map1",
+      "input": "Vector"
+     },
+     {
+      "from": "Map1",
+      "output": "Vector",
+      "to": "Noise1",
+      "input": "Vector"
+     },
+     {
+      "from": "Noise1",
+      "output": "Fac",
+      "to": "Ramp1",
+      "input": "Fac"
+     },
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Map2",
+      "input": "Vector"
+     },
+     {
+      "from": "Map2",
+      "output": "Vector",
+      "to": "Noise2",
+      "input": "Vector"
+     },
+     {
+      "from": "Noise2",
+      "output": "Fac",
+      "to": "Ramp2",
+      "input": "Fac"
+     },
+     {
+      "from": "Noise1",
+      "output": "Fac",
+      "to": "Ramp3",
+      "input": "Fac"
+     },
+     {
+      "from": "Ramp1",
+      "output": "Color",
+      "to": "Layers",
+      "input": "A"
+     },
+     {
+      "from": "Ramp2",
+      "output": "Color",
+      "to": "Layers",
+      "input": "B"
+     },
+     {
+      "from": "Ramp3",
+      "output": "Color",
+      "to": "Layers",
+      "input": "Factor"
+     },
+     {
+      "from": "Layers",
+      "output": "Result",
+      "to": "Water",
+      "input": "Color"
+     },
+     {
+      "from": "Water",
+      "output": "Emission",
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the shader: an emission; a noise on the cylinder's own UVs stretched along the fall, through a colour ramp of water colours (linear: a little blend between them)",
+   "video_time": "11:50"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall",
+    "path": "nodes[\"Map1\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 20"
+   },
+   "note": "a #frame driver on the mapping so the layer flows down (the second layer at its own speed, offset by 5)",
+   "video_time": "12:07"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall",
+    "path": "nodes[\"Map2\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 16 + 5"
+   },
+   "note": "",
+   "video_time": "12:15"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Waterfall",
+    "nodes": [
+     {
+      "name": "Map3",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        4,
+        1.2,
+        1
+       ]
+      }
+     },
+     {
+      "name": "Bubbles",
+      "type": "ShaderNodeTexVoronoi",
+      "inputs": {
+       "Scale": 5.0
+      }
+     },
+     {
+      "name": "FoamClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.86,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Foam",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "B": "#FFFFFF"
+      }
+     },
+     {
+      "name": "Shine",
+      "type": "ShaderNodeBsdfAnisotropic",
+      "inputs": {
+       "Roughness": 0.2
+      }
+     },
+     {
+      "name": "ShineToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "ShineClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.4,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Reflect",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "ADD"
+      },
+      "inputs": {
+       "B": "#34506A"
+      }
+     },
+     {
+      "name": "Light",
+      "type": "ShaderNodeBsdfDiffuse"
+     },
+     {
+      "name": "LightToRGB",
+      "type": "ShaderNodeShaderToRGB"
+     },
+     {
+      "name": "LightClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#8A96A8"
+       ],
+       [
+        0.12,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Shading",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 0.8
+      }
+     }
+    ],
+    "links": [
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Map3",
+      "input": "Vector"
+     },
+     {
+      "from": "Map3",
+      "output": "Vector",
+      "to": "Bubbles",
+      "input": "Vector"
+     },
+     {
+      "from": "Bubbles",
+      "output": "Distance",
+      "to": "FoamClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Layers",
+      "output": "Result",
+      "to": "Foam",
+      "input": "A"
+     },
+     {
+      "from": "FoamClamp",
+      "output": "Color",
+      "to": "Foam",
+      "input": "Factor"
+     },
+     {
+      "from": "Shine",
+      "output": "BSDF",
+      "to": "ShineToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "ShineToRGB",
+      "output": "Color",
+      "to": "ShineClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Foam",
+      "output": "Result",
+      "to": "Reflect",
+      "input": "A"
+     },
+     {
+      "from": "ShineClamp",
+      "output": "Color",
+      "to": "Reflect",
+      "input": "Factor"
+     },
+     {
+      "from": "Light",
+      "output": "BSDF",
+      "to": "LightToRGB",
+      "input": "Shader"
+     },
+     {
+      "from": "LightToRGB",
+      "output": "Color",
+      "to": "LightClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Reflect",
+      "output": "Result",
+      "to": "Shading",
+      "input": "A"
+     },
+     {
+      "from": "LightClamp",
+      "output": "Color",
+      "to": "Shading",
+      "input": "B"
+     },
+     {
+      "from": "Shading",
+      "output": "Result",
+      "to": "Water",
+      "input": "Color"
+     }
+    ]
+   },
+   "note": "foam: a voronoi falling at another speed, clamped by a colour ramp, mixed in as white; reflections: a glossy BSDF through Shader to RGB, clamped, added in grey-blue; shading: a diffuse through Shader to RGB, clamped, multiplied",
+   "video_time": "12:50"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall",
+    "path": "nodes[\"Map3\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 10"
+   },
+   "note": "",
+   "video_time": "12:55"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Waterfall",
+    "nodes": [
+     {
+      "name": "Lines",
+      "type": "ShaderNodeTexWave",
+      "props": {
+       "wave_type": "BANDS",
+       "bands_direction": "Y"
+      },
+      "inputs": {
+       "Scale": 1.6,
+       "Distortion": 6.0,
+       "Detail": 3.0,
+       "Detail Scale": 1.5
+      }
+     },
+     {
+      "name": "LineClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.47,
+        "#FFFFFF"
+       ],
+       [
+        0.53,
+        "#000000"
+       ]
+      ]
+     },
+     {
+      "name": "FoamLines",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "B": "#FFFFFF"
+      }
+     },
+     {
+      "name": "Map4",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Scale": [
+        6,
+        1,
+        1
+       ]
+      }
+     },
+     {
+      "name": "AlphaNoise",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 2.5,
+       "Detail": 3
+      }
+     },
+     {
+      "name": "AlphaClamp",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.36,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "See",
+      "type": "ShaderNodeBsdfTransparent"
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     }
+    ],
+    "links": [
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Lines",
+      "input": "Vector"
+     },
+     {
+      "from": "Lines",
+      "output": "Fac",
+      "to": "LineClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "Shading",
+      "output": "Result",
+      "to": "FoamLines",
+      "input": "A"
+     },
+     {
+      "from": "LineClamp",
+      "output": "Color",
+      "to": "FoamLines",
+      "input": "Factor"
+     },
+     {
+      "from": "FoamLines",
+      "output": "Result",
+      "to": "Water",
+      "input": "Color"
+     },
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Map4",
+      "input": "Vector"
+     },
+     {
+      "from": "Map4",
+      "output": "Vector",
+      "to": "AlphaNoise",
+      "input": "Vector"
+     },
+     {
+      "from": "AlphaNoise",
+      "output": "Fac",
+      "to": "AlphaClamp",
+      "input": "Fac"
+     },
+     {
+      "from": "AlphaClamp",
+      "output": "Color",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "See",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "Water",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "anime foam lines: a wave texture with horizontal bands, small, distorted, clamped by a ramp with a harsh white belt in the middle, mixed in as white; then transparency: another falling noise clamped into an alpha mask for a mix shader (transparent on top)",
+   "video_time": "13:50"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall",
+    "path": "nodes[\"Lines\"].inputs[\"Phase Offset\"].default_value",
+    "index": null,
+    "expression": "frame / 7"
+   },
+   "note": "the lines' phase offset driven (#frame / 7) so they fall; the alpha noise falls too",
+   "video_time": "13:58"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall",
+    "path": "nodes[\"Map4\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 14 + 2"
+   },
+   "note": "",
+   "video_time": "14:30"
+  },
+  {
+   "action": "add_light",
+   "args": {
+    "type": "SUN",
+    "name": "WaterSun",
+    "location": [
+     13.0,
+     -4,
+     6
+    ],
+    "rotation_deg": [
+     45,
+     0,
+     -30
+    ],
+    "power": 2.0
+   },
+   "note": "a sun for the light catchers",
+   "video_time": null
+  },
+  {
+   "action": "duplicate_object",
+   "args": {
+    "object": "Waterfall",
+    "new_name": "Waterfall2",
+    "offset": [
+     0,
+     0.25,
+     0.02
+    ]
+   },
+   "note": "the waterfall duplicated, bigger, behind",
+   "video_time": "14:30"
+  },
+  {
+   "action": "transform_object",
+   "args": {
+    "object": "Waterfall2",
+    "scale": [
+     1.15,
+     1.2,
+     1.04
+    ]
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Waterfall2",
+    "copy_from": "Waterfall",
+    "object": "Waterfall2",
+    "nodes": [
+     {
+      "name": "AlphaNoise",
+      "inputs": {
+       "Scale": 4.5
+      }
+     },
+     {
+      "name": "AlphaClamp",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.55,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Ramp1",
+      "ramp": [
+       [
+        0.35,
+        "#123E80"
+       ],
+       [
+        0.5,
+        "#2370B8"
+       ],
+       [
+        0.65,
+        "#4FA2DC"
+       ]
+      ]
+     }
+    ]
+   },
+   "note": "its own material (the users number: a copy); the alpha noise smaller, the clamp much higher and sharper",
+   "video_time": "14:45"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall2",
+    "path": "nodes[\"Map1\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 24"
+   },
+   "note": "different speeds for the second layer",
+   "video_time": "15:00"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall2",
+    "path": "nodes[\"Map2\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 19 + 3"
+   },
+   "note": "",
+   "video_time": "15:00"
+  },
+  {
+   "action": "add_driver",
+   "args": {
+    "material": "Waterfall2",
+    "path": "nodes[\"Map4\"].inputs[\"Location\"].default_value",
+    "index": 1,
+    "expression": "frame / 11"
+   },
+   "note": "",
+   "video_time": "15:00"
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     13.0,
+     -9.0,
+     2.2
+    ],
+    "look_at": [
+     13.0,
+     0,
+     2.1
+    ],
+    "lens": 40
+   },
+   "note": "the camera on the waterfall",
+   "video_time": null
+  }
+ ]
+}

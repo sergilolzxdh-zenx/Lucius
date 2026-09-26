@@ -1,0 +1,536 @@
+{
+ "title": "Energy Lines",
+ "summary": "Energy lines: Bezier curves extruded into flat ribbons with a varying point radius; a shader on the curve UVs -- an offset quadratic-sphere gradient (an ellipse leaning to one side) with contrast, multiplied by a gradient along the curve, mixed with noise, split into a constant alpha ramp and a pink-purple colour ramp, emission strength from the mask times a multiplier, over transparent -- drawn on by animating the start and end mapping.",
+ "objects": [
+  {
+   "name": "Energy",
+   "description": "the energy ribbons"
+  }
+ ],
+ "expected_result": "Glowing pink-purple crescent swooshes sweeping across and fading, brighter in their cores.",
+ "steps": [
+  {
+   "action": "hide_objects",
+   "args": {
+    "names": [
+     "Sparks",
+     "Sparks2",
+     "Spikes"
+    ]
+   },
+   "note": "the finished effects hidden (H, and from renders) so the scene stays light",
+   "video_time": null
+  },
+  {
+   "action": "add_curve",
+   "args": {
+    "name": "Energy",
+    "location": [
+     50.0,
+     0,
+     0
+    ],
+    "splines": [
+     {
+      "points": [
+       [
+        -0.243,
+        0.103,
+        0.842
+       ],
+       [
+        0.555,
+        -0.218,
+        0.893
+       ],
+       [
+        1.17,
+        -0.275,
+        1.177
+       ],
+       [
+        1.4,
+        0.0,
+        1.6
+       ],
+       [
+        1.17,
+        0.275,
+        2.023
+       ],
+       [
+        0.555,
+        0.218,
+        2.307
+       ],
+       [
+        -0.243,
+        -0.103,
+        2.358
+       ]
+      ],
+      "radius": [
+       0.2,
+       0.7,
+       1.0,
+       1.0,
+       0.9,
+       0.6,
+       0.15
+      ]
+     },
+     {
+      "points": [
+       [
+        -0.191,
+        -0.182,
+        1.354
+       ],
+       [
+        0.436,
+        -0.291,
+        1.478
+       ],
+       [
+        0.919,
+        -0.049,
+        1.784
+       ],
+       [
+        1.1,
+        0.252,
+        2.2
+       ],
+       [
+        0.919,
+        0.249,
+        2.616
+       ],
+       [
+        0.436,
+        -0.055,
+        2.922
+       ],
+       [
+        -0.191,
+        -0.293,
+        3.046
+       ]
+      ],
+      "radius": [
+       0.2,
+       0.7,
+       1.0,
+       1.0,
+       0.9,
+       0.6,
+       0.15
+      ]
+     },
+     {
+      "points": [
+       [
+        -0.295,
+        -0.299,
+        0.379
+       ],
+       [
+        0.673,
+        -0.096,
+        0.375
+       ],
+       [
+        1.42,
+        0.223,
+        0.653
+       ],
+       [
+        1.7,
+        0.273,
+        1.1
+       ],
+       [
+        1.42,
+        -0.007,
+        1.547
+       ],
+       [
+        0.673,
+        -0.278,
+        1.825
+       ],
+       [
+        -0.295,
+        -0.214,
+        1.821
+       ]
+      ],
+      "radius": [
+       0.2,
+       0.7,
+       1.0,
+       1.0,
+       0.9,
+       0.6,
+       0.15
+      ]
+     }
+    ],
+    "extrude": 0.16
+   },
+   "note": "a Bezier curve shaped into the line's whole path; extruded instead of bevelled (a flat ribbon, more 2D), its point radius scaled for a dynamic thickness",
+   "video_time": "29:45"
+  },
+  {
+   "action": "edit_nodes",
+   "args": {
+    "material": "Energy",
+    "object": "Energy",
+    "clear": true,
+    "nodes": [
+     {
+      "name": "UV",
+      "type": "ShaderNodeTexCoord"
+     },
+     {
+      "name": "Offset",
+      "type": "ShaderNodeMapping",
+      "inputs": {
+       "Location": [
+        -0.5,
+        -0.5,
+        0
+       ]
+      }
+     },
+     {
+      "name": "Ellipse",
+      "type": "ShaderNodeTexGradient",
+      "props": {
+       "gradient_type": "QUADRATIC_SPHERE"
+      }
+     },
+     {
+      "name": "Contrast",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.6,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Along",
+      "type": "ShaderNodeTexGradient"
+     },
+     {
+      "name": "Damp",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MULTIPLY"
+      },
+      "inputs": {
+       "Factor": 1.0
+      }
+     },
+     {
+      "name": "Blotches",
+      "type": "ShaderNodeTexNoise",
+      "inputs": {
+       "Scale": 6.0,
+       "Detail": 3
+      }
+     },
+     {
+      "name": "Rough",
+      "type": "ShaderNodeMix",
+      "props": {
+       "data_type": "RGBA",
+       "blend_type": "MIX"
+      },
+      "inputs": {
+       "Factor": 0.5
+      }
+     },
+     {
+      "name": "Alpha",
+      "type": "ShaderNodeValToRGB",
+      "ramp_interpolation": "CONSTANT",
+      "ramp": [
+       [
+        0.0,
+        "#000000"
+       ],
+       [
+        0.28,
+        "#FFFFFF"
+       ]
+      ]
+     },
+     {
+      "name": "Tint",
+      "type": "ShaderNodeValToRGB",
+      "ramp": [
+       [
+        0.2,
+        "#7A2BD6"
+       ],
+       [
+        0.5,
+        "#E24FD8"
+       ],
+       [
+        0.85,
+        "#FFD6FA"
+       ]
+      ]
+     },
+     {
+      "name": "Boost",
+      "type": "ShaderNodeMath",
+      "props": {
+       "operation": "MULTIPLY"
+      },
+      "inputs": {
+       "1": 4.0
+      }
+     },
+     {
+      "name": "Glow",
+      "type": "ShaderNodeEmission"
+     },
+     {
+      "name": "See",
+      "type": "ShaderNodeBsdfTransparent"
+     },
+     {
+      "name": "Mix",
+      "type": "ShaderNodeMixShader"
+     },
+     {
+      "name": "Output",
+      "type": "ShaderNodeOutputMaterial"
+     }
+    ],
+    "links": [
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Offset",
+      "input": "Vector"
+     },
+     {
+      "from": "Offset",
+      "output": "Vector",
+      "to": "Ellipse",
+      "input": "Vector"
+     },
+     {
+      "from": "Ellipse",
+      "output": "Fac",
+      "to": "Contrast",
+      "input": "Fac"
+     },
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Along",
+      "input": "Vector"
+     },
+     {
+      "from": "Contrast",
+      "output": "Color",
+      "to": "Damp",
+      "input": "A"
+     },
+     {
+      "from": "Along",
+      "output": "Color",
+      "to": "Damp",
+      "input": "B"
+     },
+     {
+      "from": "UV",
+      "output": "UV",
+      "to": "Blotches",
+      "input": "Vector"
+     },
+     {
+      "from": "Damp",
+      "output": "Result",
+      "to": "Rough",
+      "input": "A"
+     },
+     {
+      "from": "Blotches",
+      "output": "Color",
+      "to": "Rough",
+      "input": "B"
+     },
+     {
+      "from": "Rough",
+      "output": "Result",
+      "to": "Alpha",
+      "input": "Fac"
+     },
+     {
+      "from": "Rough",
+      "output": "Result",
+      "to": "Tint",
+      "input": "Fac"
+     },
+     {
+      "from": "Tint",
+      "output": "Color",
+      "to": "Glow",
+      "input": "Color"
+     },
+     {
+      "from": "Rough",
+      "output": "Result",
+      "to": "Boost",
+      "input": 0
+     },
+     {
+      "from": "Boost",
+      "output": 0,
+      "to": "Glow",
+      "input": "Strength"
+     },
+     {
+      "from": "See",
+      "output": 0,
+      "to": "Mix",
+      "input": 1
+     },
+     {
+      "from": "Glow",
+      "output": 0,
+      "to": "Mix",
+      "input": 2
+     },
+     {
+      "from": "Alpha",
+      "output": "Color",
+      "to": "Mix",
+      "input": 0
+     },
+     {
+      "from": "Mix",
+      "output": 0,
+      "to": "Output",
+      "input": "Surface"
+     }
+    ]
+   },
+   "note": "the shader on the curve's UVs: a quadratic-sphere gradient offset half a unit (an ellipse on one side), contrast from a ramp, multiplied by a linear gradient along the curve, mixed half and half with a noise for blotches; two ramps: a constant alpha mask and a pink-purple colour; emission (stronger in the middle: the mask multiplied into the strength) over transparent",
+   "video_time": "30:16"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_end",
+    "value": 0.0,
+    "frame": 1
+   },
+   "note": "animated like every curve so far: the start and end mapping",
+   "video_time": "31:50"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_start",
+    "value": 0.0,
+    "frame": 1
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 14
+   },
+   "note": "",
+   "video_time": "31:50"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_start",
+    "value": 0.0,
+    "frame": 8
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_end",
+    "value": 1.0,
+    "frame": 26
+   },
+   "note": "",
+   "video_time": "31:50"
+  },
+  {
+   "action": "set_property",
+   "args": {
+    "target": "data",
+    "name": "Energy",
+    "path": "bevel_factor_start",
+    "value": 1.0,
+    "frame": 26
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "set_frames",
+   "args": {
+    "start": 1,
+    "end": 32
+   },
+   "note": "",
+   "video_time": null
+  },
+  {
+   "action": "add_camera",
+   "args": {
+    "name": "Camera",
+    "location": [
+     50.0,
+     -6.5,
+     1.7
+    ],
+    "look_at": [
+     50.0,
+     0,
+     1.6
+    ],
+    "lens": 38
+   },
+   "note": "the camera on the energy lines",
+   "video_time": null
+  }
+ ]
+}
