@@ -382,6 +382,23 @@ against your words and reference image, revises (three tries by default) and kee
 a project folder like a lesson's. What it made becomes a skill that stays a candidate until you
 rate it good.
 
+Guards against wasted requests and generous judges: a request that just names a taught object
+("una seta") rebuilds it without calling the model; with no course learned yet, `make` refuses
+instead of letting the model stack primitives; and a judged score is capped at 4/10 when the build
+only placed primitives and at 5/10 when nothing has a material, however high the model scored it.
+
+### The best results: Claude Code as the teacher
+
+How good a new thing turns out depends on the model that plans and judges it; a small model (the free
+Gemini flash-lite, or a local one) builds rough shapes and scores them too kindly. The 9/10 objects
+and course chapters in `courses/` were made by Claude Code acting as the teacher: it writes the recipe,
+runs `lucius teach task`, looks at the renders next to the reference photos, fixes the recipe until
+it is right, and keeps it. Open Claude Code in this folder and ask for something ("make me a
+greatsword", "build this chair" with photos attached): the project skill
+[`.claude/skills/lucius-make`](.claude/skills/lucius-make/SKILL.md) gives it that loop. Every object it
+keeps is added to `courses/objects` and is rebuilt afterwards with `lucius make "<name>"`, with no
+model.
+
 ### Sending a reference image
 
 Any of these works:

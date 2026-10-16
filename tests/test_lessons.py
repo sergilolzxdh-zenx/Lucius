@@ -549,8 +549,45 @@ def test_taught_objects_are_rebuilt_without_a_model(tmp_path, headless_blender):
         assert result.status == "rebuilt" and result.skill_id == "object_stool" and result.final_render
         with pytest.raises(ValidationError, match="learned objects: Stool"):
             maker.make("a spaceship", offline=True)
+
+        # With a model set up, naming the taught object still rebuilds it (no model request); a new thing with
+        # no course learned is refused instead of spending requests on stacked primitives.
+        class NoCalls:
+            name, model, supports_images = "none", "none", True
+
+            def complete_json(self, **kwargs):
+                raise AssertionError(f"unexpected model call {kwargs.get('purpose')}")
+
+        app.providers = Providers(llm=NoCalls(), vlm=NoCalls(), embeddings=app.providers.embeddings)
+        again = maker.make("un taburete")
+        assert again.status == "rebuilt" and again.skill_id == "object_stool"
+        assert not maker.names_only("un taburete alto y rojo", maker.recall("un taburete alto y rojo"))
+        with pytest.raises(ValidationError, match="not learned any course"):
+            maker.make("a spaceship")
     finally:
         app.close()
+
+
+def test_generous_judges_are_held_to_what_the_build_can_deserve():
+    from lucius.lessons import Maker
+    from lucius.lessons.recipe import Recipe, RecipeStep
+    from lucius.lessons.runner import RecipeRun
+
+    def scene(*materials):
+        return {"objects": [{"name": f"Part{i}", "type": "MESH", "materials": list(m)} for i, m in enumerate(materials)]
+                + [{"name": "Camera", "type": "CAMERA"}]}
+
+    blob = Recipe(title="Mushroom", steps=[RecipeStep(action="add_primitive", args={"kind": "uv_sphere"}),
+                                           RecipeStep(action="transform_object", args={})])
+    shaped = Recipe(title="Mushroom", steps=[RecipeStep(action="add_primitive", args={"kind": "uv_sphere"}),
+                                             RecipeStep(action="extrude", args={}),
+                                             RecipeStep(action="set_material", args={})])
+    # the grey ball on a stick a generous judge gave 9/10
+    assert Maker._cap(9.0, blob, RecipeRun(ok=True, scene=scene([], [])))[0] == 4.0
+    score, why = Maker._cap(9.0, shaped, RecipeRun(ok=True, scene=scene([], [])))
+    assert score == 5.0 and "no materials" in why
+    assert Maker._cap(9.0, shaped, RecipeRun(ok=True, scene=scene(["Cap"], [])))  == (9.0, "")
+    assert Maker._cap(3.0, blob, RecipeRun(ok=True, scene=scene([])))[0] == 3.0
 
 
 def test_edit_mode_building_and_joining(headless_blender):

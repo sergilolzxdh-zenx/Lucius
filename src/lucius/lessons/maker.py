@@ -51,12 +51,20 @@ MAKE_SYSTEM = (
 
 CRITIQUE_SYSTEM = (
     "Judge renders of what Lucius built in Blender for a task (and against the reference image, if given). Be "
-    "honest and specific: does it read as the requested object at first glance, are the proportions and parts "
-    "right, does it match the reference? score 0-10: 10 excellent; 7 clearly the requested object with small "
-    "problems; 4 recognisable but wrong in important ways; 1 not the requested object. List the problems with "
-    "a fix stated in terms of the recipe (which step, which value). looks_like says plainly what a person would "
-    "say the render shows."
+    "strict and specific: does it read as the requested object at first glance, are the proportions and parts "
+    "right, does it have the materials and colours the object should have, does it match the reference? Score "
+    "it the way a 3D artist reviewing a portfolio piece would: 9-10 a finished model a person would accept as "
+    "the object (right silhouette, every main part, believable proportions, proper materials); 7 clearly the "
+    "object but missing detail or materials; 5 recognisable but crude (simple primitives, no shaping); 3 only "
+    "hints at the object (a ball on a stick for a mushroom, a grey box for a house); 1 not the object. Untextured "
+    "grey geometry is 5 at most. When unsure between two scores, give the lower. List the problems with a fix "
+    "stated in terms of the recipe (which step, which value). looks_like says plainly what a person would say "
+    "the render shows."
 )
+
+# Ceilings that do not depend on how generous the judging model is.
+CAP_PRIMITIVES_ONLY = 4.0   # the recipe only placed and sized primitives: no modelling at all
+CAP_NO_MATERIALS = 5.0      # nothing in the scene has a material: grey clay
 
 REVISE_SYSTEM = (
     "Improve a Blender recipe from a critique of its result. Apply the fixes, keep what works, and keep the "
@@ -190,7 +198,7 @@ class Maker:
             "differences", [])][:5]
         return {"critique": problems, "rating": data.get("rating")}
 
-    def _examples(self, techniques: Techniques, task: str, limit_chars: int = 30000) -> str:
+    def _examples(self, techniques: Techniques, task: str, limit_chars: int = 30000, start: str | None = None) -> str:
         """Tutorial recipes as worked examples of the learned techniques, and Lucius' own earlier attempts at
         similar tasks with what was judged wrong with them -- to improve on, not to copy."""
         words = set(re.findall(r"[a-z]{3,}", task.lower()))
@@ -208,7 +216,9 @@ class Maker:
             if used + len(block) <= limit_chars:
                 blocks.append(block)
                 used += len(block)
-        taught = sorted((r for r in techniques.recipes if r.get("taught") and overlap(r)), key=lambda r: -overlap(r))
+        # The taught object the request names (also by its other names, "espada"), then any sharing words with it.
+        taught = sorted((r for r in techniques.recipes if r.get("taught") and (r["skill_id"] == start or overlap(r))),
+                        key=lambda r: (r["skill_id"] != start, -overlap(r)))
         if taught:
             blocks.append("# Objects a teacher taught you (validated): start from the closest one and change what the "
                           "task asks for")
@@ -280,6 +290,13 @@ class Maker:
                 best, best_hits = item, hits
         return best
 
+    def names_only(self, task: str, known: dict[str, Any]) -> bool:
+        """The request just names the taught object ("una seta", "a sword"), asking for nothing different."""
+        from lucius.lessons.teacher import words
+
+        wanted = set(words(task))
+        return bool(wanted) and wanted <= known["words"]
+
     def rebuild(self, task: str, known: dict[str, Any], *, references: list[Path], say: Callable[[str], None]) -> MakeResult:
         """Build a taught object again, without a model: its recipe, rendered and saved as a project."""
         from lucius.lessons.recipe import RecipeStep
@@ -313,14 +330,21 @@ class Maker:
         for ref in refs:
             if not ref.is_file() or ref.suffix.lower() not in IMAGE_TYPES:
                 raise ValidationError(f"reference image {ref} must be an existing PNG, JPEG or WebP file")
+        known = self.recall(task)
         if offline or not self._has_model(bool(refs)):
-            known = self.recall(task)
             if known is None:
                 names = ", ".join(sorted(k["name"] for k in self.known_objects())) or "none yet"
                 raise ValidationError(f"no model is available and no learned object matches '{task}' "
                                       f"(learned objects: {names})")
             return self.rebuild(task, known, references=refs, say=say)
+        if known is not None and not refs and self.names_only(task, known):
+            # "una seta" when a mushroom was taught: the taught one is better than anything planned from scratch.
+            return self.rebuild(task, known, references=refs, say=say)
         techniques = self.techniques()
+        if not techniques.actions and not allow_unlearned:
+            raise ValidationError("Lucius has not learned any course yet, so a model could only stack primitives "
+                                  "(and would spend requests on it): run `lucius teach course courses/<pack>` for "
+                                  "the course packs first, or pass --allow-unlearned")
         allowed = techniques.allowed(allow_unlearned)
         project = self.projects.create("task", task, task=task, allow_unlearned=allow_unlearned,
                                        techniques=techniques.to_dict(), allowed_actions=allowed)
@@ -344,7 +368,8 @@ class Maker:
         say(f"planning '{task}' with {len(allowed)} actions ({len(techniques.actions)} learned from tutorials)")
         prompt = "\n\n".join([
             f"Task: {task}", f"Actions available:\n{catalogue(allowed)}",
-            f"Learned recipes (how the tutorials built things):\n{self._examples(techniques, task)}",
+            f"Learned recipes (how the tutorials built things):\n"
+            f"{self._examples(techniques, task, start=known['skill_id'] if known else None)}",
             ("Reference image(s) attached: match them." if ref_images else ""),
             "Write the recipe."])
         try:
@@ -377,6 +402,11 @@ class Maker:
                 except ProviderError as exc:
                     critique = {"score": None, "error": exc.message[:200], "differences": []}
             score = critique.get("score") if run.ok else None
+            if score is not None:
+                score, why = self._cap(score, recipe, run)
+                if why:
+                    critique["capped"] = why
+                    critique.setdefault("differences", []).append({"object": "", "problem": why, "fix": ""})
             attempt = {"number": number, "recipe": recipe, "run": run, "renders": renders, "critique": critique,
                        "score": score, "fixes": fixes}
             attempts.append(attempt)
@@ -484,6 +514,19 @@ class Maker:
                           images=images, max_tokens=6000)
         data["score"] = max(0.0, min(10.0, float(data.get("score") or 0.0)))
         return data
+
+    @staticmethod
+    def _cap(score: float, recipe: Recipe, run: RecipeRun) -> tuple[float, str]:
+        """Hold a judged score under what the build can deserve, however generous the judge was."""
+        from lucius.lessons.catalogue import BASIC_ACTIONS
+
+        if recipe.actions_used() <= set(BASIC_ACTIONS) and score > CAP_PRIMITIVES_ONLY:
+            return CAP_PRIMITIVES_ONLY, (f"only primitives placed and sized, no modelling: at most "
+                                         f"{CAP_PRIMITIVES_ONLY:g}/10")
+        meshes = [o for o in run.scene.get("objects", []) if o.get("type") == "MESH"]
+        if meshes and not any(o.get("materials") for o in meshes) and score > CAP_NO_MATERIALS:
+            return CAP_NO_MATERIALS, f"no materials (grey clay): at most {CAP_NO_MATERIALS:g}/10"
+        return score, ""
 
     def _revise(self, recipe: Recipe, run: RecipeRun, critique: dict[str, Any], allowed: list[str], rules: str,
                 task: str) -> tuple[Recipe, list[str]]:
